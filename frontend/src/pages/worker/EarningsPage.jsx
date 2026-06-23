@@ -234,10 +234,10 @@ const EarningsPage = () => {
 
       <Grid container spacing={4}>
         {/* Left Column: Financial Card + Recharts Bar Chart */}
-        <Grid item xs={12} md={7}>
+        <Grid size={{ xs: 12, md: 7 }}>
           <Grid container spacing={3}>
             {/* Earnings Summary Card */}
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <Card sx={{ border: '1px solid', borderColor: 'divider' }}>
                 <CardContent sx={{ p: 3, display: 'flex', alignItems: 'center', gap: 2.5 }}>
                   <Box sx={{ p: 2, borderRadius: 3, bgcolor: 'rgba(0, 245, 212, 0.1)', color: '#00F5D4' }}>
@@ -256,7 +256,7 @@ const EarningsPage = () => {
             </Grid>
 
             {/* Total Jobs Summary Card */}
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <Card sx={{ border: '1px solid', borderColor: 'divider' }}>
                 <CardContent sx={{ p: 3, display: 'flex', alignItems: 'center', gap: 2.5 }}>
                   <Box sx={{ p: 2, borderRadius: 3, bgcolor: 'rgba(0, 180, 216, 0.1)', color: '#00B4D8' }}>
@@ -275,7 +275,7 @@ const EarningsPage = () => {
             </Grid>
 
             {/* Earnings Chart Card */}
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Card sx={{ border: '1px solid', borderColor: 'divider' }}>
                 <CardContent sx={{ p: 3 }}>
                   <Box display="flex" alignItems="center" gap={1} sx={{ mb: 2 }}>
@@ -292,7 +292,7 @@ const EarningsPage = () => {
         </Grid>
 
         {/* Right Column: Statement list of Completed Jobs */}
-        <Grid item xs={12} md={5}>
+        <Grid size={{ xs: 12, md: 5 }}>
           <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', border: '1px solid', borderColor: 'divider' }}>
             <CardContent sx={{ p: 4, display: 'flex', flexDirection: 'column', height: '100%' }}>
               <Typography variant="subtitle1" fontWeight="800" sx={{ mb: 3 }}>

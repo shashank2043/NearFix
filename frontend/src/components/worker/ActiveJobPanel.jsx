@@ -126,7 +126,7 @@ const ActiveJobPanel = ({ booking, onUpdateStatus, actionLoading = false }) => {
       <CardContent sx={{ p: 4 }}>
         <Grid container spacing={4}>
           {/* Left Column: Job & Customer Details */}
-          <Grid item xs={12} md={7}>
+          <Grid size={{ xs: 12, md: 7 }}>
             <Box>
               <Chip label={`Booking ID: #${id}`} color="primary" size="small" sx={{ fontWeight: 'bold', mb: 1.5 }} />
               <Typography variant="h5" fontWeight="800" gutterBottom>
@@ -221,7 +221,7 @@ const ActiveJobPanel = ({ booking, onUpdateStatus, actionLoading = false }) => {
           </Grid>
 
           {/* Right Column: Visual Map HUD */}
-          <Grid item xs={12} md={5}>
+          <Grid size={{ xs: 12, md: 5 }}>
             <Typography variant="subtitle2" fontWeight="800" sx={{ mb: 2, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary' }}>
               Customer Location HUD
             </Typography>

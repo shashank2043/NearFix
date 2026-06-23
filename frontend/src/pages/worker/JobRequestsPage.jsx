@@ -146,7 +146,7 @@ const JobRequestsPage = () => {
       ) : (
         <Grid container spacing={3}>
           {requests.map((booking) => (
-            <Grid item xs={12} key={booking.id}>
+            <Grid size={12} key={booking.id}>
               <JobRequestCard
                 booking={booking}
                 onAccept={handleAccept}

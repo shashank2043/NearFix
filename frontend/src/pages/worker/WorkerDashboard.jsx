@@ -256,7 +256,7 @@ const WorkerDashboard = () => {
 
           <Grid container spacing={4}>
             {/* Left side: Profile summary & live availability */}
-            <Grid item xs={12} md={5}>
+            <Grid size={{ xs: 12, md: 5 }}>
               <Box display="flex" flexDirection="column" gap={3}>
                 <WorkerProfileCard user={user} profile={profile} />
 
@@ -280,10 +280,10 @@ const WorkerDashboard = () => {
             </Grid>
 
             {/* Right side: Quick stats cards & navigation blocks */}
-            <Grid item xs={12} md={7}>
+            <Grid size={{ xs: 12, md: 7 }}>
               <Grid container spacing={3}>
                 {/* Pending Bookings count card */}
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <Card sx={{ height: '100%', border: '1px solid', borderColor: 'divider' }}>
                     <CardContent sx={{ p: 3, display: 'flex', flexDirection: 'column', height: '100%' }}>
                       <Box display="flex" alignItems="center" gap={2} sx={{ mb: 2 }}>
@@ -323,7 +323,7 @@ const WorkerDashboard = () => {
                 </Grid>
 
                 {/* Total jobs completed card */}
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <Card sx={{ height: '100%', border: '1px solid', borderColor: 'divider' }}>
                     <CardContent sx={{ p: 3, display: 'flex', flexDirection: 'column', height: '100%' }}>
                       <Box display="flex" alignItems="center" gap={2} sx={{ mb: 2 }}>
@@ -360,7 +360,7 @@ const WorkerDashboard = () => {
                 </Grid>
 
                 {/* Quick Link Navigation Blocks */}
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <Card sx={{ p: 1, border: '1px solid', borderColor: 'divider', background: 'linear-gradient(135deg, #0F1A30 0%, #16243F 100%)' }}>
                     <CardContent sx={{ p: 2 }}>
                       <Typography variant="subtitle1" fontWeight="800" color="primary.main" sx={{ mb: 2 }}>
@@ -368,7 +368,7 @@ const WorkerDashboard = () => {
                       </Typography>
                       <Divider sx={{ mb: 2, borderColor: 'rgba(255,255,255,0.05)' }} />
                       <Grid container spacing={2}>
-                        <Grid item xs={12} sm={6}>
+                        <Grid size={{ xs: 12, sm: 6 }}>
                           <Button
                             component={Link}
                             to="/worker/requests"
@@ -399,7 +399,7 @@ const WorkerDashboard = () => {
                           </Button>
                         </Grid>
 
-                        <Grid item xs={12} sm={6}>
+                        <Grid size={{ xs: 12, sm: 6 }}>
                           <Button
                             component={Link}
                             to="/worker/earnings"
