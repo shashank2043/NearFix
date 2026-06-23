@@ -16,11 +16,11 @@ public class Notification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @Column(name = "recipient_to", nullable = false)
+    private String to;
 
     @Column(nullable = false)
-    private String title;
+    private String subject;
 
     @Column(nullable = false, length = 1000)
     private String message;
@@ -35,7 +35,7 @@ public class Notification {
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
         if (this.sent == null) {
-            this.sent = true; // In-app notification defaults to sent
+            this.sent = true; 
         }
     }
 }

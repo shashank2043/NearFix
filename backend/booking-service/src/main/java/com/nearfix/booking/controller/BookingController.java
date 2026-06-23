@@ -1,5 +1,6 @@
 package com.nearfix.booking.controller;
 
+import com.nearfix.booking.config.SecurityUtils;
 import com.nearfix.booking.dto.BookingResponse;
 import com.nearfix.booking.dto.CreateBookingRequest;
 import com.nearfix.booking.dto.UpdateBookingStatusRequest;
@@ -20,42 +21,48 @@ public class BookingController {
 
     @PostMapping
     public ResponseEntity<BookingResponse> createBooking(
-            @RequestHeader("X-User-Id") Long customerId,
-            @RequestHeader("X-User-Role") String customerRole,
             @Valid @RequestBody CreateBookingRequest request) {
+        Long customerId = SecurityUtils.getUserId();
+        String customerRole = SecurityUtils.getUserRole();
         BookingResponse response = bookingService.createBooking(customerId, customerRole, request);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<BookingResponse> getBookingById(
-            @PathVariable Long id,
-            @RequestHeader("X-User-Id") Long userId,
-            @RequestHeader("X-User-Role") String userRole) {
+            @PathVariable Long id) {
+        Long userId = SecurityUtils.getUserId();
+        String userRole = SecurityUtils.getUserRole();
         BookingResponse response = bookingService.getBookingById(id, userId, userRole);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/customer")
-    public ResponseEntity<List<BookingResponse>> getCustomerBookings(
-            @RequestHeader("X-User-Id") Long customerId) {
+    public ResponseEntity<List<BookingResponse>> getCustomerBookings() {
+        Long customerId = SecurityUtils.getUserId();
         List<BookingResponse> responses = bookingService.getBookingsForCustomer(customerId);
         return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/worker")
-    public ResponseEntity<List<BookingResponse>> getWorkerBookings(
-            @RequestHeader("X-User-Id") Long workerId) {
+    public ResponseEntity<List<BookingResponse>> getWorkerBookings() {
+        Long workerId = SecurityUtils.getUserId();
         List<BookingResponse> responses = bookingService.getBookingsForWorker(workerId);
         return ResponseEntity.ok(responses);
+    }
+
+    @GetMapping("/worker/has-active")
+    public ResponseEntity<Boolean> hasActiveBooking(@RequestParam("workerId") Long workerId) {
+        boolean hasActive = bookingService.hasActiveBookingForWorker(workerId);
+        return ResponseEntity.ok(hasActive);
     }
 
     @PutMapping("/{id}/status")
     public ResponseEntity<BookingResponse> updateBookingStatus(
             @PathVariable Long id,
-            @RequestHeader("X-User-Id") Long userId,
-            @RequestHeader("X-User-Role") String userRole,
             @Valid @RequestBody UpdateBookingStatusRequest request) {
+        Long userId = SecurityUtils.getUserId();
+        String userRole = SecurityUtils.getUserRole();
         BookingResponse response = bookingService.updateBookingStatus(id, userId, userRole, request.getStatus());
         return ResponseEntity.ok(response);
     }

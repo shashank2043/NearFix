@@ -1,6 +1,6 @@
 package com.nearfix.notification.dto;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,12 +10,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class NotificationRequest {
 
-    @NotNull(message = "User ID is required")
-    private Long userId;
+    @NotBlank(message = "Recipient 'to' email is required")
+    private String to;
 
-    @NotNull(message = "Title is required")
-    private String title;
+    @NotBlank(message = "Subject is required")
+    private String subject;
 
-    @NotNull(message = "Message is required")
+    @NotBlank(message = "Message is required")
     private String message;
 }

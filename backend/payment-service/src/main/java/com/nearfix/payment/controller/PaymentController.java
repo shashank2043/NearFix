@@ -1,5 +1,6 @@
 package com.nearfix.payment.controller;
 
+import com.nearfix.payment.config.SecurityUtils;
 import com.nearfix.payment.dto.CreatePaymentRequest;
 import com.nearfix.payment.dto.PaymentResponse;
 import com.nearfix.payment.entity.Payment;
@@ -18,9 +19,9 @@ public class PaymentController {
 
     @PostMapping
     public ResponseEntity<PaymentResponse> processPayment(
-            @RequestHeader("X-User-Id") Long customerId,
-            @RequestHeader("X-User-Role") String customerRole,
             @Valid @RequestBody CreatePaymentRequest request) {
+        Long customerId = SecurityUtils.getUserId();
+        String customerRole = SecurityUtils.getUserRole();
         PaymentResponse response = paymentService.processPayment(customerId, customerRole, request);
         return ResponseEntity.ok(response);
     }
