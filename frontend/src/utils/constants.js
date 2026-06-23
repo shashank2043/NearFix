@@ -1,0 +1,52 @@
+export const SERVICE_TYPES = [
+  'Electrician',
+  'Plumber',
+  'Carpenter',
+  'Mechanic',
+  'AC Technician'
+];
+
+export const ROLES = {
+  CUSTOMER: 'CUSTOMER',
+  WORKER: 'WORKER',
+  ADMIN: 'ADMIN'
+};
+
+export const BOOKING_STATUS = {
+  REQUESTED: 'REQUESTED',
+  ACCEPTED: 'ACCEPTED',
+  ON_THE_WAY: 'ON_THE_WAY',
+  WORK_STARTED: 'WORK_STARTED',
+  WORK_COMPLETED: 'WORK_COMPLETED',
+  PAID: 'PAID',
+  CANCELLED: 'CANCELLED'
+};
+
+export const STATUS_LABELS = {
+  [BOOKING_STATUS.REQUESTED]: 'Requested',
+  [BOOKING_STATUS.ACCEPTED]: 'Accepted',
+  [BOOKING_STATUS.ON_THE_WAY]: 'On The Way',
+  [BOOKING_STATUS.WORK_STARTED]: 'Work Started',
+  [BOOKING_STATUS.WORK_COMPLETED]: 'Work Completed',
+  [BOOKING_STATUS.PAID]: 'Paid',
+  [BOOKING_STATUS.CANCELLED]: 'Cancelled'
+};
+
+export const WORKER_STATUS = {
+  AVAILABLE: 'AVAILABLE',
+  BUSY: 'BUSY',
+  UNAVAILABLE: 'UNAVAILABLE'
+};
+
+export const WORKER_STATUS_LABELS = {
+  [WORKER_STATUS.AVAILABLE]: 'Available',
+  [WORKER_STATUS.BUSY]: 'Busy',
+  [WORKER_STATUS.UNAVAILABLE]: 'Unavailable'
+};
+
+export const PAYMENT_STATUS = {
+  PENDING: 'PENDING',
+  COMPLETED: 'COMPLETED',
+  SUCCESS: 'SUCCESS',
+  FAILED: 'FAILED'
+};

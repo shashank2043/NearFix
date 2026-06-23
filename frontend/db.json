@@ -1,0 +1,183 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "fullName": "Amit Sharma",
+      "email": "amit@nearfix.com",
+      "phone": "9876543210",
+      "password": "password123",
+      "role": "CUSTOMER",
+      "active": true,
+      "createdAt": "2026-06-20T10:00:00.000Z"
+    },
+    {
+      "id": "2",
+      "fullName": "Priya Patel",
+      "email": "priya@nearfix.com",
+      "phone": "9876543211",
+      "password": "password123",
+      "role": "CUSTOMER",
+      "active": true,
+      "createdAt": "2026-06-21T11:00:00.000Z"
+    },
+    {
+      "id": "3",
+      "fullName": "Rohan Das",
+      "email": "rohan@nearfix.com",
+      "phone": "9876543212",
+      "password": "password123",
+      "role": "CUSTOMER",
+      "active": true,
+      "createdAt": "2026-06-22T09:30:00.000Z"
+    },
+    {
+      "id": "4",
+      "fullName": "Rajesh Kumar",
+      "email": "rajesh@nearfix.com",
+      "phone": "9876543213",
+      "password": "password123",
+      "role": "WORKER",
+      "active": true,
+      "createdAt": "2026-06-18T08:00:00.000Z"
+    },
+    {
+      "id": "5",
+      "fullName": "Vikram Singh",
+      "email": "vikram@nearfix.com",
+      "phone": "9876543214",
+      "password": "password123",
+      "role": "WORKER",
+      "active": true,
+      "createdAt": "2026-06-19T14:00:00.000Z"
+    },
+    {
+      "id": "6",
+      "fullName": "Suresh Prasad",
+      "email": "suresh@nearfix.com",
+      "phone": "9876543215",
+      "password": "password123",
+      "role": "WORKER",
+      "active": true,
+      "createdAt": "2026-06-20T16:30:00.000Z"
+    },
+    {
+      "id": "7",
+      "fullName": "Admin Ramesh",
+      "email": "admin1@nearfix.com",
+      "phone": "9876543216",
+      "password": "admin123",
+      "role": "ADMIN",
+      "active": true,
+      "createdAt": "2026-06-01T00:00:00.000Z"
+    },
+    {
+      "id": "8",
+      "fullName": "Admin Suresh",
+      "email": "admin2@nearfix.com",
+      "phone": "9876543217",
+      "password": "admin123",
+      "role": "ADMIN",
+      "active": true,
+      "createdAt": "2026-06-01T00:00:00.000Z"
+    },
+    {
+      "id": "9",
+      "fullName": "Admin Gita",
+      "email": "admin3@nearfix.com",
+      "phone": "9876543218",
+      "password": "admin123",
+      "role": "ADMIN",
+      "active": true,
+      "createdAt": "2026-06-01T00:00:00.000Z"
+    }
+  ],
+  "workers": [
+    {
+      "id": "4",
+      "skill": "Electrician",
+      "experience": 5,
+      "city": "Bangalore",
+      "rating": 4.8,
+      "verified": true,
+      "status": "AVAILABLE"
+    },
+    {
+      "id": "5",
+      "skill": "Plumber",
+      "experience": 8,
+      "city": "Mumbai",
+      "rating": 4.5,
+      "verified": true,
+      "status": "BUSY"
+    },
+    {
+      "id": "6",
+      "skill": "Carpenter",
+      "experience": 3,
+      "city": "Delhi",
+      "rating": 4.2,
+      "verified": false,
+      "status": "UNAVAILABLE"
+    }
+  ],
+  "bookings": [
+    {
+      "id": "1",
+      "customerId": "1",
+      "workerId": "4",
+      "serviceType": "Electrician",
+      "issueDescription": "Short circuit in living room, sparks flying.",
+      "address": "Flat 302, Green Glen Layout, Bangalore",
+      "status": "WORK_COMPLETED",
+      "createdAt": "2026-06-23T10:00:00.000Z"
+    },
+    {
+      "id": "2",
+      "customerId": "2",
+      "workerId": "5",
+      "serviceType": "Plumber",
+      "issueDescription": "Main pipe burst, water flooding the kitchen.",
+      "address": "Villa 12, Palm Meadows, Mumbai",
+      "status": "ON_THE_WAY",
+      "createdAt": "2026-06-23T12:30:00.000Z"
+    },
+    {
+      "id": "3",
+      "customerId": "3",
+      "workerId": "6",
+      "serviceType": "Carpenter",
+      "issueDescription": "Broken main entrance door lock, security issue.",
+      "address": "Block C-5, Sector 62, Delhi",
+      "status": "REQUESTED",
+      "createdAt": "2026-06-23T14:00:00.000Z"
+    }
+  ],
+  "payments": [
+    {
+      "id": "1",
+      "bookingId": "1",
+      "amount": 500.0,
+      "status": "COMPLETED",
+      "transactionId": "TXN-9876543210-A",
+      "paymentDate": "2026-06-23T11:15:00.000Z"
+    },
+    {
+      "id": "2",
+      "bookingId": "2",
+      "amount": 750.0,
+      "status": "PENDING",
+      "transactionId": "TXN-9876543211-B",
+      "paymentDate": ""
+    }
+  ],
+  "reviews": [
+    {
+      "id": "1",
+      "bookingId": "1",
+      "customerId": "1",
+      "workerId": "4",
+      "rating": 5,
+      "comment": "Super fast response! Rajesh fixed the short circuit in no time. Very professional."
+    }
+  ]
+}

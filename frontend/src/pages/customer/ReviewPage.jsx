@@ -1,0 +1,169 @@
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import Container from '@mui/material/Container';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Typography from '@mui/material/Typography';
+import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
+import Avatar from '@mui/material/Avatar';
+import Divider from '@mui/material/Divider';
+import { Award } from 'lucide-react';
+
+import { useBooking } from '../../hooks/useBooking';
+import { reviewApi } from '../../api/reviewApi';
+import { workerApi } from '../../api/workerApi';
+import { authApi } from '../../api/authApi';
+import ReviewForm from '../../components/customer/ReviewForm';
+import Loader from '../../components/common/Loader';
+
+/**
+ * ReviewPage Component.
+ * Collects ratings and comment feedback for assigned worker and triggers average score updates.
+ */
+const ReviewPage = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { fetchBookingById } = useBooking();
+
+  const [booking, setBooking] = useState(null);
+  const [workerProfile, setWorkerProfile] = useState(null);
+  const [workerUser, setWorkerUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  useEffect(() => {
+    const loadBookingAndWorker = async () => {
+      try {
+        const details = await fetchBookingById(id);
+        setBooking(details);
+
+        if (details.workerId) {
+          const profile = await workerApi.getProfileById(details.workerId);
+          const userObj = await authApi.getUserById(details.workerId);
+          setWorkerProfile(profile);
+          setWorkerUser(userObj);
+        }
+      } catch (err) {
+        setError('Failed to load technician details.');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadBookingAndWorker();
+  }, [id, fetchBookingById]);
+
+  const handleReviewSubmit = async ({ rating, comment }) => {
+    if (!booking || !booking.workerId) return;
+    setSubmitting(true);
+    setError('');
+    setSuccess('');
+    try {
+      // 1. Submit review
+      await reviewApi.createReview({
+        bookingId: booking.id,
+        customerId: booking.customerId,
+        workerId: booking.workerId,
+        rating,
+        comment,
+      });
+
+      // 2. Query all ratings of this worker to calculate fresh mean score
+      const allReviews = await reviewApi.getReviewsByWorker(booking.workerId);
+      const sum = allReviews.reduce((acc, r) => acc + r.rating, 0);
+      const avg = Number((sum / allReviews.length).toFixed(1));
+
+      // 3. Save new score in worker profile records
+      await workerApi.updateProfile(booking.workerId, { rating: avg });
+
+      setSuccess('Review submitted! Navigating to dashboard...');
+      setTimeout(() => {
+        navigate('/customer/dashboard');
+      }, 2000);
+    } catch (err) {
+      console.error('Submit review failed:', err);
+      setError('Could not register service review. Please try again.');
+      setSubmitting(false);
+    }
+  };
+
+  if (loading) return <Loader message="Connecting reviews portal..." />;
+  if (error && !booking) return <Container sx={{ mt: 4 }}><Alert severity="error">{error}</Alert></Container>;
+  if (!booking) return <Loader message="Booking details not found..." />;
+
+  return (
+    <Container maxWidth="sm" sx={{ mt: 6, mb: 6 }}>
+      <Card sx={{ border: '1px solid', borderColor: 'divider' }}>
+        <CardContent sx={{ p: 4 }}>
+          <Typography variant="h5" fontWeight="800" textAlign="center" color="text.primary" gutterBottom>
+            Rate Technician
+          </Typography>
+          <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ mb: 4 }}>
+            Rate your experience with our emergency responder. Your feedback helps maintain our high standards of service.
+          </Typography>
+
+          {error && (
+            <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+              {error}
+            </Alert>
+          )}
+
+          {success && (
+            <Alert severity="success" sx={{ mb: 3, borderRadius: 2 }}>
+              {success}
+            </Alert>
+          )}
+
+          {/* Helper details display */}
+          {workerUser && workerProfile && (
+            <Box display="flex" flexDirection="column" alignItems="center" sx={{ gap: 1.5, mb: 4 }}>
+              <Avatar 
+                sx={{ 
+                  bgcolor: 'secondary.main', 
+                  color: '#0B192C', 
+                  width: 56, 
+                  height: 56, 
+                  fontWeight: 800 
+                }}
+              >
+                {workerUser.fullName?.charAt(0).toUpperCase()}
+              </Avatar>
+              <Box textAlign="center">
+                <Typography variant="subtitle1" fontWeight="700" color="text.primary">
+                  {workerUser.fullName}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {workerProfile.skill} Specialist
+                </Typography>
+                <Box 
+                  display="flex" 
+                  justifyContent="center" 
+                  alignItems="center" 
+                  sx={{ gap: 0.5, mt: 0.5, color: 'text.secondary' }}
+                >
+                  <Award size={14} color="#00B4D8" />
+                  <Typography variant="caption" fontWeight="600" color="text.secondary">
+                    Overall Rating: {workerProfile.rating.toFixed(1)} / 5.0
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+          )}
+
+          <Divider sx={{ mb: 4 }} />
+
+          {/* Form */}
+          <ReviewForm
+            onSubmit={handleReviewSubmit}
+            loading={submitting}
+          />
+        </CardContent>
+      </Card>
+    </Container>
+  );
+};
+
+export default ReviewPage;
