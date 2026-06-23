@@ -108,8 +108,9 @@
       "experience": 5,
       "city": "Bangalore",
       "rating": 4.8,
-      "verified": true,
-      "status": "AVAILABLE"
+      "verified": false,
+      "status": "UNAVAILABLE",
+      "verificationStatus": "REJECTED"
     },
     {
       "id": "5",

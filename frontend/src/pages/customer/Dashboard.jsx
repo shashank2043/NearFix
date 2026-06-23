@@ -525,7 +525,7 @@ const Dashboard = () => {
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                   The job is complete. Pay the helper's emergency service call rate.
                 </Typography>
-                <Box display="flex" justifyContent="space-between" alignItems="center">
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Box>
                     <Typography variant="caption" color="text.secondary" display="block">
                       Amount Due

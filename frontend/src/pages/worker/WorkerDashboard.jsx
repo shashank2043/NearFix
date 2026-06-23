@@ -158,7 +158,7 @@ const WorkerDashboard = () => {
               </Typography>
             </Box>
             <form onSubmit={handleCreateProfile}>
-              <Box display="flex" flexDirection="column" sx={{ gap: 3 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <TextField
                   select
                   label="Select Skill"
@@ -212,7 +212,7 @@ const WorkerDashboard = () => {
         /* Standard Worker Dashboard Grid */
         <>
           {/* Hero Welcome banner */}
-          <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mb: 4, flexWrap: 'wrap', gap: 2 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4, flexWrap: 'wrap', gap: 2 }}>
             <Box>
               <Typography variant="h4" fontWeight="800" color="text.primary">
                 Welcome back, {user?.fullName || 'Worker'}!
@@ -257,7 +257,7 @@ const WorkerDashboard = () => {
           <Grid container spacing={4}>
             {/* Left side: Profile summary & live availability */}
             <Grid size={{ xs: 12, md: 5 }}>
-              <Box display="flex" flexDirection="column" gap={3}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <WorkerProfileCard user={user} profile={profile} />
 
                 {profile && (
@@ -286,7 +286,7 @@ const WorkerDashboard = () => {
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Card sx={{ height: '100%', border: '1px solid', borderColor: 'divider' }}>
                     <CardContent sx={{ p: 3, display: 'flex', flexDirection: 'column', height: '100%' }}>
-                      <Box display="flex" alignItems="center" gap={2} sx={{ mb: 2 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
                         <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'rgba(0, 245, 212, 0.1)', color: '#00F5D4' }}>
                           <ClipboardList size={24} />
                         </Box>
@@ -294,7 +294,7 @@ const WorkerDashboard = () => {
                           Pending Requests
                         </Typography>
                       </Box>
-                      <Box display="flex" alignItems="baseline" gap={1.5} sx={{ mb: 2 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1.5, mb: 2 }}>
                         <Typography variant="h3" fontWeight="800">
                           {pendingRequests.length}
                         </Typography>
@@ -326,7 +326,7 @@ const WorkerDashboard = () => {
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Card sx={{ height: '100%', border: '1px solid', borderColor: 'divider' }}>
                     <CardContent sx={{ p: 3, display: 'flex', flexDirection: 'column', height: '100%' }}>
-                      <Box display="flex" alignItems="center" gap={2} sx={{ mb: 2 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
                         <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'rgba(0, 180, 216, 0.1)', color: '#00B4D8' }}>
                           <CheckCircle2 size={24} />
                         </Box>
@@ -334,7 +334,7 @@ const WorkerDashboard = () => {
                           Completed Tasks
                         </Typography>
                       </Box>
-                      <Box display="flex" alignItems="baseline" gap={1.5} sx={{ mb: 2 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1.5, mb: 2 }}>
                         <Typography variant="h3" fontWeight="800">
                           {completedJobsCount}
                         </Typography>

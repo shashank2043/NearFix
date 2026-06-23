@@ -367,7 +367,7 @@ const Dashboard = () => {
                         {activeJobs.map((job, idx) => (
                           <React.Fragment key={job.id}>
                             <Box sx={{ py: 2 }}>
-                              <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                                 <Typography variant="subtitle1" fontWeight="700">
                                   {job.serviceType} Callout
                                 </Typography>
@@ -495,7 +495,7 @@ const Dashboard = () => {
       {tabValue === 1 && (
         <Card sx={{ maxWidth: 600, mx: 'auto' }}>
           <CardContent>
-            <Box display="flex" flexDirection="column" alignItems="center" sx={{ gap: 2, mb: 4 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, mb: 4 }}>
               <Avatar sx={{ bgcolor: 'primary.main', width: 64, height: 64, fontSize: '1.8rem' }}>
                 {user.fullName.charAt(0).toUpperCase()}
               </Avatar>
@@ -508,8 +508,8 @@ const Dashboard = () => {
                 </Typography>
                 
                 {workerProfile && (
-                  <Box display="flex" justifyContent="center" alignItems="center" sx={{ gap: 2, mt: 1.5 }}>
-                    <Box display="flex" alignItems="center" sx={{ gap: 0.5 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 2, mt: 1.5 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                       <Award size={16} color="#00B4D8" />
                       <Typography variant="body2" fontWeight="700">
                         {workerProfile.rating.toFixed(1)} / 5.0

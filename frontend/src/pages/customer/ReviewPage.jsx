@@ -119,7 +119,7 @@ const ReviewPage = () => {
 
           {/* Helper details display */}
           {workerUser && workerProfile && (
-            <Box display="flex" flexDirection="column" alignItems="center" sx={{ gap: 1.5, mb: 4 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5, mb: 4 }}>
               <Avatar 
                 sx={{ 
                   bgcolor: 'secondary.main', 
@@ -139,10 +139,7 @@ const ReviewPage = () => {
                   {workerProfile.skill} Specialist
                 </Typography>
                 <Box 
-                  display="flex" 
-                  justifyContent="center" 
-                  alignItems="center" 
-                  sx={{ gap: 0.5, mt: 0.5, color: 'text.secondary' }}
+                  sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 0.5, mt: 0.5, color: 'text.secondary' }}
                 >
                   <Award size={14} color="#00B4D8" />
                   <Typography variant="caption" fontWeight="600" color="text.secondary">

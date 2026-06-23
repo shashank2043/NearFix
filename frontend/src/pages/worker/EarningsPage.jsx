@@ -191,7 +191,7 @@ const EarningsPage = () => {
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 6 }}>
       {/* Header Panel */}
-      <Box display="flex" alignItems="center" gap={2} sx={{ mb: 4 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4 }}>
         <Button
           variant="outlined"
           color="secondary"
@@ -278,7 +278,7 @@ const EarningsPage = () => {
             <Grid size={12}>
               <Card sx={{ border: '1px solid', borderColor: 'divider' }}>
                 <CardContent sx={{ p: 3 }}>
-                  <Box display="flex" alignItems="center" gap={1} sx={{ mb: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                     <TrendingUp size={18} className="text-secondary" />
                     <Typography variant="subtitle1" fontWeight="800">
                       Earnings Distribution
@@ -312,7 +312,7 @@ const EarningsPage = () => {
                       <ListItem sx={{ px: 0, py: 2 }}>
                         <ListItemText
                           primary={
-                            <Box display="flex" justifyContent="space-between" alignItems="center">
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                               <Typography variant="body2" fontWeight="800" color="text.primary">
                                 {job.serviceType} Callout
                               </Typography>
@@ -323,13 +323,13 @@ const EarningsPage = () => {
                           }
                           secondary={
                             <Box sx={{ mt: 1 }}>
-                              <Box display="flex" alignItems="center" gap={0.5} sx={{ mb: 0.5 }}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
                                 <User size={12} className="text-secondary" />
                                 <Typography variant="caption" color="text.secondary">
                                   {usersMap[job.customerId] || `Customer #${job.customerId}`}
                                 </Typography>
                               </Box>
-                              <Box display="flex" alignItems="center" gap={0.5}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                                 <Calendar size={12} className="text-secondary" />
                                 <Typography variant="caption" color="text.secondary">
                                   {formatDate(job.createdAt)}

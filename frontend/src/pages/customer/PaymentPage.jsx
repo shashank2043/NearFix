@@ -117,8 +117,8 @@ const PaymentPage = () => {
                 Invoice Details
               </Typography>
 
-              <Box display="flex" flexDirection="column" sx={{ gap: 2 }}>
-                <Box display="flex" justifyContent="space-between">
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                   <Typography variant="body2" color="text.secondary">
                     SOS Dispatch ID
                   </Typography>
@@ -126,7 +126,7 @@ const PaymentPage = () => {
                     #{booking.id}
                   </Typography>
                 </Box>
-                <Box display="flex" justifyContent="space-between">
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                   <Typography variant="body2" color="text.secondary">
                     Service Callout Category
                   </Typography>
@@ -135,7 +135,7 @@ const PaymentPage = () => {
                   </Typography>
                 </Box>
                 {workerUser && (
-                  <Box display="flex" justifyContent="space-between">
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <Typography variant="body2" color="text.secondary">
                       Emergency Helper
                     </Typography>
@@ -144,7 +144,7 @@ const PaymentPage = () => {
                     </Typography>
                   </Box>
                 )}
-                <Box display="flex" justifyContent="space-between">
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                   <Typography variant="body2" color="text.secondary">
                     Location
                   </Typography>
@@ -155,7 +155,7 @@ const PaymentPage = () => {
 
                 <Divider sx={{ my: 1.5 }} />
 
-                <Box display="flex" justifyContent="space-between" alignItems="baseline">
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                   <Typography variant="body1" fontWeight="700" color="text.primary">
                     Total Amount Due
                   </Typography>

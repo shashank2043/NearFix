@@ -16,7 +16,7 @@ const RatingStars = ({ value, readOnly = true, onChange, precision = 0.5, showLa
   const score = Number(value) || 0;
   
   return (
-    <Box display="flex" alignItems="center" sx={{ gap: 0.5 }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
       <Rating
         value={score}
         readOnly={readOnly}

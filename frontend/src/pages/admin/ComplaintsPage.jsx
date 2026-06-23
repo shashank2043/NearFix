@@ -143,7 +143,7 @@ const ComplaintsPage = () => {
       {/* Filter and Action bar */}
       <Card sx={{ mb: 4 }}>
         <CardContent sx={{ p: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-          <Box display="flex" alignItems="center" sx={{ gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Filter size={18} color={theme.palette.secondary.main} />
             <Typography variant="subtitle2" fontWeight="700">
               Filter Complaints

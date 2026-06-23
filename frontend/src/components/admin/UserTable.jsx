@@ -99,7 +99,7 @@ const UserTable = ({ users }) => {
 
                 {/* Name and avatar */}
                 <TableCell>
-                  <Box display="flex" alignItems="center" sx={{ gap: 1.5 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <Avatar 
                       sx={{ 
                         width: 38, 
@@ -129,14 +129,14 @@ const UserTable = ({ users }) => {
 
                 {/* Contact Info */}
                 <TableCell>
-                  <Box display="flex" flexDirection="column" sx={{ gap: 0.2 }}>
-                    <Box display="flex" alignItems="center" sx={{ gap: 0.5, color: 'text.secondary' }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
                       <Mail size={12} />
                       <Typography variant="caption" sx={{ textDecoration: 'none' }}>
                         {user.email}
                       </Typography>
                     </Box>
-                    <Box display="flex" alignItems="center" sx={{ gap: 0.5, color: 'text.secondary' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
                       <Phone size={12} />
                       <Typography variant="caption">
                         {user.phone}
@@ -163,7 +163,7 @@ const UserTable = ({ users }) => {
 
                 {/* Joined Date */}
                 <TableCell>
-                  <Box display="flex" alignItems="center" sx={{ gap: 0.5, color: 'text.secondary' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
                     <Calendar size={14} />
                     <Typography variant="body2">
                       {formatDate(user.createdAt)}

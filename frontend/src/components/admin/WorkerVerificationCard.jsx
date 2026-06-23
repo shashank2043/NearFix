@@ -62,8 +62,8 @@ const WorkerVerificationCard = ({ worker, workerUser = {}, onApprove, onReject }
     >
       <CardContent sx={{ p: 3 }}>
         {/* Top Section: Avatar & Status */}
-        <Box display="flex" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 2.5 }}>
-          <Box display="flex" sx={{ gap: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2.5 }}>
+          <Box sx={{ display: 'flex', gap: 2 }}>
             <Avatar 
               sx={{ 
                 width: 56, 

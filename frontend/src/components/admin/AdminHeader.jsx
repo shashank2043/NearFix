@@ -1,16 +1,10 @@
 import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import Paper from '@mui/material/Paper';
-import Container from '@mui/material/Container';
-import { LayoutDashboard, UserCheck, BarChart3, AlertOctagon } from 'lucide-react';
 import { useTheme } from '@mui/material/styles';
 
 /**
- * Reusable AdminHeader component that displays the workspace title and provides sub-navigation.
+ * Reusable AdminHeader component that displays the workspace title and description.
  * 
  * @param {Object} props
  * @param {string} props.title - Title of the active sub-page
@@ -18,26 +12,9 @@ import { useTheme } from '@mui/material/styles';
  */
 const AdminHeader = ({ title, subtitle }) => {
   const theme = useTheme();
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  // Map paths to tab values
-  const paths = [
-    '/admin/dashboard',
-    '/admin/verifications',
-    '/admin/analytics',
-    '/admin/complaints'
-  ];
-
-  const currentTab = paths.indexOf(location.pathname);
-  const tabValue = currentTab !== -1 ? currentTab : 0;
-
-  const handleTabChange = (event, newValue) => {
-    navigate(paths[newValue]);
-  };
 
   return (
-    <Box sx={{ mb: 4 }}>
+    <Box sx={{ mb: 2 }}>
       {/* Header section with styling */}
       <Box 
         sx={{ 
@@ -46,7 +23,6 @@ const AdminHeader = ({ title, subtitle }) => {
           borderRadius: 4,
           bgcolor: theme.palette.mode === 'light' ? '#0B192C' : '#0F1A30',
           color: '#FFFFFF',
-          mb: 3,
           position: 'relative',
           overflow: 'hidden',
           boxShadow: theme.palette.mode === 'light' 
@@ -103,40 +79,6 @@ const AdminHeader = ({ title, subtitle }) => {
           </Typography>
         )}
       </Box>
-
-      {/* Navigation Sub-bar */}
-      <Paper 
-        sx={{ 
-          borderRadius: 3, 
-          boxShadow: 'none', 
-          border: `1px solid ${theme.palette.divider}`,
-          overflow: 'hidden'
-        }}
-      >
-        <Tabs 
-          value={tabValue} 
-          onChange={handleTabChange}
-          indicatorColor="secondary"
-          textColor="secondary"
-          variant="scrollable"
-          scrollButtons="auto"
-          sx={{ 
-            px: 2,
-            '& .MuiTab-root': {
-              minHeight: 56,
-              fontWeight: 700,
-              fontSize: '0.875rem',
-              gap: 1,
-              textTransform: 'none'
-            }
-          }}
-        >
-          <Tab icon={<LayoutDashboard size={18} />} iconPosition="start" label="Dashboard" />
-          <Tab icon={<UserCheck size={18} />} iconPosition="start" label="Worker Verifications" />
-          <Tab icon={<BarChart3 size={18} />} iconPosition="start" label="System Analytics" />
-          <Tab icon={<AlertOctagon size={18} />} iconPosition="start" label="Complaints Desk" />
-        </Tabs>
-      </Paper>
     </Box>
   );
 };

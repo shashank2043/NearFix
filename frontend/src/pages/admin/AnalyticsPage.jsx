@@ -212,7 +212,7 @@ const AnalyticsPage = () => {
               </Typography>
 
               {topWorkers.length === 0 ? (
-                <Box display="flex" flexDirection="column" alignItems="center" sx={{ py: 4 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 4 }}>
                   <HardDrive size={36} color="text.secondary" />
                   <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5 }}>
                     No workers currently verified in the system.
@@ -247,7 +247,7 @@ const AnalyticsPage = () => {
                           }}
                         >
                           <TableCell>
-                            <Box display="flex" alignItems="center" sx={{ gap: 1 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                               <Avatar 
                                 sx={{ 
                                   width: 30, 
@@ -281,7 +281,7 @@ const AnalyticsPage = () => {
                           </TableCell>
                           <TableCell sx={{ fontWeight: 600 }}>{worker.completedJobs} calls</TableCell>
                           <TableCell align="right">
-                            <Box display="flex" alignItems="center" justifyContent="flex-end" sx={{ gap: 0.5 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.5 }}>
                               <Rating value={worker.rating} precision={0.1} readOnly size="small" max={1} />
                               <Typography variant="body2" fontWeight="800">
                                 {worker.rating?.toFixed(1) || '0.0'}
