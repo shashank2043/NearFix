@@ -79,15 +79,8 @@ public class BookingService {
         Booking saved = bookingRepository.save(booking);
 
         // Send Notification
-        try {
-            notificationClient.sendNotification(new NotificationRequest(
-                    customerId,
-                    "Booking Created",
-                    "Your request for " + request.getServiceType() + " service has been submitted successfully."
-            ));
-        } catch (Exception e) {
-            log.error("Failed to send booking creation notification", e);
-        }
+        sendNotificationSafely(customerId, "Booking Created",
+                "Your request for " + request.getServiceType() + " service has been submitted successfully.");
 
         return mapToResponse(saved);
     }
@@ -127,6 +120,17 @@ public class BookingService {
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public boolean hasActiveBookingForWorker(Long workerId) {
+        log.info("Checking if worker: {} has active bookings", workerId);
+        List<Booking> bookings = bookingRepository.findByWorkerIdOrderByCreatedAtDesc(workerId);
+        return bookings.stream().anyMatch(b -> 
+            b.getStatus() == BookingStatus.ACCEPTED 
+            || b.getStatus() == BookingStatus.ON_THE_WAY
+            || b.getStatus() == BookingStatus.WORK_STARTED
+            || b.getStatus() == BookingStatus.WORK_COMPLETED);
     }
 
     @Transactional
@@ -173,15 +177,8 @@ public class BookingService {
         Booking saved = bookingRepository.save(booking);
 
         // Notify Worker
-        try {
-            notificationClient.sendNotification(new NotificationRequest(
-                    workerId,
-                    "New Job Assignment",
-                    "You have been assigned to booking #" + bookingId + ". Please accept or reject."
-            ));
-        } catch (Exception e) {
-            log.error("Failed to send job assignment notification", e);
-        }
+        sendNotificationSafely(workerId, "New Job Assignment",
+                "You have been assigned to booking #" + bookingId + ". Please accept or reject.");
 
         return mapToResponse(saved);
     }
@@ -354,11 +351,16 @@ public class BookingService {
         }
     }
 
-    private void sendNotificationSafely(Long userId, String title, String message) {
+    private void sendNotificationSafely(Long userId, String subject, String message) {
         try {
-            notificationClient.sendNotification(new NotificationRequest(userId, title, message));
+            UserDto user = authClient.getUserById(userId);
+            if (user != null && user.getEmail() != null) {
+                notificationClient.sendNotification(new NotificationRequest(user.getEmail(), subject, message));
+            } else {
+                log.warn("Could not send notification to user {}: User or email not found", userId);
+            }
         } catch (Exception e) {
-            log.error("Failed to send notification to user {}: {}", userId, title, e);
+            log.error("Failed to send notification to user {}: {}", userId, subject, e);
         }
     }
 
