@@ -9,7 +9,10 @@ import TrackingPage from '../pages/customer/TrackingPage';
 import PaymentPage from '../pages/customer/PaymentPage';
 import ReviewPage from '../pages/customer/ReviewPage';
 import WorkerDashboard from '../pages/worker/Dashboard';
-import AdminDashboard from '../pages/admin/Dashboard';
+import AdminDashboard from '../pages/admin/AdminDashboard';
+import WorkerVerificationPage from '../pages/admin/WorkerVerificationPage';
+import AnalyticsPage from '../pages/admin/AnalyticsPage';
+import ComplaintsPage from '../pages/admin/ComplaintsPage';
 import ProtectedRoute from '../components/common/ProtectedRoute';
 import { useAuth } from '../hooks/useAuth';
 
@@ -136,6 +139,30 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute allowedRoles={['ADMIN']}>
             <AdminDashboard />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/admin/verifications" 
+        element={
+          <ProtectedRoute allowedRoles={['ADMIN']}>
+            <WorkerVerificationPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/admin/analytics" 
+        element={
+          <ProtectedRoute allowedRoles={['ADMIN']}>
+            <AnalyticsPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/admin/complaints" 
+        element={
+          <ProtectedRoute allowedRoles={['ADMIN']}>
+            <ComplaintsPage />
           </ProtectedRoute>
         } 
       />
