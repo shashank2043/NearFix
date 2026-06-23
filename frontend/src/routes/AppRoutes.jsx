@@ -8,6 +8,10 @@ import EmergencyRequest from '../pages/customer/EmergencyRequest';
 import TrackingPage from '../pages/customer/TrackingPage';
 import PaymentPage from '../pages/customer/PaymentPage';
 import ReviewPage from '../pages/customer/ReviewPage';
+import JobRequestsPage from '../pages/worker/JobRequestsPage';
+import ActiveJobPage from '../pages/worker/ActiveJobPage';
+import EarningsPage from '../pages/worker/EarningsPage';
+import AdminDashboard from '../pages/admin/Dashboard';
 import WorkerDashboard from '../pages/worker/Dashboard';
 import AdminDashboard from '../pages/admin/AdminDashboard';
 import WorkerVerificationPage from '../pages/admin/WorkerVerificationPage';
@@ -129,6 +133,30 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute allowedRoles={['WORKER']}>
             <WorkerDashboard />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/worker/requests" 
+        element={
+          <ProtectedRoute allowedRoles={['WORKER']}>
+            <JobRequestsPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/worker/active-job" 
+        element={
+          <ProtectedRoute allowedRoles={['WORKER']}>
+            <ActiveJobPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/worker/earnings" 
+        element={
+          <ProtectedRoute allowedRoles={['WORKER']}>
+            <EarningsPage />
           </ProtectedRoute>
         } 
       />

@@ -62,8 +62,8 @@ export const bookingApi = {
    * @param {string} status - REQUESTED, ACCEPTED, ON_THE_WAY, WORK_STARTED, WORK_COMPLETED, PAID, CANCELLED
    * @returns {Promise<Object>}
    */
-  updateBookingStatus: async (id, status) => {
-    const response = await axiosInstance.patch(`/bookings/${id}`, { status });
+  updateBookingStatus: async (id, status, extraData = {}) => {
+    const response = await axiosInstance.patch(`/bookings/${id}`, { status, ...extraData });
     return response.data;
   },
 
