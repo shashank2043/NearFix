@@ -22,11 +22,11 @@ const EmptyState = ({
 }) => {
   return (
     <Box
-      display="flex"
-      flexDirection="column"
-      alignItems="center"
-      justifyContent="center"
       sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
         py: 8,
         px: 3,
         textAlign: 'center',

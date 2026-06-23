@@ -99,8 +99,8 @@ const WorkerVerificationCard = ({ worker, workerUser = {}, onApprove, onReject }
 
         {/* Worker Professional Details */}
         <Grid container spacing={2} sx={{ mb: 2.5 }}>
-          <Grid item xs={6}>
-            <Box display="flex" alignItems="center" sx={{ gap: 1 }}>
+          <Grid size={6}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Award size={18} color="#00B4D8" />
               <Box>
                 <Typography variant="caption" color="text.secondary" display="block">
@@ -112,8 +112,8 @@ const WorkerVerificationCard = ({ worker, workerUser = {}, onApprove, onReject }
               </Box>
             </Box>
           </Grid>
-          <Grid item xs={6}>
-            <Box display="flex" alignItems="center" sx={{ gap: 1 }}>
+          <Grid size={6}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Shield size={18} color="#00B4D8" />
               <Box>
                 <Typography variant="caption" color="text.secondary" display="block">
@@ -141,7 +141,7 @@ const WorkerVerificationCard = ({ worker, workerUser = {}, onApprove, onReject }
             <FileText size={16} color={theme.palette.secondary.main} /> Verification Documents
           </Typography>
           <Grid container spacing={1.5}>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <Typography variant="caption" color="text.secondary" display="block">
                 Aadhaar Number
               </Typography>
@@ -149,7 +149,7 @@ const WorkerVerificationCard = ({ worker, workerUser = {}, onApprove, onReject }
                 {aadhaarNumber}
               </Typography>
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <Typography variant="caption" color="text.secondary" display="block">
                 Skill License ID
               </Typography>

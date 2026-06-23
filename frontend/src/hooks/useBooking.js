@@ -1,14 +1,17 @@
 import { useState, useCallback } from 'react';
 import { bookingApi } from '../api/bookingApi';
 import { useAuth } from './useAuth';
+import { useToast } from './useToast';
 
 /**
  * Custom hook to manage booking operations for the active session.
+ * Integrates global toast alerts for consistent error feedbacks.
  */
 export const useBooking = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const { showToast } = useToast();
 
   /**
    * Fetches a booking by its unique ID.
@@ -20,12 +23,14 @@ export const useBooking = () => {
       const data = await bookingApi.getBookingById(id);
       return data;
     } catch (err) {
-      setError(err.message || 'Failed to fetch booking details.');
+      const errMsg = err.response?.data?.message || err.message || 'Failed to fetch booking details.';
+      setError(errMsg);
+      showToast(errMsg, 'error');
       throw err;
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [showToast]);
 
   /**
    * Fetches all bookings belonging to the currently logged in customer.
@@ -39,12 +44,14 @@ export const useBooking = () => {
       // Sort newest first
       return data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     } catch (err) {
-      setError(err.message || 'Failed to fetch your bookings history.');
+      const errMsg = err.response?.data?.message || err.message || 'Failed to fetch your bookings history.';
+      setError(errMsg);
+      showToast(errMsg, 'error');
       throw err;
     } finally {
       setLoading(false);
     }
-  }, [user?.id]);
+  }, [user?.id, showToast]);
 
   /**
    * Creates a new emergency booking request.
@@ -58,14 +65,17 @@ export const useBooking = () => {
         ...bookingData,
         customerId: user.id
       });
+      showToast('Emergency SOS Dispatch Requested!', 'success');
       return data;
     } catch (err) {
-      setError(err.message || 'Failed to create booking.');
+      const errMsg = err.response?.data?.message || err.message || 'Failed to create booking.';
+      setError(errMsg);
+      showToast(errMsg, 'error');
       throw err;
     } finally {
       setLoading(false);
     }
-  }, [user?.id]);
+  }, [user?.id, showToast]);
 
   /**
    * Updates the status of an existing booking.
@@ -77,12 +87,14 @@ export const useBooking = () => {
       const data = await bookingApi.updateBookingStatus(id, status);
       return data;
     } catch (err) {
-      setError(err.message || 'Failed to update booking status.');
+      const errMsg = err.response?.data?.message || err.message || 'Failed to update booking status.';
+      setError(errMsg);
+      showToast(errMsg, 'error');
       throw err;
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [showToast]);
 
   return {
     loading,

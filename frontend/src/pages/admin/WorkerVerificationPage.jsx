@@ -203,7 +203,7 @@ const WorkerVerificationPage = () => {
       ) : (
         <Grid container spacing={3}>
           {filteredWorkers.map(worker => (
-            <Grid item xs={12} md={6} key={worker.id}>
+            <Grid size={{ xs: 12, md: 6 }} key={worker.id}>
               <WorkerVerificationCard 
                 worker={worker}
                 workerUser={getWorkerUser(worker.id)}

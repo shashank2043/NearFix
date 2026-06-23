@@ -60,7 +60,7 @@ const EmergencyRequest = () => {
 
       <Grid container spacing={4}>
         {/*SOS Dispatch form */}
-        <Grid item xs={12} md={7}>
+        <Grid size={{ xs: 12, md: 7 }}>
           <Card>
             <CardContent sx={{ p: 3 }}>
               <Typography variant="h5" fontWeight="800" color="text.primary" gutterBottom>
@@ -86,8 +86,8 @@ const EmergencyRequest = () => {
         </Grid>
 
         {/* Dynamic Sidebar Estimator */}
-        <Grid item xs={12} md={5}>
-          <Box display="flex" flexDirection="column" sx={{ gap: 3 }}>
+        <Grid size={{ xs: 12, md: 5 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             
             <Card sx={{ border: '1px solid', borderColor: 'divider' }}>
               <CardContent sx={{ p: 3 }}>

@@ -89,6 +89,16 @@
       "role": "ADMIN",
       "active": true,
       "createdAt": "2026-06-01T00:00:00.000Z"
+    },
+    {
+      "fullName": "P SHashank",
+      "email": "shashankpulluri1@gmail.com",
+      "phone": "9290799915",
+      "password": "Shashank@123",
+      "role": "CUSTOMER",
+      "active": true,
+      "createdAt": "2026-06-23T13:52:08.452Z",
+      "id": "hiuOoWswyr8"
     }
   ],
   "workers": [
@@ -156,7 +166,7 @@
     {
       "id": "1",
       "bookingId": "1",
-      "amount": 500.0,
+      "amount": 500,
       "status": "COMPLETED",
       "transactionId": "TXN-9876543210-A",
       "paymentDate": "2026-06-23T11:15:00.000Z"
@@ -164,7 +174,7 @@
     {
       "id": "2",
       "bookingId": "2",
-      "amount": 750.0,
+      "amount": 750,
       "status": "PENDING",
       "transactionId": "TXN-9876543211-B",
       "paymentDate": ""
@@ -179,5 +189,6 @@
       "rating": 5,
       "comment": "Super fast response! Rajesh fixed the short circuit in no time. Very professional."
     }
-  ]
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
 }

@@ -2,22 +2,23 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from '../pages/auth/Login';
 import Register from '../pages/auth/Register';
+import LandingPage from '../pages/LandingPage';
 import CustomerDashboard from '../pages/customer/CustomerDashboard';
 import ServiceSelection from '../pages/customer/ServiceSelection';
 import EmergencyRequest from '../pages/customer/EmergencyRequest';
 import TrackingPage from '../pages/customer/TrackingPage';
 import PaymentPage from '../pages/customer/PaymentPage';
 import ReviewPage from '../pages/customer/ReviewPage';
+import WorkerDashboard from '../pages/worker/WorkerDashboard';
 import JobRequestsPage from '../pages/worker/JobRequestsPage';
 import ActiveJobPage from '../pages/worker/ActiveJobPage';
 import EarningsPage from '../pages/worker/EarningsPage';
-import AdminDashboard from '../pages/admin/Dashboard';
-import WorkerDashboard from '../pages/worker/Dashboard';
 import AdminDashboard from '../pages/admin/AdminDashboard';
 import WorkerVerificationPage from '../pages/admin/WorkerVerificationPage';
 import AnalyticsPage from '../pages/admin/AnalyticsPage';
 import ComplaintsPage from '../pages/admin/ComplaintsPage';
 import ProtectedRoute from '../components/common/ProtectedRoute';
+import AdminLayout from '../components/common/AdminLayout';
 import { useAuth } from '../hooks/useAuth';
 
 /**
@@ -57,7 +58,7 @@ const AppRoutes = () => {
   return (
     <Routes>
       {/* Index Path Redirect */}
-      <Route path="/" element={<HomeRedirect />} />
+      <Route path="/" element={<LandingPage />} />
 
       {/* Authentication Pages */}
       <Route 
@@ -163,37 +164,17 @@ const AppRoutes = () => {
 
       {/* Protected Admin Space */}
       <Route 
-        path="/admin/dashboard" 
         element={
           <ProtectedRoute allowedRoles={['ADMIN']}>
-            <AdminDashboard />
+            <AdminLayout />
           </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/admin/verifications" 
-        element={
-          <ProtectedRoute allowedRoles={['ADMIN']}>
-            <WorkerVerificationPage />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/admin/analytics" 
-        element={
-          <ProtectedRoute allowedRoles={['ADMIN']}>
-            <AnalyticsPage />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/admin/complaints" 
-        element={
-          <ProtectedRoute allowedRoles={['ADMIN']}>
-            <ComplaintsPage />
-          </ProtectedRoute>
-        } 
-      />
+        }
+      >
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/verifications" element={<WorkerVerificationPage />} />
+        <Route path="/admin/analytics" element={<AnalyticsPage />} />
+        <Route path="/admin/complaints" element={<ComplaintsPage />} />
+      </Route>
 
       {/* Fallback Redirect */}
       <Route path="*" element={<Navigate to="/" replace />} />
