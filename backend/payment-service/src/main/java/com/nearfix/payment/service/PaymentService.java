@@ -1,0 +1,138 @@
+package com.nearfix.payment.service;
+
+import com.nearfix.payment.client.BookingClient;
+import com.nearfix.payment.client.NotificationClient;
+import com.nearfix.payment.client.dto.BookingResponse;
+import com.nearfix.payment.client.dto.NotificationRequest;
+import com.nearfix.payment.client.dto.UpdateBookingStatusRequest;
+import com.nearfix.payment.dto.CreatePaymentRequest;
+import com.nearfix.payment.dto.PaymentResponse;
+import com.nearfix.payment.entity.Payment;
+import com.nearfix.payment.entity.PaymentStatus;
+import com.nearfix.payment.exception.BadRequestException;
+import com.nearfix.payment.exception.ConflictException;
+import com.nearfix.payment.exception.ResourceNotFoundException;
+import com.nearfix.payment.repository.PaymentRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class PaymentService {
+
+    private final PaymentRepository paymentRepository;
+    private final BookingClient bookingClient;
+    private final NotificationClient notificationClient;
+
+    @Transactional
+    public PaymentResponse processPayment(Long customerId, String customerRole, CreatePaymentRequest request) {
+        log.info("Processing payment for bookingId: {} by customerId: {}", request.getBookingId(), customerId);
+
+        // Verify if payment has already succeeded for this booking
+        boolean alreadyPaid = paymentRepository.existsByBookingIdAndStatus(request.getBookingId(), PaymentStatus.SUCCESS);
+        if (alreadyPaid) {
+            throw new ConflictException("Payment has already been successfully processed for booking #" + request.getBookingId());
+        }
+
+        // Fetch booking from Booking Service
+        BookingResponse booking;
+        try {
+            booking = bookingClient.getBookingById(request.getBookingId(), customerId, customerRole);
+        } catch (Exception e) {
+            log.error("Failed to retrieve booking details from Booking Service", e);
+            throw new BadRequestException("Booking does not exist or is not accessible: " + e.getMessage());
+        }
+
+        if (booking == null) {
+            throw new ResourceNotFoundException("Booking not found");
+        }
+
+        // Business validations
+        if ("CANCELLED".equalsIgnoreCase(booking.getStatus())) {
+            throw new ConflictException("Cannot process payment for a cancelled booking");
+        }
+        if ("PAID".equalsIgnoreCase(booking.getStatus())) {
+            throw new ConflictException("Booking is already PAID");
+        }
+        if (!"WORK_COMPLETED".equalsIgnoreCase(booking.getStatus())) {
+            throw new ConflictException("Payment can only be processed for bookings in WORK_COMPLETED status (Current status: " + booking.getStatus() + ")");
+        }
+
+        // Simulate payment gateway processing
+        // Fail payment if amount is e.g. 999.99 for testing purposes
+        boolean paymentSucceeded = request.getAmount() != 999.99; 
+        PaymentStatus status = paymentSucceeded ? PaymentStatus.SUCCESS : PaymentStatus.FAILED;
+
+        String transactionId = "TXN-" + UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase();
+
+        Payment payment = Payment.builder()
+                .bookingId(request.getBookingId())
+                .amount(request.getAmount())
+                .status(status)
+                .transactionId(transactionId)
+                .paymentDate(LocalDateTime.now())
+                .build();
+
+        Payment savedPayment = paymentRepository.save(payment);
+
+        if (paymentSucceeded) {
+            // Update booking status to PAID in Booking Service
+            try {
+                bookingClient.updateBookingStatus(
+                        request.getBookingId(),
+                        customerId,
+                        customerRole,
+                        new UpdateBookingStatusRequest("PAID")
+                );
+            } catch (Exception e) {
+                log.error("Failed to update booking status to PAID in Booking Service", e);
+                // In a real system, you might roll back or schedule a retry.
+                // We throw an exception to let the client know status update failed.
+                throw new ConflictException("Payment succeeded but failed to update booking status: " + e.getMessage());
+            }
+
+            // Trigger notification event for payment success
+            sendNotificationSafely(booking.getCustomerId(), "Payment Successful",
+                    "Payment of $" + request.getAmount() + " was successful. Transaction ID: " + transactionId);
+
+            if (booking.getWorkerId() != null) {
+                sendNotificationSafely(booking.getWorkerId(), "Payment Settled",
+                        "Payment of $" + request.getAmount() + " for booking #" + request.getBookingId() + " has been settled.");
+            }
+        } else {
+            // Trigger notification event for payment failure
+            sendNotificationSafely(booking.getCustomerId(), "Payment Failed",
+                    "Payment of $" + request.getAmount() + " failed. Transaction ID: " + transactionId + ". Please retry.");
+        }
+
+        return new PaymentResponse(savedPayment.getTransactionId(), savedPayment.getStatus());
+    }
+
+    @Transactional(readOnly = true)
+    public Payment getPaymentById(Long id) {
+        log.info("Fetching payment by id: {}", id);
+        return paymentRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Payment not found with id: " + id));
+    }
+
+    @Transactional(readOnly = true)
+    public Payment getPaymentByBookingId(Long bookingId) {
+        log.info("Fetching payment by bookingId: {}", bookingId);
+        return paymentRepository.findByBookingId(bookingId)
+                .orElseThrow(() -> new ResourceNotFoundException("Payment not found for bookingId: " + bookingId));
+    }
+
+    private void sendNotificationSafely(Long userId, String title, String message) {
+        try {
+            notificationClient.sendNotification(new NotificationRequest(userId, title, message));
+        } catch (Exception e) {
+            log.error("Failed to send notification to user {}", userId, e);
+        }
+    }
+}
