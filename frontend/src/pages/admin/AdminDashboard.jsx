@@ -152,7 +152,7 @@ const AdminDashboard = () => {
 
       {/* Row 1: Quick Stats Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <StatsCard 
             icon={Users} 
             label="Total Users" 
@@ -161,7 +161,7 @@ const AdminDashboard = () => {
             isPositive={true}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <StatsCard 
             icon={UserPlus} 
             label="Active Workers" 
@@ -170,7 +170,7 @@ const AdminDashboard = () => {
             isPositive={true}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <StatsCard 
             icon={ShieldCheck} 
             label="Completed Jobs" 
@@ -179,7 +179,7 @@ const AdminDashboard = () => {
             isPositive={true}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <StatsCard 
             icon={IndianRupee} 
             label="Total Revenue" 
@@ -232,7 +232,7 @@ const AdminDashboard = () => {
       {/* Row 3: Revenue Chart and Recent Bookings */}
       <Grid container spacing={3}>
         {/* Left Column: Recharts Line Chart */}
-        <Grid item xs={12} lg={7}>
+        <Grid size={{ xs: 12, lg: 7 }}>
           <AnalyticsChart 
             title="Revenue Trend (Last 7 Days)"
             type="line"
@@ -245,7 +245,7 @@ const AdminDashboard = () => {
         </Grid>
 
         {/* Right Column: Recent Booking Table */}
-        <Grid item xs={12} lg={5}>
+        <Grid size={{ xs: 12, lg: 5 }}>
           <Card sx={{ height: '100%' }}>
             <CardContent sx={{ p: 3, display: 'flex', flexDirection: 'column', height: '100%' }}>
               <Typography variant="subtitle1" fontWeight="800" sx={{ mb: 2 }}>

@@ -178,7 +178,7 @@ const AnalyticsPage = () => {
 
       {/* Row 1: Graphs */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <AnalyticsChart 
             title="Total Revenue by Service Type"
             type="pie"
@@ -188,7 +188,7 @@ const AnalyticsPage = () => {
             height={320}
           />
         </Grid>
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <AnalyticsChart 
             title="Bookings Dispatched Per Day"
             type="bar"
@@ -204,7 +204,7 @@ const AnalyticsPage = () => {
       {/* Row 2: Top Lists Tables */}
       <Grid container spacing={3}>
         {/* Top 5 Workers */}
-        <Grid item xs={12} md={7}>
+        <Grid size={{ xs: 12, md: 7 }}>
           <Card sx={{ height: '100%' }}>
             <CardContent sx={{ p: 3 }}>
               <Typography variant="subtitle1" fontWeight="800" sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -299,7 +299,7 @@ const AnalyticsPage = () => {
         </Grid>
 
         {/* Top 5 Busiest Locations (Mock Table) */}
-        <Grid item xs={12} md={5}>
+        <Grid size={{ xs: 12, md: 5 }}>
           <Card sx={{ height: '100%' }}>
             <CardContent sx={{ p: 3 }}>
               <Typography variant="subtitle1" fontWeight="800" sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>

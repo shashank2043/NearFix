@@ -125,7 +125,7 @@ const PaymentForm = ({ onSubmit, loading, amount }) => {
             {method === 'CARD' && (
               <Box sx={{ px: 4, py: 0.5 }}>
                 <Grid container spacing={2}>
-                  <Grid item xs={12}>
+                  <Grid size={12}>
                     <TextField
                       label="Card Number"
                       placeholder="4321 8765 9012 3456"
@@ -136,7 +136,7 @@ const PaymentForm = ({ onSubmit, loading, amount }) => {
                       size="small"
                     />
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <TextField
                       label="Expiry Date"
                       placeholder="MM/YY"
@@ -147,7 +147,7 @@ const PaymentForm = ({ onSubmit, loading, amount }) => {
                       size="small"
                     />
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <TextField
                       label="CVV"
                       placeholder="***"

@@ -1,14 +1,17 @@
 import { useState, useCallback } from 'react';
 import { workerApi } from '../api/workerApi';
 import { bookingApi } from '../api/bookingApi';
+import { useToast } from './useToast';
 
 /**
  * Custom hook to manage worker-related operations, including fetching profiles,
  * updating availability, and managing assigned booking statuses.
+ * Integrates global toast notifications for transparent error reporting.
  */
 export const useWorkers = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const { showToast } = useToast();
 
   /**
    * Fetches a worker profile by ID.
@@ -20,12 +23,14 @@ export const useWorkers = () => {
       const data = await workerApi.getProfileById(id);
       return data;
     } catch (err) {
-      setError(err.message || 'Failed to fetch worker profile.');
+      const errMsg = err.response?.data?.message || err.message || 'Failed to fetch worker profile.';
+      setError(errMsg);
+      showToast(errMsg, 'error');
       throw err;
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [showToast]);
 
   /**
    * Updates the worker availability status (AVAILABLE, BUSY, UNAVAILABLE).
@@ -35,14 +40,17 @@ export const useWorkers = () => {
     setError(null);
     try {
       const data = await workerApi.updateStatus(id, status);
+      showToast(`Duty status advanced to ${status}`, 'success');
       return data;
     } catch (err) {
-      setError(err.message || 'Failed to update availability status.');
+      const errMsg = err.response?.data?.message || err.message || 'Failed to update availability status.';
+      setError(errMsg);
+      showToast(errMsg, 'error');
       throw err;
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [showToast]);
 
   /**
    * Fetches bookings assigned to a specific worker.
@@ -55,12 +63,14 @@ export const useWorkers = () => {
       // Sort newest first
       return data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     } catch (err) {
-      setError(err.message || 'Failed to fetch worker bookings.');
+      const errMsg = err.response?.data?.message || err.message || 'Failed to fetch worker bookings.';
+      setError(errMsg);
+      showToast(errMsg, 'error');
       throw err;
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [showToast]);
 
   /**
    * Updates the status of a specific booking, with optional extra payload details.
@@ -72,12 +82,14 @@ export const useWorkers = () => {
       const data = await bookingApi.updateBookingStatus(id, status, extraData);
       return data;
     } catch (err) {
-      setError(err.message || 'Failed to update booking status.');
+      const errMsg = err.response?.data?.message || err.message || 'Failed to update booking status.';
+      setError(errMsg);
+      showToast(errMsg, 'error');
       throw err;
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [showToast]);
 
   return {
     loading,

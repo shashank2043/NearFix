@@ -11,9 +11,7 @@ const Loader = ({ fullPage, message = 'Loading NearFix...' }) => {
     <Box
       display="flex"
       flexDirection="column"
-      alignItems="center"
-      justifyContent="center"
-      sx={{ gap: 2 }}
+      sx={{ alignItems: 'center', justifyContent: 'center', gap: 2 }}
     >
       <CircularProgress color="primary" size={50} thickness={4} />
       {message && (

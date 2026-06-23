@@ -58,13 +58,15 @@ const Login = () => {
   return (
     <Container maxWidth="xs" sx={{ mt: 10, mb: 4 }}>
       <Box
-        display="flex"
-        flexDirection="column"
-        alignItems="center"
-        justifyContent="center"
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
       >
         {/* Brand Header */}
-        <Box display="flex" alignItems="center" sx={{ gap: 1, mb: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
           <ShieldAlert size={32} color="#00F5D4" strokeWidth={2.5} />
           <Typography variant="h4" fontWeight="800" sx={{ color: 'text.primary' }}>
             Near<span style={{ color: '#00B4D8' }}>Fix</span>
@@ -74,10 +76,10 @@ const Login = () => {
         {/* Login Form Card */}
         <Card sx={{ width: '100%', p: 2 }}>
           <CardContent>
-            <Typography variant="h5" fontWeight="700" textAlign="center" gutterBottom>
+            <Typography variant="h5" fontWeight="700" sx={{ textAlign: 'center' }} gutterBottom>
               Welcome Back
             </Typography>
-            <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ mb: 3 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', mb: 3 }}>
               Enter your credentials to access your account
             </Typography>
 
@@ -88,7 +90,7 @@ const Login = () => {
             )}
 
             <form onSubmit={handleSubmit}>
-              <Box display="flex" flexDirection="column" sx={{ gap: 2.5 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
                 {/* Email Input */}
                 <TextField
                   label="Email Address"
@@ -98,12 +100,14 @@ const Login = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={isSubmitting}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start" style={{ marginRight: 8 }}>
-                        <Mail size={18} color="#64748B" />
-                      </InputAdornment>
-                    ),
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start" style={{ marginRight: 8 }}>
+                          <Mail size={18} color="#64748B" />
+                        </InputAdornment>
+                      ),
+                    }
                   }}
                 />
 
@@ -116,23 +120,25 @@ const Login = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={isSubmitting}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start" style={{ marginRight: 8 }}>
-                        <Lock size={18} color="#64748B" />
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          onClick={() => setShowPassword(!showPassword)}
-                          edge="end"
-                          size="small"
-                        >
-                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start" style={{ marginRight: 8 }}>
+                          <Lock size={18} color="#64748B" />
+                        </InputAdornment>
+                      ),
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            onClick={() => setShowPassword(!showPassword)}
+                            edge="end"
+                            size="small"
+                          >
+                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }
                   }}
                 />
 

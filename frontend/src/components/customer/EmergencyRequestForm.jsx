@@ -74,12 +74,14 @@ const EmergencyRequestForm = ({ initialService = 'Electrician', onSubmit, loadin
           onChange={(e) => setServiceType(e.target.value)}
           fullWidth
           required
-          InputProps={{
-            startAdornment: (
-              <Box sx={{ mr: 1, display: 'flex', alignItems: 'center', color: 'text.secondary' }}>
-                <Wrench size={18} />
-              </Box>
-            )
+          slotProps={{
+            input: {
+              startAdornment: (
+                <Box sx={{ mr: 1, display: 'flex', alignItems: 'center', color: 'text.secondary' }}>
+                  <Wrench size={18} />
+                </Box>
+              )
+            }
           }}
         >
           {SERVICE_TYPES.map((type) => (
@@ -107,27 +109,29 @@ const EmergencyRequestForm = ({ initialService = 'Electrician', onSubmit, loadin
           onChange={(e) => setLocation(e.target.value)}
           fullWidth
           required
-          InputProps={{
-            startAdornment: (
-              <Box sx={{ mr: 1, display: 'flex', alignItems: 'center', color: 'text.secondary' }}>
-                <MapPin size={18} />
-              </Box>
-            ),
-            endAdornment: (
-              <InputAdornment position="end">
-                <Button
-                  variant="outlined"
-                  color="secondary"
-                  size="small"
-                  onClick={handleDetectLocation}
-                  disabled={detecting}
-                  sx={{ py: 0.5, px: 1, textTransform: 'none', height: 32 }}
-                  startIcon={detecting ? <Loader2 size={14} className="animate-spin" /> : <Navigation size={14} />}
-                >
-                  {detecting ? 'Detecting...' : 'Detect'}
-                </Button>
-              </InputAdornment>
-            ),
+          slotProps={{
+            input: {
+              startAdornment: (
+                <Box sx={{ mr: 1, display: 'flex', alignItems: 'center', color: 'text.secondary' }}>
+                  <MapPin size={18} />
+                </Box>
+              ),
+              endAdornment: (
+                <InputAdornment position="end">
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    size="small"
+                    onClick={handleDetectLocation}
+                    disabled={detecting}
+                    sx={{ py: 0.5, px: 1, textTransform: 'none', height: 32 }}
+                    startIcon={detecting ? <Loader2 size={14} className="animate-spin" /> : <Navigation size={14} />}
+                  >
+                    {detecting ? 'Detecting...' : 'Detect'}
+                  </Button>
+                </InputAdornment>
+              ),
+            }
           }}
         />
 

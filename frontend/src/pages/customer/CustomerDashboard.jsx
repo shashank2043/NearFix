@@ -87,7 +87,7 @@ const CustomerDashboard = () => {
             gap: 3 
           }}
         >
-          <Box display="flex" alignItems="center" sx={{ gap: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Box 
               sx={{ 
                 p: 1.8, 
@@ -140,7 +140,7 @@ const CustomerDashboard = () => {
           {quickServices.map((service) => {
             const Icon = service.icon;
             return (
-              <Grid item xs={6} sm={4} md={2.4} key={service.name}>
+              <Grid size={{ xs: 6, sm: 4, md: 2.4 }} key={service.name}>
                 <Card
                   sx={{
                     textAlign: 'center',
