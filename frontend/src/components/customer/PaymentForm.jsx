@@ -46,14 +46,14 @@ const PaymentForm = ({ onSubmit, loading, amount }) => {
           Select Payment Method
         </FormLabel>
         <RadioGroup value={method} onChange={(e) => setMethod(e.target.value)}>
-          <Box display="flex" flexDirection="column" sx={{ gap: 2 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             
             {/* UPI Option */}
             <Box
-              display="flex"
-              alignItems="center"
-              justifyContent="space-between"
               sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
                 p: 2,
                 border: '1px solid',
                 borderColor: method === 'UPI' ? 'secondary.main' : 'divider',
@@ -68,7 +68,7 @@ const PaymentForm = ({ onSubmit, loading, amount }) => {
                 value="UPI"
                 control={<Radio color="secondary" />}
                 label={
-                  <Box display="flex" alignItems="center" sx={{ gap: 1.5 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <Smartphone size={20} />
                     <Typography variant="body1" fontWeight="600">
                       UPI (GPay / PhonePe / Paytm)
@@ -94,10 +94,10 @@ const PaymentForm = ({ onSubmit, loading, amount }) => {
 
             {/* CARD Option */}
             <Box
-              display="flex"
-              alignItems="center"
-              justifyContent="space-between"
               sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
                 p: 2,
                 border: '1px solid',
                 borderColor: method === 'CARD' ? 'secondary.main' : 'divider',
@@ -112,7 +112,7 @@ const PaymentForm = ({ onSubmit, loading, amount }) => {
                 value="CARD"
                 control={<Radio color="secondary" />}
                 label={
-                  <Box display="flex" alignItems="center" sx={{ gap: 1.5 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <CreditCard size={20} />
                     <Typography variant="body1" fontWeight="600">
                       Card (Debit or Credit Card)
@@ -170,9 +170,9 @@ const PaymentForm = ({ onSubmit, loading, amount }) => {
 
       {/* Safety Notice */}
       <Box 
-        display="flex" 
-        alignItems="center" 
         sx={{ 
+          display: 'flex',
+          alignItems: 'center',
           gap: 1.5, 
           p: 1.8, 
           bgcolor: 'action.hover', 

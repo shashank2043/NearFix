@@ -31,7 +31,7 @@ function App() {
               <Navbar />
 
               {/* Core Application Page Routes */}
-              <Box component="main" sx={{ flexGrow: 1, py: 2 }}>
+              <Box component="main" sx={{ flexGrow: 1 }}>
                 <AppRoutes />
               </Box>
             </Box>

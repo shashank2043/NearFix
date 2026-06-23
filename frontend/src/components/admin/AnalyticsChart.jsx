@@ -43,6 +43,24 @@ const AnalyticsChart = ({
   height = 300,
 }) => {
   const theme = useTheme();
+  const containerRef = React.useRef(null);
+  const [dimensions, setDimensions] = React.useState(null);
+
+  React.useEffect(() => {
+    const observeTarget = containerRef.current;
+    if (!observeTarget) return;
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      if (!entries || entries.length === 0) return;
+      const { width, height } = entries[0].contentRect;
+      setDimensions({ width, height });
+    });
+
+    resizeObserver.observe(observeTarget);
+    return () => {
+      resizeObserver.unobserve(observeTarget);
+    };
+  }, []);
   
   // Resolve theme colors
   const defaultColors = theme.palette.mode === 'light'
@@ -80,10 +98,10 @@ const AnalyticsChart = ({
     return null;
   };
 
-  const renderChart = () => {
+  const renderChart = (chartWidth) => {
     if (!data || data.length === 0) {
       return (
-        <Box display="flex" justifyContent="center" alignItems="center" height={height}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height }}>
           <Typography variant="body2" color="text.secondary">
             No chart data available.
           </Typography>
@@ -94,8 +112,7 @@ const AnalyticsChart = ({
     switch (type) {
       case 'line':
         return (
-          <ResponsiveContainer width="100%" height={height}>
-            <LineChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+          <LineChart width={chartWidth} height={height} data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} vertical={false} />
               <XAxis 
                 dataKey={xAxisKey} 
@@ -121,13 +138,11 @@ const AnalyticsChart = ({
                 name={title}
               />
             </LineChart>
-          </ResponsiveContainer>
         );
 
       case 'bar':
         return (
-          <ResponsiveContainer width="100%" height={height}>
-            <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+          <BarChart width={chartWidth} height={height} data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} vertical={false} />
               <XAxis 
                 dataKey={xAxisKey} 
@@ -151,13 +166,11 @@ const AnalyticsChart = ({
                 name={title}
               />
             </BarChart>
-          </ResponsiveContainer>
         );
 
       case 'pie':
         return (
-          <ResponsiveContainer width="100%" height={height}>
-            <PieChart>
+          <PieChart width={chartWidth} height={height}>
               <Pie
                 data={data}
                 cx="50%"
@@ -185,7 +198,6 @@ const AnalyticsChart = ({
                 )}
               />
             </PieChart>
-          </ResponsiveContainer>
         );
 
       default:
@@ -193,15 +205,21 @@ const AnalyticsChart = ({
     }
   };
 
+  const chartWidth = dimensions ? dimensions.width : 0;
+
   return (
     <Card sx={{ height: '100%' }}>
-      <CardContent sx={{ p: 3 }}>
+      <CardContent ref={containerRef} sx={{ p: 3, height: '100%' }}>
         {title && (
           <Typography variant="subtitle1" fontWeight="800" sx={{ mb: 3 }}>
             {title}
           </Typography>
         )}
-        {renderChart()}
+        {dimensions && chartWidth > 0 ? (
+          renderChart(chartWidth)
+        ) : (
+          <Box sx={{ height }} />
+        )}
       </CardContent>
     </Card>
   );

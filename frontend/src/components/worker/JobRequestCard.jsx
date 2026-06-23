@@ -76,8 +76,8 @@ const JobRequestCard = ({ booking, onAccept, onReject, actionLoading = false }) 
       <Box sx={{ height: 4, bgcolor: 'error.main', borderTopLeftRadius: 16, borderTopRightRadius: 16 }} />
       
       <CardContent sx={{ p: 3 }}>
-        <Box display="flex" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 2 }}>
-          <Box display="flex" alignItems="center" sx={{ gap: 1.5 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <Avatar sx={{ bgcolor: 'secondary.main', color: 'secondary.contrastText', width: 40, height: 40 }}>
               {getServiceIcon(serviceType)}
             </Avatar>
@@ -103,7 +103,7 @@ const JobRequestCard = ({ booking, onAccept, onReject, actionLoading = false }) 
         <Divider sx={{ my: 1.5 }} />
 
         {/* Customer Detail section */}
-        <Box display="flex" alignItems="center" sx={{ gap: 1.5, my: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, my: 2 }}>
           <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: '0.9rem' }}>
             <User size={16} />
           </Avatar>
@@ -130,7 +130,7 @@ const JobRequestCard = ({ booking, onAccept, onReject, actionLoading = false }) 
         </Box>
 
         {/* Location Address */}
-        <Box display="flex" alignItems="flex-start" sx={{ gap: 1, mb: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 3 }}>
           <MapPin size={18} className="text-secondary" style={{ marginTop: 2, flexShrink: 0 }} />
           <Box>
             <Typography variant="caption" color="text.secondary" fontWeight="700" display="block" sx={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -145,7 +145,7 @@ const JobRequestCard = ({ booking, onAccept, onReject, actionLoading = false }) 
         <Divider sx={{ mb: 2.5 }} />
 
         {/* Action Buttons */}
-        <Box display="flex" sx={{ gap: 2 }}>
+        <Box sx={{ display: 'flex', gap: 2 }}>
           <Button
             variant="contained"
             color="primary"

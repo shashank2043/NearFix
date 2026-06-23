@@ -253,7 +253,7 @@ const AdminDashboard = () => {
               </Typography>
               
               {recentBookings.length === 0 ? (
-                <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" sx={{ flexGrow: 1, py: 4 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', flexGrow: 1, py: 4 }}>
                   <HardDrive size={36} color={theme.palette.text.secondary} />
                   <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5 }}>
                     No bookings logged in the system.

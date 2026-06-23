@@ -41,10 +41,28 @@ const CustomTooltip = ({ active, payload, label }) => {
 const EarningsChart = ({ data }) => {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
+  const containerRef = React.useRef(null);
+  const [dimensions, setDimensions] = React.useState(null);
+
+  React.useEffect(() => {
+    const observeTarget = containerRef.current;
+    if (!observeTarget) return;
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      if (!entries || entries.length === 0) return;
+      const { width, height } = entries[0].contentRect;
+      setDimensions({ width, height });
+    });
+
+    resizeObserver.observe(observeTarget);
+    return () => {
+      resizeObserver.unobserve(observeTarget);
+    };
+  }, []);
 
   if (!data || data.length === 0) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" height={300}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300 }}>
         <Typography variant="body2" color="text.secondary">
           No earnings record to display.
         </Typography>
@@ -56,10 +74,15 @@ const EarningsChart = ({ data }) => {
   const fillGradient = isDark ? '#00F5D4' : '#00B4D8';
   const gridColor = isDark ? '#1E293B' : '#E2E8F0';
 
+  const chartWidth = dimensions ? dimensions.width : 0;
+  const chartHeight = 300;
+
   return (
-    <Box sx={{ width: '100%', height: 320, pt: 2 }}>
-      <ResponsiveContainer width="100%" height="100%">
+    <Box ref={containerRef} sx={{ width: '100%', height: 320, pt: 2 }}>
+      {dimensions && chartWidth > 0 && (
         <BarChart
+          width={chartWidth}
+          height={chartHeight}
           data={data}
           margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
         >
@@ -93,7 +116,7 @@ const EarningsChart = ({ data }) => {
             ))}
           </Bar>
         </BarChart>
-      </ResponsiveContainer>
+      )}
     </Box>
   );
 };

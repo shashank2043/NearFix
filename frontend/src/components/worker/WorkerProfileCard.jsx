@@ -32,7 +32,7 @@ const WorkerProfileCard = ({ user, profile }) => {
       
       <CardContent sx={{ pt: 0, px: 3, pb: 3, position: 'relative' }}>
         {/* Large Avatar overlapping top banner */}
-        <Box display="flex" justifyContent="space-between" alignItems="flex-end" sx={{ mt: -5, mb: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', mt: -5, mb: 2 }}>
           <Avatar
             sx={{
               width: 80,
@@ -68,7 +68,7 @@ const WorkerProfileCard = ({ user, profile }) => {
           <Typography variant="h5" fontWeight="800" color="text.primary" gutterBottom>
             {fullName}
           </Typography>
-          <Box display="flex" alignItems="center" gap={1}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Typography variant="body2" fontWeight="700" color="primary.main">
               {skill}
             </Typography>
@@ -79,9 +79,9 @@ const WorkerProfileCard = ({ user, profile }) => {
           </Box>
         </Box>
 
-        <Box display="flex" alignItems="center" justifyContent="space-between" sx={{ p: 2, borderRadius: 3, bgcolor: 'background.default', border: '1px solid', borderColor: 'divider' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2, borderRadius: 3, bgcolor: 'background.default', border: '1px solid', borderColor: 'divider' }}>
           {/* Experience Badge */}
-          <Box display="flex" alignItems="center" gap={1}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Award size={18} className="text-secondary" />
             <Box>
               <Typography variant="caption" color="text.secondary" fontWeight="700" display="block">
@@ -96,12 +96,12 @@ const WorkerProfileCard = ({ user, profile }) => {
           <Box sx={{ borderRight: '1px solid', borderColor: 'divider', height: 28 }} />
 
           {/* Rating Section */}
-          <Box display="flex" alignItems="center" gap={1}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Box>
               <Typography variant="caption" color="text.secondary" fontWeight="700" display="block" align="right">
                 RATING
               </Typography>
-              <Box display="flex" alignItems="center" gap={0.5}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 <Star size={14} fill="#ffc107" stroke="#ffc107" />
                 <Typography variant="body2" fontWeight="800" color="text.primary">
                   {rating.toFixed(1)}

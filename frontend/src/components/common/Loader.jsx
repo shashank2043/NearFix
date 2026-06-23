@@ -9,9 +9,7 @@ import Typography from '@mui/material/Typography';
 const Loader = ({ fullPage, message = 'Loading NearFix...' }) => {
   const content = (
     <Box
-      display="flex"
-      flexDirection="column"
-      sx={{ alignItems: 'center', justifyContent: 'center', gap: 2 }}
+      sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}
     >
       <CircularProgress color="primary" size={50} thickness={4} />
       {message && (

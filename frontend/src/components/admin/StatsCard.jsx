@@ -35,7 +35,7 @@ const StatsCard = ({ icon: Icon, label, value, trend, isPositive = true }) => {
       }}
     >
       <CardContent sx={{ p: 3 }}>
-        <Box display="flex" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
           <Box 
             sx={{ 
               p: 1.5, 
@@ -57,9 +57,9 @@ const StatsCard = ({ icon: Icon, label, value, trend, isPositive = true }) => {
           
           {trend !== undefined && (
             <Box 
-              display="flex" 
-              alignItems="center" 
               sx={{ 
+                display: 'flex',
+                alignItems: 'center',
                 px: 1.5, 
                 py: 0.5, 
                 borderRadius: '20px', 
