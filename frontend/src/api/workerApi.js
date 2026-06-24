@@ -96,5 +96,34 @@ export const workerApi = {
   verifyWorker: async (id, verified) => {
     const response = await axiosInstance.put(`/api/workers/profile/${id}/verify?verified=${verified}`);
     return response.data;
+  },
+
+  /**
+   * Retrieves all operating cities.
+   * @returns {Promise<Array>}
+   */
+  getCities: async () => {
+    const response = await axiosInstance.get('/api/workers/cities');
+    return response.data;
+  },
+
+  /**
+   * Creates a new operating city (Admin access).
+   * @param {string} name
+   * @returns {Promise<Object>}
+   */
+  createCity: async (name) => {
+    const response = await axiosInstance.post('/api/workers/cities', { name });
+    return response.data;
+  },
+
+  /**
+   * Deletes an operating city (Admin access).
+   * @param {string} id
+   * @returns {Promise<Object>}
+   */
+  deleteCity: async (id) => {
+    const response = await axiosInstance.delete(`/api/workers/cities/${id}`);
+    return response.data;
   }
 };

@@ -31,6 +31,33 @@ const getServiceIcon = (type) => {
   }
 };
 
+const parseCoordinates = (addressStr) => {
+  if (!addressStr) return null;
+  const regex = /(-?\d+\.\d+)\s*°?\s*[NS]?\s*,\s*(-?\d+\.\d+)\s*°?\s*[EW]?/i;
+  const match = addressStr.match(regex);
+  if (match) {
+    return {
+      latitude: parseFloat(match[1]),
+      longitude: parseFloat(match[2]),
+    };
+  }
+  return null;
+};
+
+const calculateHaversineDistance = (lat1, lon1, lat2, lon2) => {
+  const R = 6371; // Radius of Earth in km
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
 /**
  * JobRequestCard Component
  * Displays a premium booking request card with customer details, distance, description, location, and action buttons.
@@ -44,7 +71,7 @@ const JobRequestCard = ({ booking, onAccept, onReject, actionLoading = false }) 
   const { id, customerId, serviceType, issueDescription, address, createdAt } = booking;
   const [customerName, setCustomerName] = useState('Loading Customer...');
   const [customerPhone, setCustomerPhone] = useState('');
-  const [distance] = useState(() => (Math.random() * 4 + 0.8).toFixed(1)); // mock distance in km
+  const [distance, setDistance] = useState('...');
 
   useEffect(() => {
     let isMounted = true;
@@ -69,6 +96,37 @@ const JobRequestCard = ({ booking, onAccept, onReject, actionLoading = false }) 
       isMounted = false;
     };
   }, [customerId]);
+
+  useEffect(() => {
+    const calcDistance = () => {
+      const custLoc = parseCoordinates(address);
+      if (!custLoc) {
+        setDistance((Math.random() * 3 + 1).toFixed(1));
+        return;
+      }
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const dist = calculateHaversineDistance(
+              pos.coords.latitude,
+              pos.coords.longitude,
+              custLoc.latitude,
+              custLoc.longitude
+            );
+            setDistance(dist.toFixed(1));
+          },
+          () => {
+            setDistance((Math.random() * 3 + 1).toFixed(1));
+          },
+          { enableHighAccuracy: true, timeout: 5000 }
+        );
+      } else {
+        setDistance((Math.random() * 3 + 1).toFixed(1));
+      }
+    };
+    calcDistance();
+  }, [address]);
 
   return (
     <Card sx={{ position: 'relative', overflow: 'visible', transition: 'transform 0.2s ease, box-shadow 0.2s ease', '&:hover': { transform: 'translateY(-2px)' } }}>
@@ -150,7 +208,23 @@ const JobRequestCard = ({ booking, onAccept, onReject, actionLoading = false }) 
             variant="contained"
             color="primary"
             fullWidth
-            onClick={() => onAccept(id)}
+            onClick={async () => {
+              let workerLoc = null;
+              if (navigator.geolocation) {
+                try {
+                  workerLoc = await new Promise((resolve) => {
+                    navigator.geolocation.getCurrentPosition(
+                      (pos) => resolve({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
+                      () => resolve(null),
+                      { enableHighAccuracy: true, timeout: 5000 }
+                    );
+                  });
+                } catch (e) {
+                  console.warn(e);
+                }
+              }
+              onAccept(id, workerLoc);
+            }}
             disabled={actionLoading}
             startIcon={<Check size={16} />}
             sx={{

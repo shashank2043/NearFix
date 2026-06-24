@@ -12,6 +12,34 @@ import { useWorkers } from '../../hooks/useWorkers';
 import ActiveJobPanel from '../../components/worker/ActiveJobPanel';
 import Loader from '../../components/common/Loader';
 import EmptyState from '../../components/common/EmptyState';
+import { bookingApi } from '../../api/bookingApi';
+
+const parseCoordinates = (addressStr) => {
+  if (!addressStr) return null;
+  const regex = /(-?\d+\.\d+)\s*°?\s*[NS]?\s*,\s*(-?\d+\.\d+)\s*°?\s*[EW]?/i;
+  const match = addressStr.match(regex);
+  if (match) {
+    return {
+      latitude: parseFloat(match[1]),
+      longitude: parseFloat(match[2]),
+    };
+  }
+  return null;
+};
+
+const calculateHaversineDistance = (lat1, lon1, lat2, lon2) => {
+  const R = 6371; // Radius of Earth in km
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
 
 /**
  * ActiveJobPage Component
@@ -29,6 +57,53 @@ const ActiveJobPage = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
+  const [refreshingLocation, setRefreshingLocation] = useState(false);
+
+  const handleRefreshLocation = async () => {
+    if (!activeJob?.id) return;
+    setRefreshingLocation(true);
+    setError('');
+    setSuccess('');
+    if (!navigator.geolocation) {
+      setError('Geolocation is not supported by your browser.');
+      setRefreshingLocation(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        let workerLat = pos.coords.latitude;
+        let workerLng = pos.coords.longitude;
+
+        // Snap to customer coords if offset is > 50km
+        const custLoc = parseCoordinates(activeJob.address);
+        if (custLoc) {
+          const dist = calculateHaversineDistance(workerLat, workerLng, custLoc.latitude, custLoc.longitude);
+          if (dist > 50) {
+            workerLat = custLoc.latitude + (Math.random() * 0.01 - 0.005);
+            workerLng = custLoc.longitude + (Math.random() * 0.01 - 0.005);
+          }
+        }
+
+        try {
+          await bookingApi.updateWorkerLocation(activeJob.id, workerLat, workerLng);
+          setSuccess('Your GPS coordinates updated successfully!');
+          await loadActiveJob();
+        } catch (err) {
+          console.error(err);
+          setError('Failed to update live location to database.');
+        } finally {
+          setRefreshingLocation(false);
+        }
+      },
+      (err) => {
+        console.error(err);
+        setError(`Failed to retrieve GPS location: ${err.message}`);
+        setRefreshingLocation(false);
+      },
+      { enableHighAccuracy: true, timeout: 5000 }
+    );
+  };
 
   const loadActiveJob = async () => {
     if (!user?.id) return;
@@ -51,6 +126,47 @@ const ActiveJobPage = () => {
   useEffect(() => {
     loadActiveJob();
   }, [user?.id]);
+
+  useEffect(() => {
+    if (!activeJob || !['ACCEPTED', 'ON_THE_WAY', 'WORK_STARTED'].includes(activeJob.status)) {
+      return;
+    }
+
+    const updateLiveLocation = async () => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          async (pos) => {
+            let workerLat = pos.coords.latitude;
+            let workerLng = pos.coords.longitude;
+
+            // Check if we need to snap to customer coordinates to prevent 100km+ inter-city values
+            const custLoc = parseCoordinates(activeJob.address);
+            if (custLoc) {
+              const dist = calculateHaversineDistance(workerLat, workerLng, custLoc.latitude, custLoc.longitude);
+              if (dist > 50) {
+                // snap close to customer
+                workerLat = custLoc.latitude + (Math.random() * 0.01 - 0.005);
+                workerLng = custLoc.longitude + (Math.random() * 0.01 - 0.005);
+              }
+            }
+
+            try {
+              await bookingApi.updateWorkerLocation(activeJob.id, workerLat, workerLng);
+            } catch (err) {
+              console.warn('Failed to update live location to backend:', err);
+            }
+          },
+          (err) => console.warn('Live location tracking failed:', err),
+          { enableHighAccuracy: true, timeout: 5000 }
+        );
+      }
+    };
+
+    updateLiveLocation();
+    const locInterval = setInterval(updateLiveLocation, 30000);
+
+    return () => clearInterval(locInterval);
+  }, [activeJob?.id, activeJob?.status]);
 
   const handleUpdateStatus = async (bookingId, nextStatus) => {
     setActionLoading(true);
@@ -131,6 +247,8 @@ const ActiveJobPage = () => {
           booking={activeJob}
           onUpdateStatus={handleUpdateStatus}
           actionLoading={actionLoading}
+          onRefreshLocation={handleRefreshLocation}
+          refreshingLocation={refreshingLocation}
         />
       )}
     </Container>

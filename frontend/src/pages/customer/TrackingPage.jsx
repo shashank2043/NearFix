@@ -9,7 +9,7 @@ import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
 import Divider from '@mui/material/Divider';
-import { Map, Ban, ChevronRight, Phone } from 'lucide-react';
+import { Ban, ChevronRight, Phone, RefreshCw } from 'lucide-react';
 
 import { useBooking } from '../../hooks/useBooking';
 import { workerApi } from '../../api/workerApi';
@@ -32,6 +32,26 @@ const TrackingPage = () => {
   const [workerProfile, setWorkerProfile] = useState(null);
   const [workerUser, setWorkerUser] = useState(null);
   const [cancelling, setCancelling] = useState(false);
+  const [refreshingETA, setRefreshingETA] = useState(false);
+
+  const handleCheckETA = async () => {
+    if (!id) return;
+    setRefreshingETA(true);
+    try {
+      const details = await fetchBookingById(id);
+      setBooking(details);
+      if (details.workerId && !workerUser) {
+        const profile = await workerApi.getProfileById(details.workerId);
+        const userObj = await authApi.getUserById(details.workerId);
+        setWorkerProfile(profile);
+        setWorkerUser(userObj);
+      }
+    } catch (err) {
+      console.error('Error refreshing ETA:', err);
+    } finally {
+      setRefreshingETA(false);
+    }
+  };
 
   // Poll booking details every 5 seconds to simulate real-time worker changes
   useEffect(() => {
@@ -58,7 +78,7 @@ const TrackingPage = () => {
     };
 
     loadBookingDetails();
-    const interval = setInterval(loadBookingDetails, 5000);
+    const interval = setInterval(loadBookingDetails, 30000);
 
     return () => {
       active = false;
@@ -160,58 +180,7 @@ const TrackingPage = () => {
         <Grid xs={12} md={5}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             
-            {/* Mock GPS Map Panel */}
-            <Card>
-              <CardContent sx={{ p: 0, position: 'relative' }}>
-                <Box
-                  sx={{
-                    height: 250,
-                    bgcolor: '#0B192C',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#FFFFFF',
-                    textAlign: 'center',
-                    p: 3,
-                    borderBottom: '1px solid',
-                    borderColor: 'divider',
-                  }}
-                >
-                  <Map size={48} color="#00F5D4" style={{ marginBottom: 16 }} />
-                  <Typography variant="body1" fontWeight="800" sx={{ color: '#FFFFFF' }}>
-                    Live GPS Tracker Simulator
-                  </Typography>
-                  <Typography variant="caption" sx={{ opacity: 0.7, color: '#FFFFFF', maxWidth: 300, mt: 0.5 }}>
-                    {booking.status === 'REQUESTED'
-                      ? 'Analyzing nearest technician GPS coordinates...'
-                      : `Helper dispatched. Approaching your service location...`}
-                  </Typography>
 
-                  {/* Pulse Indicator */}
-                  {booking.status !== 'REQUESTED' && (
-                    <Box
-                      sx={{
-                        width: 14,
-                        height: 14,
-                        borderRadius: '50%',
-                        bgcolor: 'secondary.main',
-                        position: 'absolute',
-                        top: '55%',
-                        left: '48%',
-                        boxShadow: '0 0 10px #00F5D4',
-                        animation: 'pulse 1.5s infinite ease-in-out',
-                        '@keyframes pulse': {
-                          '0%': { transform: 'scale(0.8)', opacity: 0.5 },
-                          '50%': { transform: 'scale(1.4)', opacity: 1 },
-                          '100%': { transform: 'scale(0.8)', opacity: 0.5 },
-                        },
-                      }}
-                    />
-                  )}
-                </Box>
-              </CardContent>
-            </Card>
 
             {/* Helper Card */}
             {workerUser && workerProfile ? (
@@ -223,9 +192,31 @@ const TrackingPage = () => {
                   name={workerUser.fullName}
                   skill={workerProfile.skill}
                   rating={workerProfile.rating}
-                  distance={booking.status === 'ON_THE_WAY' ? '300 m' : '1.4 km'}
-                  estimatedArrival={booking.status === 'ON_THE_WAY' ? '2 mins' : '8 mins'}
+                  distance={
+                    (booking.distance !== null && booking.distance !== undefined)
+                      ? `${booking.distance} km` 
+                      : 'Calculating...'
+                  }
+                  estimatedArrival={
+                    (booking.distance !== null && booking.distance !== undefined)
+                      ? `${Math.max(1, Math.round(booking.distance * 5))} mins`
+                      : 'Calculating...'
+                  }
                 />
+                
+                <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    size="small"
+                    onClick={handleCheckETA}
+                    disabled={refreshingETA}
+                    startIcon={<RefreshCw size={14} className={refreshingETA ? "animate-spin" : ""} />}
+                    sx={{ fontWeight: 'bold', width: '100%' }}
+                  >
+                    {refreshingETA ? 'Checking ETA...' : 'Check ETA / Refresh Location'}
+                  </Button>
+                </Box>
                 
                 <Box 
                   sx={{ 

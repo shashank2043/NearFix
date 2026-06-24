@@ -38,6 +38,12 @@ public class Booking {
     @Column(nullable = false)
     private BookingStatus status;
 
+    @Column(name = "worker_location")
+    private String workerLocation;
+
+    @Column(name = "distance")
+    private Double distance;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 

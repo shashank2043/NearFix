@@ -20,4 +20,8 @@ public class BookingResponse {
     private String city;
     private BookingStatus status;
     private LocalDateTime createdAt;
+    private Double workerLatitude;
+    private Double workerLongitude;
+    private String workerLocation;
+    private Double distance;
 }

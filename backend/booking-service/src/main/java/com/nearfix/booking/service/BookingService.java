@@ -8,6 +8,7 @@ import com.nearfix.booking.client.dto.UserDto;
 import com.nearfix.booking.client.dto.WorkerProfileResponse;
 import com.nearfix.booking.dto.BookingResponse;
 import com.nearfix.booking.dto.CreateBookingRequest;
+import com.nearfix.booking.dto.UpdateBookingStatusRequest;
 import com.nearfix.booking.entity.Booking;
 import com.nearfix.booking.entity.BookingStatus;
 import com.nearfix.booking.exception.BadRequestException;
@@ -32,7 +33,6 @@ public class BookingService {
     private final AuthClient authClient;
     private final WorkerClient workerClient;
     private final NotificationClient notificationClient;
-    private final BookingKafkaProducer bookingKafkaProducer;
 
     private static final List<BookingStatus> ACTIVE_STATUSES = List.of(
             BookingStatus.REQUESTED,
@@ -84,8 +84,7 @@ public class BookingService {
         sendNotificationSafely(customerId, "Booking Created",
                 "Your request for " + request.getServiceType() + " service has been submitted successfully.");
 
-        // Publish to Kafka for Swiggy-like broadcast queue
-        bookingKafkaProducer.sendWorkRequest(saved);
+
 
         return mapToResponse(saved);
     }
@@ -189,7 +188,8 @@ public class BookingService {
     }
 
     @Transactional
-    public BookingResponse updateBookingStatus(Long id, Long userId, String userRole, BookingStatus newStatus) {
+    public BookingResponse updateBookingStatus(Long id, Long userId, String userRole, UpdateBookingStatusRequest request) {
+        BookingStatus newStatus = request.getStatus();
         log.info("Updating booking: {} to status: {} by user: {}, role: {}", id, newStatus, userId, userRole);
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + id));
@@ -243,6 +243,17 @@ public class BookingService {
                 
                 booking.setWorkerId(userId);
                 booking.setStatus(BookingStatus.ACCEPTED);
+                booking.setWorkerLocation(formatCoordinates(request.getWorkerLatitude(), request.getWorkerLongitude()));
+                
+                Double[] custCoords = parseCoordinates(booking.getAddress());
+                if (custCoords != null && request.getWorkerLatitude() != null && request.getWorkerLongitude() != null) {
+                    Double dist = calculateHaversineDistance(request.getWorkerLatitude(), request.getWorkerLongitude(), custCoords[0], custCoords[1]);
+                    if (dist != null) {
+                        booking.setDistance(Math.round(dist * 100.0) / 100.0);
+                    }
+                } else {
+                    booking.setDistance(request.getDistance());
+                }
                 
                 // Notify Customer
                 sendNotificationSafely(booking.getCustomerId(), "Booking Accepted", 
@@ -391,6 +402,15 @@ public class BookingService {
     }
 
     private BookingResponse mapToResponse(Booking booking) {
+        Double lat = null;
+        Double lon = null;
+        if (booking.getWorkerLocation() != null) {
+            Double[] coords = parseCoordinates(booking.getWorkerLocation());
+            if (coords != null) {
+                lat = coords[0];
+                lon = coords[1];
+            }
+        }
         return new BookingResponse(
                 booking.getId(),
                 booking.getId(),
@@ -401,7 +421,11 @@ public class BookingService {
                 booking.getAddress(),
                 booking.getCity(),
                 booking.getStatus(),
-                booking.getCreatedAt()
+                booking.getCreatedAt(),
+                lat,
+                lon,
+                booking.getWorkerLocation(),
+                booking.getDistance()
         );
     }
 
@@ -413,5 +437,81 @@ public class BookingService {
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
+    }
+
+    @Transactional
+    public BookingResponse updateWorkerLocation(Long id, Double workerLatitude, Double workerLongitude) {
+        log.info("Updating worker live location for booking: {} to ({}, {})", id, workerLatitude, workerLongitude);
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
+
+        booking.setWorkerLocation(formatCoordinates(workerLatitude, workerLongitude));
+
+        Double[] custCoords = parseCoordinates(booking.getAddress());
+        if (custCoords != null && workerLatitude != null && workerLongitude != null) {
+            Double distance = calculateHaversineDistance(workerLatitude, workerLongitude, custCoords[0], custCoords[1]);
+            if (distance != null) {
+                // Round to 2 decimal places
+                booking.setDistance(Math.round(distance * 100.0) / 100.0);
+            }
+        }
+
+        Booking saved = bookingRepository.save(booking);
+        return mapToResponse(saved);
+    }
+
+    private Double calculateHaversineDistance(Double lat1, Double lon1, Double lat2, Double lon2) {
+        if (lat1 == null || lon1 == null || lat2 == null || lon2 == null) {
+            return null;
+        }
+        final int R = 6371; // Radius of the Earth in km
+        double latDistance = Math.toRadians(lat2 - lat1);
+        double lonDistance = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
+    private Double[] parseCoordinates(String addressStr) {
+        if (addressStr == null) return null;
+        // Match patterns like "Coordinates: 12.971600° N, 77.594600° E"
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(-?\\d+\\.\\d+)\\s*°?\\s*([NSEW]?)");
+        java.util.regex.Matcher matcher = pattern.matcher(addressStr);
+        Double lat = null;
+        Double lon = null;
+        if (matcher.find()) {
+            lat = Double.parseDouble(matcher.group(1));
+            String dir = matcher.group(2);
+            if ("S".equalsIgnoreCase(dir)) {
+                lat = -Math.abs(lat);
+            } else if ("N".equalsIgnoreCase(dir)) {
+                lat = Math.abs(lat);
+            }
+        }
+        if (matcher.find()) {
+            lon = Double.parseDouble(matcher.group(1));
+            String dir = matcher.group(2);
+            if ("W".equalsIgnoreCase(dir)) {
+                lon = -Math.abs(lon);
+            } else if ("E".equalsIgnoreCase(dir)) {
+                lon = Math.abs(lon);
+            }
+        }
+        if (lat != null && lon != null) {
+            return new Double[]{lat, lon};
+        }
+        return null;
+    }
+
+    private String formatCoordinates(Double lat, Double lon) {
+        if (lat == null || lon == null) {
+            return null;
+        }
+        char latDirection = lat >= 0 ? 'N' : 'S';
+        char lonDirection = lon >= 0 ? 'E' : 'W';
+        return String.format(java.util.Locale.US, "Coordinates: %.6f° %c, %.6f° %c", 
+                Math.abs(lat), latDirection, Math.abs(lon), lonDirection);
     }
 }

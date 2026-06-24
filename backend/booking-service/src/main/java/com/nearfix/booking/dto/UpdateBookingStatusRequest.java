@@ -13,4 +13,8 @@ public class UpdateBookingStatusRequest {
 
     @NotNull(message = "Status is required")
     private BookingStatus status;
+
+    private Double workerLatitude;
+    private Double workerLongitude;
+    private Double distance;
 }
