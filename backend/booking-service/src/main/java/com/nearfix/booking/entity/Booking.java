@@ -31,6 +31,9 @@ public class Booking {
     @Column(nullable = false)
     private String address;
 
+    @Column(nullable = false)
+    private String city;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private BookingStatus status;

@@ -92,7 +92,7 @@ const TrackingPage = () => {
       <Grid container spacing={4}>
         
         {/* Live Tracking Column */}
-        <Grid item xs={12} md={7}>
+        <Grid xs={12} md={7}>
           <Card sx={{ mb: 4 }}>
             <CardContent sx={{ p: 3 }}>
               <Typography variant="h5" fontWeight="800" color="text.primary" gutterBottom>
@@ -124,7 +124,7 @@ const TrackingPage = () => {
           </Card>
 
           {/* Action Triggers */}
-          <Box display="flex" sx={{ gap: 2 }}>
+          <Box sx={{ display: 'flex', gap: 2 }}>
             {isRequested && (
               <Button
                 variant="outlined"
@@ -157,8 +157,8 @@ const TrackingPage = () => {
         </Grid>
 
         {/* Worker Info Map Column */}
-        <Grid item xs={12} md={5}>
-          <Box display="flex" flexDirection="column" sx={{ gap: 3 }}>
+        <Grid xs={12} md={5}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             
             {/* Mock GPS Map Panel */}
             <Card>
@@ -228,9 +228,9 @@ const TrackingPage = () => {
                 />
                 
                 <Box 
-                  display="flex" 
-                  alignItems="center" 
                   sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
                     gap: 1.5, 
                     p: 2, 
                     bgcolor: 'action.hover', 

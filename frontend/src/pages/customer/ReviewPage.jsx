@@ -76,8 +76,8 @@ const ReviewPage = () => {
       const sum = allReviews.reduce((acc, r) => acc + r.rating, 0);
       const avg = Number((sum / allReviews.length).toFixed(1));
 
-      // 3. Save new score in worker profile records
-      await workerApi.updateProfile(booking.workerId, { rating: avg });
+      // 3. Save new score in worker profile records using the rating-specific endpoint
+      await workerApi.updateRating(booking.workerId, avg);
 
       setSuccess('Review submitted! Navigating to dashboard...');
       setTimeout(() => {
@@ -98,10 +98,10 @@ const ReviewPage = () => {
     <Container maxWidth="sm" sx={{ mt: 6, mb: 6 }}>
       <Card sx={{ border: '1px solid', borderColor: 'divider' }}>
         <CardContent sx={{ p: 4 }}>
-          <Typography variant="h5" fontWeight="800" textAlign="center" color="text.primary" gutterBottom>
+          <Typography variant="h5" fontWeight="800" color="text.primary" gutterBottom sx={{ textAlign: 'center' }}>
             Rate Technician
           </Typography>
-          <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ mb: 4 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 4, textAlign: 'center' }}>
             Rate your experience with our emergency responder. Your feedback helps maintain our high standards of service.
           </Typography>
 
@@ -131,7 +131,7 @@ const ReviewPage = () => {
               >
                 {workerUser.fullName?.charAt(0).toUpperCase()}
               </Avatar>
-              <Box textAlign="center">
+              <Box sx={{ textAlign: 'center' }}>
                 <Typography variant="subtitle1" fontWeight="700" color="text.primary">
                   {workerUser.fullName}
                 </Typography>

@@ -37,4 +37,18 @@ public class PaymentController {
         Payment payment = paymentService.getPaymentByBookingId(bookingId);
         return ResponseEntity.ok(payment);
     }
+
+    @GetMapping
+    public ResponseEntity<?> getPayments(
+            @RequestParam(value = "bookingId", required = false) Long bookingId) {
+        if (bookingId != null) {
+            try {
+                Payment payment = paymentService.getPaymentByBookingId(bookingId);
+                return ResponseEntity.ok(java.util.List.of(payment));
+            } catch (com.nearfix.payment.exception.ResourceNotFoundException e) {
+                return ResponseEntity.ok(java.util.List.of());
+            }
+        }
+        return ResponseEntity.ok(paymentService.getAllPayments());
+    }
 }

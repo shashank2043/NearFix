@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
@@ -8,19 +10,42 @@ import Alert from '@mui/material/Alert';
 import { MapPin, Wrench, Navigation, Loader2 } from 'lucide-react';
 import { SERVICE_TYPES } from '../../utils/constants';
 
+// Form validation schema matching booking-service constraints
+const bookingSchema = Yup.object().shape({
+  serviceType: Yup.string()
+    .required('Service type is required'),
+  issueDescription: Yup.string()
+    .required('Issue description is required')
+    .min(10, 'Issue description must be at least 10 characters'),
+  address: Yup.string()
+    .required('Dispatch address is required'),
+  city: Yup.string()
+    .required('City is required')
+});
+
 /**
  * Reusable Emergency SOS Booking Form.
  * @param {Object} props
  * @param {string} [props.initialService='Electrician'] - default prefilled service
- * @param {function} props.onSubmit - Submission callback returning {serviceType, issueDescription, address}
+ * @param {function} props.onSubmit - Submission callback returning {serviceType, issueDescription, address, city}
  * @param {boolean} props.loading - Form submission loading state
  */
 const EmergencyRequestForm = ({ initialService = 'Electrician', onSubmit, loading }) => {
-  const [serviceType, setServiceType] = useState(initialService);
-  const [issueDescription, setIssueDescription] = useState('');
-  const [location, setLocation] = useState('');
   const [detecting, setDetecting] = useState(false);
   const [locError, setLocError] = useState('');
+
+  const formik = useFormik({
+    initialValues: {
+      serviceType: initialService,
+      issueDescription: '',
+      address: '',
+      city: '',
+    },
+    validationSchema: bookingSchema,
+    onSubmit: (values) => {
+      onSubmit(values);
+    },
+  });
 
   const handleDetectLocation = () => {
     if (!navigator.geolocation) {
@@ -34,13 +59,15 @@ const EmergencyRequestForm = ({ initialService = 'Electrician', onSubmit, loadin
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
-        setLocation(`Coordinates: ${latitude.toFixed(6)}° N, ${longitude.toFixed(6)}° E`);
+        const coordinatesStr = `Coordinates: ${latitude.toFixed(6)}° N, ${longitude.toFixed(6)}° E`;
+        formik.setFieldValue('address', coordinatesStr);
         setDetecting(false);
       },
       (error) => {
         console.error('Geolocation error:', error);
         // Fallback: mock coordinates if permission is blocked or timeout occurs
-        setLocation('Coordinates: 12.971600° N, 77.594600° E (Detected Location)');
+        const coordinatesStr = 'Coordinates: 12.971600° N, 77.594600° E (Detected Location)';
+        formik.setFieldValue('address', coordinatesStr);
         setLocError('Exact GPS access timed out or was blocked. Using local default dispatch coordinates.');
         setDetecting(false);
       },
@@ -48,19 +75,9 @@ const EmergencyRequestForm = ({ initialService = 'Electrician', onSubmit, loadin
     );
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!issueDescription || !location) return;
-    onSubmit({
-      serviceType,
-      issueDescription,
-      address: location,
-    });
-  };
-
   return (
-    <form onSubmit={handleSubmit}>
-      <Box display="flex" flexDirection="column" sx={{ gap: 3 }}>
+    <form onSubmit={formik.handleSubmit}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         {locError && (
           <Alert severity="warning" onClose={() => setLocError('')} sx={{ borderRadius: 2 }}>
             {locError}
@@ -69,11 +86,14 @@ const EmergencyRequestForm = ({ initialService = 'Electrician', onSubmit, loadin
 
         <TextField
           select
+          name="serviceType"
           label="Emergency Service Type"
-          value={serviceType}
-          onChange={(e) => setServiceType(e.target.value)}
+          value={formik.values.serviceType}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          error={formik.touched.serviceType && Boolean(formik.errors.serviceType)}
+          helperText={formik.touched.serviceType && formik.errors.serviceType}
           fullWidth
-          required
           slotProps={{
             input: {
               startAdornment: (
@@ -92,23 +112,29 @@ const EmergencyRequestForm = ({ initialService = 'Electrician', onSubmit, loadin
         </TextField>
 
         <TextField
+          name="issueDescription"
           label="Explain the Emergency Details"
           placeholder="Please explain the problem (e.g. electrical short circuit causing smoke, kitchen sink pipe burst flooding water, lock broken etc.)"
           multiline
           rows={4}
-          value={issueDescription}
-          onChange={(e) => setIssueDescription(e.target.value)}
+          value={formik.values.issueDescription}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          error={formik.touched.issueDescription && Boolean(formik.errors.issueDescription)}
+          helperText={formik.touched.issueDescription && formik.errors.issueDescription}
           fullWidth
-          required
         />
 
         <TextField
+          name="address"
           label="Emergency Dispatch Address"
           placeholder="Enter detailed address or click Detect"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
+          value={formik.values.address}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          error={formik.touched.address && Boolean(formik.errors.address)}
+          helperText={formik.touched.address && formik.errors.address}
           fullWidth
-          required
           slotProps={{
             input: {
               startAdornment: (
@@ -135,13 +161,25 @@ const EmergencyRequestForm = ({ initialService = 'Electrician', onSubmit, loadin
           }}
         />
 
+        <TextField
+          name="city"
+          label="Dispatch City"
+          placeholder="Enter city (e.g. Bangalore)"
+          value={formik.values.city}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          error={formik.touched.city && Boolean(formik.errors.city)}
+          helperText={formik.touched.city && formik.errors.city}
+          fullWidth
+        />
+
         <Button
           type="submit"
           variant="contained"
           color="secondary"
           fullWidth
           size="large"
-          disabled={loading || !issueDescription || !location}
+          disabled={loading || formik.isSubmitting}
           sx={{ py: 1.2, mt: 1 }}
         >
           {loading ? 'Dispatching Emergency Request...' : 'Confirm SOS Dispatch'}

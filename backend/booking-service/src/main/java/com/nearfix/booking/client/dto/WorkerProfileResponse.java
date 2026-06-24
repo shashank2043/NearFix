@@ -12,6 +12,7 @@ public class WorkerProfileResponse {
     private String skill;
     private Integer experience;
     private String city;
+    private String aadhaarNumber;
     private Double rating;
     private Boolean verified;
     private String status; // AVAILABLE, BUSY, OFFLINE

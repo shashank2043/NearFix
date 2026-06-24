@@ -2,18 +2,12 @@ import axiosInstance from './axiosInstance';
 
 export const paymentApi = {
   /**
-   * Creates a mock transaction payment record.
+   * Creates a transaction payment record in the backend.
    * @param {Object} paymentData - { bookingId, amount }
    * @returns {Promise<Object>}
    */
   createPayment: async (paymentData) => {
-    const payload = {
-      ...paymentData,
-      status: 'COMPLETED', // Instantly completed in the mock backend flow
-      transactionId: `TXN-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
-      paymentDate: new Date().toISOString()
-    };
-    const response = await axiosInstance.post('/payments', payload);
+    const response = await axiosInstance.post('/api/payments', paymentData);
     return response.data;
   },
 
@@ -23,7 +17,7 @@ export const paymentApi = {
    * @returns {Promise<Object>}
    */
   getPaymentById: async (id) => {
-    const response = await axiosInstance.get(`/payments/${id}`);
+    const response = await axiosInstance.get(`/api/payments/${id}`);
     return response.data;
   },
 
@@ -33,7 +27,7 @@ export const paymentApi = {
    * @returns {Promise<Array>}
    */
   getPaymentByBookingId: async (bookingId) => {
-    const response = await axiosInstance.get(`/payments?bookingId=${bookingId}`);
+    const response = await axiosInstance.get(`/api/payments?bookingId=${bookingId}`);
     return response.data;
   },
 
@@ -42,7 +36,7 @@ export const paymentApi = {
    * @returns {Promise<Array>}
    */
   getAllPayments: async () => {
-    const response = await axiosInstance.get('/payments');
+    const response = await axiosInstance.get('/api/payments');
     return response.data;
   }
 };

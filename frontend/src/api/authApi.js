@@ -2,70 +2,37 @@ import axiosInstance from './axiosInstance';
 
 export const authApi = {
   /**
-   * Simulates user login against json-server.
+   * Logs in user against Spring Boot auth service.
    * @param {string} email
    * @param {string} password
-   * @returns {Promise<{token: string, role: string, id: string, fullName: string}>}
+   * @returns {Promise<{token: string, role: string, id: string}>}
    */
   login: async (email, password) => {
-    const response = await axiosInstance.get(`/users?email=${encodeURIComponent(email)}`);
-    const users = response.data;
-    
-    if (users.length > 0) {
-      const user = users[0];
-      if (user.password === password) {
-        if (!user.active) {
-          throw new Error('Account is deactivated. Please contact support.');
-        }
-        return {
-          token: `mock-jwt-token-${user.id}`,
-          role: user.role, // CUSTOMER, WORKER, ADMIN
-          id: user.id,
-          fullName: user.fullName
-        };
-      }
-    }
-    throw new Error('Invalid email or password');
+    const response = await axiosInstance.post('/api/auth/login', { email, password });
+    return response.data;
   },
 
   /**
-   * Simulates user registration.
+   * Registers a new user.
    * @param {Object} userData - { fullName, email, phone, password, role }
    * @returns {Promise<{id: string, message: string}>}
    */
   register: async (userData) => {
-    // Check if email already exists
-    const emailCheck = await axiosInstance.get(`/users?email=${encodeURIComponent(userData.email)}`);
-    if (emailCheck.data.length > 0) {
-      throw new Error('Email is already in use');
-    }
-
-    // Check if phone already exists
-    const phoneCheck = await axiosInstance.get(`/users?phone=${encodeURIComponent(userData.phone)}`);
-    if (phoneCheck.data.length > 0) {
-      throw new Error('Phone number is already in use');
-    }
-
-    const newUser = {
-      ...userData,
-      active: true,
-      createdAt: new Date().toISOString()
-    };
-
-    const response = await axiosInstance.post('/users', newUser);
-    return {
-      id: response.data.id,
-      message: 'Registration successful'
-    };
+    const response = await axiosInstance.post('/api/auth/register', userData);
+    return response.data;
   },
 
   /**
-   * Fetches user profile data by ID.
+   * Fetches user profile data by ID. If ID is empty/falsy, fetches all users.
    * @param {string} id
-   * @returns {Promise<Object>}
+   * @returns {Promise<Object|Array>}
    */
   getUserById: async (id) => {
-    const response = await axiosInstance.get(`/users/${id}`);
+    if (!id) {
+      const response = await axiosInstance.get('/api/auth/users');
+      return response.data;
+    }
+    const response = await axiosInstance.get(`/api/auth/users/${id}`);
     return response.data;
   },
 
@@ -73,9 +40,7 @@ export const authApi = {
    * Resolves the profile of the currently logged-in user.
    */
   getProfile: async () => {
-    const token = localStorage.getItem('token');
-    if (!token) throw new Error('No authorization token found');
-    const id = token.replace('mock-jwt-token-', '');
-    return authApi.getUserById(id);
+    const response = await axiosInstance.get('/api/auth/profile');
+    return response.data;
   }
 };

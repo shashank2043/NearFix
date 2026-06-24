@@ -93,4 +93,19 @@ public class WorkerProfileController {
         WorkerProfileResponse response = workerProfileService.verifyWorker(id, verified);
         return ResponseEntity.ok(response);
     }
+
+    @PutMapping("/profile/{id}/rating")
+    public ResponseEntity<WorkerProfileResponse> updateRating(
+            @PathVariable Long id,
+            @RequestParam Double rating
+    ) {
+        WorkerProfileResponse response = workerProfileService.updateRating(id, rating);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<WorkerProfileResponse>> getAllWorkers() {
+        List<WorkerProfileResponse> response = workerProfileService.getAllWorkers();
+        return ResponseEntity.ok(response);
+    }
 }

@@ -54,6 +54,7 @@ public class WorkerProfileService {
         profile.setSkill(request.skill());
         profile.setExperience(request.experience());
         profile.setCity(request.city());
+        profile.setAadhaarNumber(request.aadhaarNumber());
 
         WorkerProfile savedProfile = workerProfileRepository.save(profile);
         return workerProfileMapper.entityToResponse(savedProfile);
@@ -100,5 +101,19 @@ public class WorkerProfileService {
     public List<WorkerProfileResponse> getAvailableWorkers() {
         List<WorkerProfile> profiles = workerProfileRepository.findByVerifiedAndStatus(true, WorkerStatus.AVAILABLE);
         return profiles.stream().map(workerProfileMapper::entityToResponse).collect(Collectors.toList());
+    }
+
+    public List<WorkerProfileResponse> getAllWorkers() {
+        List<WorkerProfile> profiles = workerProfileRepository.findAll();
+        return profiles.stream().map(workerProfileMapper::entityToResponse).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public WorkerProfileResponse updateRating(Long id, Double rating) {
+        WorkerProfile profile = workerProfileRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Worker profile not found with id: " + id));
+        profile.setRating(rating);
+        WorkerProfile savedProfile = workerProfileRepository.save(profile);
+        return workerProfileMapper.entityToResponse(savedProfile);
     }
 }

@@ -7,6 +7,7 @@ public record WorkerProfileResponse(
     String skill,
     Integer experience,
     String city,
+    String aadhaarNumber,
     Double rating,
     Boolean verified,
     WorkerStatus status

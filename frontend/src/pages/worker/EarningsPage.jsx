@@ -67,13 +67,13 @@ const EarningsPage = () => {
       // Filter payments belonging to this worker's completed bookings
       const completedIds = completedBookings.map((b) => b.id);
       const workerPayments = paymentsList.filter(
-        (p) => completedIds.includes(p.bookingId) && p.status === 'COMPLETED'
+        (p) => completedIds.includes(p.bookingId) && (p.status === 'COMPLETED' || p.status === 'SUCCESS')
       );
       setAllPayments(workerPayments);
 
       // 3. Fetch all users to map customer IDs to names
       try {
-        const usersResponse = await axiosInstance.get('/users');
+        const usersResponse = await axiosInstance.get('/api/auth/users');
         const map = {};
         usersResponse.data.forEach((u) => {
           map[u.id] = u.fullName;

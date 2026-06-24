@@ -2,6 +2,7 @@ package com.nearfix.auth.service;
 
 import com.nearfix.auth.dto.*;
 import com.nearfix.auth.entity.User;
+import com.nearfix.auth.entity.Role;
 import com.nearfix.auth.exception.DuplicateResourceException;
 import com.nearfix.auth.exception.ResourceNotFoundException;
 import com.nearfix.auth.repository.UserRepository;
@@ -13,6 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import jakarta.annotation.PostConstruct;
 
 @Service
 public class AuthService {
@@ -22,6 +24,21 @@ public class AuthService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @PostConstruct
+    public void seedAdmin() {
+        if (!userRepository.existsByEmail("admin@nearfix.com")) {
+            User admin = new User(
+                "System Admin",
+                "admin@nearfix.com",
+                "9999999999",
+                passwordEncoder.encode("admin123"),
+                Role.ADMIN
+            );
+            userRepository.save(admin);
+            System.out.println("Seeded admin user: admin@nearfix.com / admin123");
+        }
+    }
 
     @Autowired
     private JwtService jwtService;
@@ -65,6 +82,12 @@ public class AuthService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
         return userMapper.userToUserResponse(user);
+    }
+
+    public java.util.List<UserResponse> getAllUsers() {
+        return userRepository.findAll().stream()
+                .map(userMapper::userToUserResponse)
+                .toList();
     }
 
     public UserResponse getCurrentUserProfile() {

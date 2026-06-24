@@ -105,8 +105,8 @@ const ComplaintsPage = () => {
       setError('');
       setSuccess('');
 
-      // Send patch request to flag worker profile
-      await axiosInstance.patch(`/workers/${workerId}`, { flagged: true });
+      // Send request to suspend/unverify worker profile
+      await workerApi.verifyWorker(workerId, false);
 
       setSuccess(`Worker ID ${workerId} has been flagged for low quality reports.`);
       await loadData();

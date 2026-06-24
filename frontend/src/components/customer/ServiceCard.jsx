@@ -32,11 +32,13 @@ const ServiceCard = ({ icon: Icon, name, description, onClick }) => {
     >
       <CardActionArea onClick={onClick} sx={{ height: '100%', p: 3 }}>
         <Box 
-          display="flex" 
-          flexDirection="column" 
-          alignItems="center" 
-          textAlign="center" 
-          sx={{ gap: 2 }}
+          sx={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            textAlign: 'center', 
+            gap: 2 
+          }}
         >
           {Icon && (
             <Box 

@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -11,6 +13,39 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { CreditCard, Smartphone, ShieldCheck } from 'lucide-react';
 
+// Conditional payment validation schema
+const paymentSchema = Yup.object().shape({
+  method: Yup.string().required('Payment method is required'),
+  upiId: Yup.string().when('method', {
+    is: 'UPI',
+    then: (schema) => schema
+      .required('UPI ID is required')
+      .matches(/^[a-zA-Z0-9.\-_]+@[a-zA-Z0-9.\-_]+$/, 'Invalid UPI ID format (e.g., username@bank)'),
+    otherwise: (schema) => schema.notRequired(),
+  }),
+  cardNumber: Yup.string().when('method', {
+    is: 'CARD',
+    then: (schema) => schema
+      .required('Card number is required')
+      .matches(/^\d{16}$/, 'Card number must be exactly 16 digits'),
+    otherwise: (schema) => schema.notRequired(),
+  }),
+  cardExpiry: Yup.string().when('method', {
+    is: 'CARD',
+    then: (schema) => schema
+      .required('Expiry date is required')
+      .matches(/^(0[1-9]|1[0-2])\/?([0-9]{2})$/, 'Expiry date must be in MM/YY format'),
+    otherwise: (schema) => schema.notRequired(),
+  }),
+  cardCvv: Yup.string().when('method', {
+    is: 'CARD',
+    then: (schema) => schema
+      .required('CVV is required')
+      .matches(/^\d{3}$/, 'CVV must be exactly 3 digits'),
+    otherwise: (schema) => schema.notRequired(),
+  }),
+});
+
 /**
  * Reusable Payment Selection and Details Form.
  * @param {Object} props
@@ -19,25 +54,22 @@ import { CreditCard, Smartphone, ShieldCheck } from 'lucide-react';
  * @param {number} props.amount - Price summary total
  */
 const PaymentForm = ({ onSubmit, loading, amount }) => {
-  const [method, setMethod] = useState('UPI');
-  const [upiId, setUpiId] = useState('');
-  const [cardNumber, setCardNumber] = useState('');
-  const [cardExpiry, setCardExpiry] = useState('');
-  const [cardCvv, setCardCvv] = useState('');
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSubmit({
-      method,
-      upiId,
-      cardNumber,
-      cardExpiry,
-      cardCvv,
-    });
-  };
+  const formik = useFormik({
+    initialValues: {
+      method: 'UPI',
+      upiId: '',
+      cardNumber: '',
+      cardExpiry: '',
+      cardCvv: '',
+    },
+    validationSchema: paymentSchema,
+    onSubmit: (values) => {
+      onSubmit(values);
+    },
+  });
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={formik.handleSubmit}>
       <FormControl component="fieldset" fullWidth sx={{ mb: 3 }}>
         <FormLabel 
           component="legend" 
@@ -45,7 +77,13 @@ const PaymentForm = ({ onSubmit, loading, amount }) => {
         >
           Select Payment Method
         </FormLabel>
-        <RadioGroup value={method} onChange={(e) => setMethod(e.target.value)}>
+        <RadioGroup 
+          name="method"
+          value={formik.values.method} 
+          onChange={(e) => {
+            formik.setFieldValue('method', e.target.value);
+          }}
+        >
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             
             {/* UPI Option */}
@@ -56,17 +94,17 @@ const PaymentForm = ({ onSubmit, loading, amount }) => {
                 justifyContent: 'space-between',
                 p: 2,
                 border: '1px solid',
-                borderColor: method === 'UPI' ? 'secondary.main' : 'divider',
+                borderColor: formik.values.method === 'UPI' ? 'secondary.main' : 'divider',
                 borderRadius: 2,
-                bgcolor: method === 'UPI' ? 'action.selected' : 'transparent',
+                bgcolor: formik.values.method === 'UPI' ? 'action.selected' : 'transparent',
                 cursor: 'pointer',
                 transition: 'all 0.2s ease'
               }}
-              onClick={() => setMethod('UPI')}
+              onClick={() => formik.setFieldValue('method', 'UPI')}
             >
               <FormControlLabel
                 value="UPI"
-                control={<Radio color="secondary" />}
+                control={<Radio color="secondary" checked={formik.values.method === 'UPI'} />}
                 label={
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <Smartphone size={20} />
@@ -78,15 +116,18 @@ const PaymentForm = ({ onSubmit, loading, amount }) => {
               />
             </Box>
 
-            {method === 'UPI' && (
+            {formik.values.method === 'UPI' && (
               <Box sx={{ px: 4, py: 0.5 }}>
                 <TextField
+                  name="upiId"
                   label="Enter UPI ID"
                   placeholder="username@okhdfcbank"
-                  value={upiId}
-                  onChange={(e) => setUpiId(e.target.value)}
+                  value={formik.values.upiId}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={formik.touched.upiId && Boolean(formik.errors.upiId)}
+                  helperText={formik.touched.upiId && formik.errors.upiId}
                   fullWidth
-                  required
                   size="small"
                 />
               </Box>
@@ -100,17 +141,17 @@ const PaymentForm = ({ onSubmit, loading, amount }) => {
                 justifyContent: 'space-between',
                 p: 2,
                 border: '1px solid',
-                borderColor: method === 'CARD' ? 'secondary.main' : 'divider',
+                borderColor: formik.values.method === 'CARD' ? 'secondary.main' : 'divider',
                 borderRadius: 2,
-                bgcolor: method === 'CARD' ? 'action.selected' : 'transparent',
+                bgcolor: formik.values.method === 'CARD' ? 'action.selected' : 'transparent',
                 cursor: 'pointer',
                 transition: 'all 0.2s ease'
               }}
-              onClick={() => setMethod('CARD')}
+              onClick={() => formik.setFieldValue('method', 'CARD')}
             >
               <FormControlLabel
                 value="CARD"
-                control={<Radio color="secondary" />}
+                control={<Radio color="secondary" checked={formik.values.method === 'CARD'} />}
                 label={
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <CreditCard size={20} />
@@ -122,42 +163,51 @@ const PaymentForm = ({ onSubmit, loading, amount }) => {
               />
             </Box>
 
-            {method === 'CARD' && (
+            {formik.values.method === 'CARD' && (
               <Box sx={{ px: 4, py: 0.5 }}>
                 <Grid container spacing={2}>
-                  <Grid size={12}>
+                  <Grid item xs={12}>
                     <TextField
+                      name="cardNumber"
                       label="Card Number"
                       placeholder="4321 8765 9012 3456"
-                      value={cardNumber}
-                      onChange={(e) => setCardNumber(e.target.value)}
+                      value={formik.values.cardNumber}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      error={formik.touched.cardNumber && Boolean(formik.errors.cardNumber)}
+                      helperText={formik.touched.cardNumber && formik.errors.cardNumber}
                       fullWidth
-                      required
                       size="small"
                     />
                   </Grid>
-                  <Grid size={6}>
+                  <Grid item xs={6}>
                     <TextField
+                      name="cardExpiry"
                       label="Expiry Date"
                       placeholder="MM/YY"
-                      value={cardExpiry}
-                      onChange={(e) => setCardExpiry(e.target.value)}
+                      value={formik.values.cardExpiry}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      error={formik.touched.cardExpiry && Boolean(formik.errors.cardExpiry)}
+                      helperText={formik.touched.cardExpiry && formik.errors.cardExpiry}
                       fullWidth
-                      required
                       size="small"
                     />
                   </Grid>
-                  <Grid size={6}>
+                  <Grid item xs={6}>
                     <TextField
+                      name="cardCvv"
                       label="CVV"
                       placeholder="***"
                       type="password"
-                      value={cardCvv}
-                      onChange={(e) => setCardCvv(e.target.value)}
+                      value={formik.values.cardCvv}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      error={formik.touched.cardCvv && Boolean(formik.errors.cardCvv)}
+                      helperText={formik.touched.cardCvv && formik.errors.cardCvv}
                       fullWidth
-                      required
                       size="small"
-                      inputProps={{ maxLength: 3 }}
+                      slotProps={{ htmlInput: { maxLength: 3 } }}
                     />
                   </Grid>
                 </Grid>

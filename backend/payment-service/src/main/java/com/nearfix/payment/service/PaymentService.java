@@ -37,7 +37,7 @@ public class PaymentService {
     private final NotificationClient notificationClient;
     private final AuthClient authClient;
 
-    @Value("${razorpay.key-id}}")
+    @Value("${razorpay.key-id}")
     private String razorpayKeyId;
 
     @Value("${razorpay.key-secret}")
@@ -155,7 +155,7 @@ public class PaymentService {
                     "Payment of ₹" + request.getAmount() + " failed. Transaction ID: " + transactionId + ". Please retry.");
         }
 
-        return new PaymentResponse(savedPayment.getTransactionId(), savedPayment.getStatus());
+        return new PaymentResponse(savedPayment.getTransactionId(), savedPayment.getStatus(), razorpayKeyId);
     }
 
     @Transactional(readOnly = true)
@@ -170,6 +170,12 @@ public class PaymentService {
         log.info("Fetching payment by bookingId: {}", bookingId);
         return paymentRepository.findByBookingId(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Payment not found for bookingId: " + bookingId));
+    }
+
+    @Transactional(readOnly = true)
+    public java.util.List<Payment> getAllPayments() {
+        log.info("Fetching all payments");
+        return paymentRepository.findAll();
     }
 
     private void sendNotificationSafely(Long userId, String subject, String message) {

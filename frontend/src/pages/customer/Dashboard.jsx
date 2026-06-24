@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
@@ -20,6 +22,7 @@ import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Divider from '@mui/material/Divider';
+import Avatar from '@mui/material/Avatar';
 import { ShieldAlert, PlusCircle, Wrench, Clock, FileText, CheckCircle2, DollarSign, Star, User } from 'lucide-react';
 
 import { useAuth } from '../../hooks/useAuth';
@@ -44,12 +47,6 @@ const Dashboard = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // Booking Form State
-  const [serviceType, setServiceType] = useState('Electrician');
-  const [issueDescription, setIssueDescription] = useState('');
-  const [address, setAddress] = useState('');
-  const [submittingBooking, setSubmittingBooking] = useState(false);
-
   // Booking Tracking Modal
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [assignedWorker, setAssignedWorker] = useState(null);
@@ -60,10 +57,90 @@ const Dashboard = () => {
   const [paymentLoading, setPaymentLoading] = useState(false);
 
   // Review State
-  const [reviewRating, setReviewRating] = useState(5);
-  const [reviewComment, setReviewComment] = useState('');
-  const [submittingReview, setSubmittingReview] = useState(false);
   const [hasReviewed, setHasReviewed] = useState(false);
+
+  // Booking Formik Form
+  const bookingFormik = useFormik({
+    initialValues: {
+      serviceType: 'Electrician',
+      issueDescription: '',
+      address: '',
+    },
+    validationSchema: Yup.object().shape({
+      serviceType: Yup.string().required('Service type is required'),
+      issueDescription: Yup.string()
+        .required('Issue description is required')
+        .min(10, 'Issue description must be at least 10 characters'),
+      address: Yup.string().required('Service address is required'),
+    }),
+    onSubmit: async (values, { resetForm, setSubmitting }) => {
+      setError('');
+      setSuccess('');
+      try {
+        await bookingApi.createBooking({
+          customerId: user.id,
+          serviceType: values.serviceType,
+          issueDescription: values.issueDescription,
+          address: values.address,
+        });
+
+        setSuccess('Emergency request submitted! Finding nearby helpers...');
+        resetForm();
+        fetchBookings();
+      } catch (err) {
+        setError('Failed to log booking request. Please try again.');
+        console.error(err);
+      } finally {
+        setSubmitting(false);
+      }
+    },
+  });
+
+  // Review Formik Form
+  const reviewFormik = useFormik({
+    initialValues: {
+      rating: 5,
+      comment: '',
+    },
+    validationSchema: Yup.object().shape({
+      rating: Yup.number()
+        .required('Rating is required')
+        .min(1, 'Rating must be at least 1')
+        .max(5, 'Rating cannot exceed 5'),
+      comment: Yup.string()
+        .required('Comment is required')
+        .max(1000, 'Comment must be at most 1000 characters'),
+    }),
+    onSubmit: async (values, { resetForm, setSubmitting }) => {
+      if (!selectedBooking || !assignedWorker) return;
+      setError('');
+      setSuccess('');
+      try {
+        await reviewApi.createReview({
+          bookingId: selectedBooking.id,
+          customerId: user.id,
+          workerId: assignedWorker.id,
+          rating: values.rating,
+          comment: values.comment,
+        });
+
+        // Update worker overall rating
+        const reviews = await reviewApi.getReviewsByWorker(assignedWorker.id);
+        const avgRating = reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length;
+        await workerApi.updateProfile(assignedWorker.id, { rating: Number(avgRating.toFixed(1)) });
+
+        setHasReviewed(true);
+        setSuccess('Thank you for your feedback!');
+        resetForm();
+        fetchBookings();
+      } catch (err) {
+        console.error('Submit review failed:', err);
+        setError('Failed to submit review.');
+      } finally {
+        setSubmitting(false);
+      }
+    },
+  });
 
   const fetchBookings = async () => {
     try {
@@ -85,36 +162,7 @@ const Dashboard = () => {
     }
   }, [user?.id]);
 
-  const handleCreateBooking = async (e) => {
-    e.preventDefault();
-    if (!issueDescription || !address) {
-      setError('Please provide the issue details and service location.');
-      return;
-    }
 
-    setSubmittingBooking(true);
-    setError('');
-    setSuccess('');
-
-    try {
-      await bookingApi.createBooking({
-        customerId: user.id,
-        serviceType,
-        issueDescription,
-        address,
-      });
-
-      setSuccess('Emergency request submitted! Finding nearby helpers...');
-      setIssueDescription('');
-      setAddress('');
-      fetchBookings();
-    } catch (err) {
-      setError('Failed to log booking request. Please try again.');
-      console.error(err);
-    } finally {
-      setSubmittingBooking(false);
-    }
-  };
 
   // Timeline Tracker Steps mapping
   const getStepIndex = (status) => {
@@ -137,6 +185,7 @@ const Dashboard = () => {
     setAssignedWorker(null);
     setAssignedWorkerUser(null);
     setHasReviewed(false);
+    reviewFormik.resetForm();
 
     if (booking.workerId) {
       try {
@@ -184,34 +233,7 @@ const Dashboard = () => {
     }
   };
 
-  const handleReviewSubmit = async (e) => {
-    e.preventDefault();
-    if (!selectedBooking || !assignedWorker) return;
 
-    setSubmittingReview(true);
-    try {
-      await reviewApi.createReview({
-        bookingId: selectedBooking.id,
-        customerId: user.id,
-        workerId: assignedWorker.id,
-        rating: reviewRating,
-        comment: reviewComment,
-      });
-
-      // Update worker overall rating
-      const reviews = await reviewApi.getReviewsByWorker(assignedWorker.id);
-      const avgRating = reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length;
-      await workerApi.updateProfile(assignedWorker.id, { rating: Number(avgRating.toFixed(1)) });
-
-      setHasReviewed(true);
-      setSuccess('Thank you for your feedback!');
-      fetchBookings();
-    } catch (err) {
-      console.error('Submit review failed:', err);
-    } finally {
-      setSubmittingReview(false);
-    }
-  };
 
   // Compute metrics
   const totalRequests = bookings.length;
@@ -234,7 +256,7 @@ const Dashboard = () => {
 
       {/* Metrics Row */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={4}>
+        <Grid size={{ xs: 12, sm: 4 }}>
           <Card sx={{ bgcolor: 'background.paper' }}>
             <CardContent display="flex" sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'rgba(0, 180, 216, 0.1)', color: '#00B4D8' }}>
@@ -251,7 +273,7 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={4}>
+        <Grid size={{ xs: 12, sm: 4 }}>
           <Card sx={{ bgcolor: 'background.paper' }}>
             <CardContent display="flex" sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'rgba(0, 245, 212, 0.1)', color: '#00F5D4' }}>
@@ -268,7 +290,7 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={4}>
+        <Grid size={{ xs: 12, sm: 4 }}>
           <Card sx={{ bgcolor: 'background.paper' }}>
             <CardContent display="flex" sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'rgba(99, 102, 241, 0.1)', color: '#6366F1' }}>
@@ -290,7 +312,7 @@ const Dashboard = () => {
       {/* Main Content Area */}
       <Grid container spacing={4}>
         {/* Create Request Column */}
-        <Grid item xs={12} md={5}>
+        <Grid size={{ xs: 12, md: 5 }}>
           <Card sx={{ height: '100%' }}>
             <CardContent>
               <Box display="flex" alignItems="center" sx={{ gap: 1.5, mb: 3 }}>
@@ -300,20 +322,26 @@ const Dashboard = () => {
                 </Typography>
               </Box>
               
-              <form onSubmit={handleCreateBooking}>
+              <form onSubmit={bookingFormik.handleSubmit}>
                 <Box display="flex" flexDirection="column" sx={{ gap: 3 }}>
                   <TextField
                     select
+                    name="serviceType"
                     label="Service Type"
-                    value={serviceType}
-                    onChange={(e) => setServiceType(e.target.value)}
+                    value={bookingFormik.values.serviceType}
+                    onChange={bookingFormik.handleChange}
+                    onBlur={bookingFormik.handleBlur}
+                    error={bookingFormik.touched.serviceType && Boolean(bookingFormik.errors.serviceType)}
+                    helperText={bookingFormik.touched.serviceType && bookingFormik.errors.serviceType}
                     fullWidth
-                    InputProps={{
-                      startAdornment: (
-                        <Box sx={{ mr: 1, display: 'flex', alignItems: 'center', color: 'text.secondary' }}>
-                          <Wrench size={18} />
-                        </Box>
-                      )
+                    slotProps={{
+                      input: {
+                        startAdornment: (
+                          <Box sx={{ mr: 1, display: 'flex', alignItems: 'center', color: 'text.secondary' }}>
+                            <Wrench size={18} />
+                          </Box>
+                        )
+                      }
                     }}
                   >
                     {SERVICE_TYPES.map((type) => (
@@ -324,23 +352,29 @@ const Dashboard = () => {
                   </TextField>
 
                   <TextField
+                    name="issueDescription"
                     label="Explain the Emergency"
                     multiline
                     rows={4}
                     placeholder="Describe the issue (e.g. power outlet sparked and blew fuse, kitchen faucet burst, etc.)"
-                    value={issueDescription}
-                    onChange={(e) => setIssueDescription(e.target.value)}
+                    value={bookingFormik.values.issueDescription}
+                    onChange={bookingFormik.handleChange}
+                    onBlur={bookingFormik.handleBlur}
+                    error={bookingFormik.touched.issueDescription && Boolean(bookingFormik.errors.issueDescription)}
+                    helperText={bookingFormik.touched.issueDescription && bookingFormik.errors.issueDescription}
                     fullWidth
-                    required
                   />
 
                   <TextField
+                    name="address"
                     label="Service Address"
                     placeholder="Enter complete flat, street and layout address"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
+                    value={bookingFormik.values.address}
+                    onChange={bookingFormik.handleChange}
+                    onBlur={bookingFormik.handleBlur}
+                    error={bookingFormik.touched.address && Boolean(bookingFormik.errors.address)}
+                    helperText={bookingFormik.touched.address && bookingFormik.errors.address}
                     fullWidth
-                    required
                   />
 
                   <Button
@@ -349,10 +383,10 @@ const Dashboard = () => {
                     color="secondary"
                     fullWidth
                     size="large"
-                    disabled={submittingBooking}
+                    disabled={bookingFormik.isSubmitting}
                     sx={{ py: 1.2 }}
                   >
-                    {submittingBooking ? 'Submitting request...' : 'Dispatch Request Now'}
+                    {bookingFormik.isSubmitting ? 'Submitting request...' : 'Dispatch Request Now'}
                   </Button>
                 </Box>
               </form>
@@ -361,7 +395,7 @@ const Dashboard = () => {
         </Grid>
 
         {/* History Column */}
-        <Grid item xs={12} md={7}>
+        <Grid size={{ xs: 12, md: 7 }}>
           <Card sx={{ height: '100%' }}>
             <CardContent>
               <Typography variant="h6" fontWeight="700" sx={{ mb: 3 }}>
@@ -496,7 +530,7 @@ const Dashboard = () => {
                         <RatingStars value={assignedWorker?.rating} showLabel />
                       </Box>
                     </Box>
-                    <Box textAlign="right">
+                    <Box sx={{ textAlign: 'right' }}>
                       <Typography variant="caption" display="block" color="text.secondary">
                         Contact Info
                       </Typography>
@@ -566,34 +600,37 @@ const Dashboard = () => {
                     Your feedback for this service request was submitted. Thank you!
                   </Alert>
                 ) : (
-                  <form onSubmit={handleReviewSubmit}>
+                  <form onSubmit={reviewFormik.handleSubmit}>
                     <Box display="flex" flexDirection="column" sx={{ gap: 2 }}>
                       <Box display="flex" alignItems="center" sx={{ gap: 2 }}>
                         <Typography variant="body2">Rate the helper's service:</Typography>
                         <RatingStars
-                          value={reviewRating}
+                          value={reviewFormik.values.rating}
                           readOnly={false}
-                          onChange={(val) => setReviewRating(val)}
+                          onChange={(val) => reviewFormik.setFieldValue('rating', val)}
                         />
                       </Box>
                       <TextField
+                        name="comment"
                         label="Your Comments"
                         placeholder="Write a brief comment about the technician's professionalism, speed, quality..."
-                        value={reviewComment}
-                        onChange={(e) => setReviewComment(e.target.value)}
+                        value={reviewFormik.values.comment}
+                        onChange={reviewFormik.handleChange}
+                        onBlur={reviewFormik.handleBlur}
+                        error={reviewFormik.touched.comment && Boolean(reviewFormik.errors.comment)}
+                        helperText={reviewFormik.touched.comment && reviewFormik.errors.comment}
                         fullWidth
                         multiline
                         rows={2}
-                        required
                       />
                       <Button
                         type="submit"
                         variant="contained"
                         color="primary"
-                        disabled={submittingReview}
+                        disabled={reviewFormik.isSubmitting}
                         sx={{ alignSelf: 'flex-end' }}
                       >
-                        {submittingReview ? 'Submitting...' : 'Submit Feedback'}
+                        {reviewFormik.isSubmitting ? 'Submitting...' : 'Submit Feedback'}
                       </Button>
                     </Box>
                   </form>

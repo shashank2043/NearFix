@@ -18,6 +18,9 @@ public class WorkerProfile {
     @Column(nullable = false)
     private String city;
 
+    @Column(name = "aadhaar_number", nullable = false)
+    private String aadhaarNumber;
+
     @Column(nullable = false)
     private Double rating = 0.0;
 
@@ -30,11 +33,12 @@ public class WorkerProfile {
 
     public WorkerProfile() {}
 
-    public WorkerProfile(Long id, String skill, Integer experience, String city) {
+    public WorkerProfile(Long id, String skill, Integer experience, String city, String aadhaarNumber) {
         this.id = id;
         this.skill = skill;
         this.experience = experience;
         this.city = city;
+        this.aadhaarNumber = aadhaarNumber;
         this.rating = 0.0;
         this.verified = false;
         this.status = WorkerStatus.OFFLINE;
@@ -70,6 +74,14 @@ public class WorkerProfile {
 
     public void setCity(String city) {
         this.city = city;
+    }
+
+    public String getAadhaarNumber() {
+        return aadhaarNumber;
+    }
+
+    public void setAadhaarNumber(String aadhaarNumber) {
+        this.aadhaarNumber = aadhaarNumber;
     }
 
     public Double getRating() {
