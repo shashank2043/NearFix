@@ -15,6 +15,7 @@ import com.nearfix.payment.entity.PaymentStatus;
 import com.nearfix.payment.exception.BadRequestException;
 import com.nearfix.payment.exception.ConflictException;
 import com.nearfix.payment.exception.ResourceNotFoundException;
+import com.nearfix.payment.mapper.PaymentMapper;
 import com.nearfix.payment.repository.PaymentRepository;
 import com.razorpay.Order;
 import com.razorpay.RazorpayClient;
@@ -26,7 +27,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
+import java.util.Optional;
+
+import static java.util.UUID.randomUUID;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +40,7 @@ public class PaymentService {
     private final BookingClient bookingClient;
     private final NotificationClient notificationClient;
     private final AuthClient authClient;
+    private final PaymentMapper paymentMapper;
 
     @Value("${razorpay.key-id}")
     private String razorpayKeyId;
@@ -46,21 +50,20 @@ public class PaymentService {
 
     @Transactional
     public PaymentResponse processPayment(Long customerId, String customerRole, CreatePaymentRequest request) {
-        log.info("Processing payment for bookingId: {} by customerId: {}", request.getBookingId(), customerId);
+        log.info("Processing payment for bookingId: {} by customerId: {}", request.bookingId(), customerId);
 
-        // Verify if payment has already succeeded for this booking
-        java.util.Optional<Payment> existingPaymentOpt = paymentRepository.findByBookingId(request.getBookingId());
+         Optional<Payment> existingPaymentOpt = paymentRepository.findByBookingId(request.bookingId());
         if (existingPaymentOpt.isPresent()) {
             Payment existingPayment = existingPaymentOpt.get();
             if (existingPayment.getStatus() == PaymentStatus.SUCCESS) {
-                throw new ConflictException("Payment has already been successfully processed for booking #" + request.getBookingId());
+                throw new ConflictException("Payment has already been successfully processed for booking #" + request.bookingId());
             }
         }
 
-        // Fetch booking from Booking Service
+
         BookingResponse booking;
         try {
-            booking = bookingClient.getBookingById(request.getBookingId(), customerId, customerRole);
+            booking = bookingClient.getBookingById(request.bookingId(), customerId, customerRole);
         } catch (Exception e) {
             log.error("Failed to retrieve booking details from Booking Service", e);
             throw new BadRequestException("Booking does not exist or is not accessible: " + e.getMessage());
@@ -70,44 +73,50 @@ public class PaymentService {
             throw new ResourceNotFoundException("Booking not found");
         }
 
-        // Business validations
-        if ("CANCELLED".equalsIgnoreCase(booking.getStatus())) {
+
+        if ("CANCELLED".equalsIgnoreCase(booking.status())) {
             throw new ConflictException("Cannot process payment for a cancelled booking");
         }
-        if ("PAID".equalsIgnoreCase(booking.getStatus())) {
+        if ("PAID".equalsIgnoreCase(booking.status())) {
             throw new ConflictException("Booking is already PAID");
         }
-        if (!"WORK_COMPLETED".equalsIgnoreCase(booking.getStatus())) {
-            throw new ConflictException("Payment can only be processed for bookings in WORK_COMPLETED status (Current status: " + booking.getStatus() + ")");
+        if (!"WORK_COMPLETED".equalsIgnoreCase(booking.status())) {
+            throw new ConflictException("Payment can only be processed for bookings in WORK_COMPLETED status (Current status: " + booking.status() + ")");
         }
 
+        Double amountToCharge = booking.amount();
+        if (amountToCharge == null) {
+            throw new BadRequestException("No payment amount has been set for this booking by the worker");
+        }
+
+        double amount = amountToCharge;
         String transactionId;
         PaymentStatus status;
 
         try {
-            log.info("Initializing Razorpay Client and creating order for receipt: {}", "txn_" + request.getBookingId());
+            log.info("Initializing Razorpay Client and creating order for receipt: {}", "txn_" + request.bookingId());
             RazorpayClient razorpay = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
             
             JSONObject orderRequest = new JSONObject();
-            orderRequest.put("amount", (int) Math.round(request.getAmount() * 100)); // amount in paise
+            orderRequest.put("amount", (int) Math.round(amount * 100)); // amount in paise
             orderRequest.put("currency", "INR");
-            orderRequest.put("receipt", "txn_" + request.getBookingId());
+            orderRequest.put("receipt", "txn_" + request.bookingId());
             
-            // Create Razorpay Order
+
             Order order = razorpay.orders.create(orderRequest);
             transactionId = order.get("id"); 
             log.info("Razorpay order created successfully: {}", transactionId);
             
-            // Handle validation rule: if amount is 999.99, simulate payment failure immediately
-            if (request.getAmount() == 999.99) {
+
+            if (amount == 999.99) {
                 status = PaymentStatus.FAILED;
             } else {
                 status = PaymentStatus.PENDING;
             }
         } catch (Exception e) {
             log.error("Error creating order with Razorpay, falling back to simulation", e);
-            transactionId = "rzp_order_" + java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 14);
-            if (request.getAmount() == 999.99) {
+            transactionId = "rzp_order_" +  randomUUID().toString().replace("-", "").substring(0, 14);
+            if (amount == 999.99) {
                 status = PaymentStatus.FAILED;
             } else {
                 status = PaymentStatus.PENDING;
@@ -117,14 +126,14 @@ public class PaymentService {
         Payment payment;
         if (existingPaymentOpt.isPresent()) {
             payment = existingPaymentOpt.get();
-            payment.setAmount(request.getAmount());
+            payment.setAmount(amount);
             payment.setStatus(status);
             payment.setTransactionId(transactionId);
             payment.setPaymentDate(null);
         } else {
             payment = Payment.builder()
-                    .bookingId(request.getBookingId())
-                    .amount(request.getAmount())
+                    .bookingId(request.bookingId())
+                    .amount(amount)
                     .status(status)
                     .transactionId(transactionId)
                     .build();
@@ -133,36 +142,35 @@ public class PaymentService {
         Payment savedPayment = paymentRepository.save(payment);
 
         if (status == PaymentStatus.FAILED) {
-            // Trigger notification event for payment failure
-            sendNotificationSafely(booking.getCustomerId(), "Payment Failed",
-                    "Payment of ₹" + request.getAmount() + " failed. Transaction ID: " + transactionId + ". Please retry.");
+
+            sendNotificationSafely(booking.customerId(), "Payment Failed",
+                    "Payment of ₹" + amount + " failed. Transaction ID: " + transactionId + ". Please retry.");
         }
 
-        return new PaymentResponse(savedPayment.getTransactionId(), savedPayment.getStatus(), razorpayKeyId);
+        return paymentMapper.toResponse(savedPayment, razorpayKeyId);
     }
 
     @Transactional
     public PaymentResponse verifyPayment(Long customerId, String customerRole, PaymentVerificationRequest request) {
-        log.info("Verifying payment for bookingId: {} transactionId: {}", request.getBookingId(), request.getTransactionId());
+        log.info("Verifying payment for bookingId: {} transactionId: {}", request.bookingId(), request.transactionId());
 
-        Payment payment = paymentRepository.findByBookingId(request.getBookingId())
-                .orElseThrow(() -> new ResourceNotFoundException("Payment not found for booking #" + request.getBookingId()));
+        Payment payment = paymentRepository.findByBookingId(request.bookingId())
+                .orElseThrow(() -> new ResourceNotFoundException("Payment not found for booking #" + request.bookingId()));
 
         if (payment.getStatus() == PaymentStatus.SUCCESS) {
-            return new PaymentResponse(payment.getTransactionId(), payment.getStatus(), razorpayKeyId);
+            return paymentMapper.toResponse(payment, razorpayKeyId);
         }
 
         boolean verified = false;
 
-        // Bypass verification if it's a simulated order ID or signature is missing (for local testing fallbacks)
-        if (payment.getTransactionId().startsWith("rzp_order_") || request.getRazorpaySignature() == null || request.getRazorpaySignature().isEmpty()) {
+        if (payment.getTransactionId().startsWith("rzp_order_") || request.razorpaySignature() == null || request.razorpaySignature().isEmpty()) {
             verified = true;
         } else {
             try {
                 JSONObject options = new JSONObject();
                 options.put("razorpay_order_id", payment.getTransactionId());
-                options.put("razorpay_payment_id", request.getRazorpayPaymentId());
-                options.put("razorpay_signature", request.getRazorpaySignature());
+                options.put("razorpay_payment_id", request.razorpayPaymentId());
+                options.put("razorpay_signature", request.razorpaySignature());
 
                 verified = com.razorpay.Utils.verifyPaymentSignature(options, razorpayKeySecret);
             } catch (Exception e) {
@@ -175,13 +183,12 @@ public class PaymentService {
             payment.setPaymentDate(LocalDateTime.now());
             Payment savedPayment = paymentRepository.save(payment);
 
-            // Fetch booking from Booking Service
-            BookingResponse booking = bookingClient.getBookingById(request.getBookingId(), customerId, customerRole);
 
-            // Update booking status to PAID in Booking Service
+            BookingResponse booking = bookingClient.getBookingById(request.bookingId(), customerId, customerRole);
+
             try {
                 bookingClient.updateBookingStatus(
-                        request.getBookingId(),
+                        request.bookingId(),
                         customerId,
                         customerRole,
                         new UpdateBookingStatusRequest("PAID")
@@ -191,16 +198,15 @@ public class PaymentService {
                 throw new ConflictException("Payment succeeded but failed to update booking status: " + e.getMessage());
             }
 
-            // Trigger notification event for payment success
-            sendNotificationSafely(booking.getCustomerId(), "Payment Successful",
+            sendNotificationSafely(booking.customerId(), "Payment Successful",
                     "Payment of ₹" + payment.getAmount() + " was successful. Transaction ID: " + payment.getTransactionId());
 
-            if (booking.getWorkerId() != null) {
-                sendNotificationSafely(booking.getWorkerId(), "Payment Settled",
-                        "Payment of ₹" + payment.getAmount() + " for booking #" + request.getBookingId() + " has been settled.");
+            if (booking.workerId() != null) {
+                sendNotificationSafely(booking.workerId(), "Payment Settled",
+                        "Payment of ₹" + payment.getAmount() + " for booking #" + request.bookingId() + " has been settled.");
             }
 
-            return new PaymentResponse(savedPayment.getTransactionId(), savedPayment.getStatus(), razorpayKeyId);
+            return paymentMapper.toResponse(savedPayment, razorpayKeyId);
         } else {
             payment.setStatus(PaymentStatus.FAILED);
             paymentRepository.save(payment);
@@ -231,8 +237,8 @@ public class PaymentService {
     private void sendNotificationSafely(Long userId, String subject, String message) {
         try {
             UserDto user = authClient.getUserById(userId);
-            if (user != null && user.getEmail() != null) {
-                notificationClient.sendNotification(new NotificationRequest(user.getEmail(), subject, message));
+            if (user != null && user.email() != null) {
+                notificationClient.sendNotification(new NotificationRequest(user.email(), subject, message));
             } else {
                 log.warn("Could not send notification to user {}: User or email not found", userId);
             }

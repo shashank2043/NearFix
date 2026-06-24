@@ -11,6 +11,12 @@ import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Grid from '@mui/material/Grid';
 import Chip from '@mui/material/Chip';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
+import TextField from '@mui/material/TextField';
 import { MapPin, Phone, User, CheckCircle2, Navigation, ShieldCheck, AlertCircle, Play, RefreshCw } from 'lucide-react';
 import { authApi } from '../../api/authApi';
 
@@ -87,6 +93,33 @@ const ActiveJobPanel = ({ booking, onUpdateStatus, actionLoading = false, onRefr
       isMounted = false;
     };
   }, [customerId]);
+
+  const [openDialog, setOpenDialog] = useState(false);
+  const [amount, setAmount] = useState('300');
+  const [validationError, setValidationError] = useState('');
+
+  const handleButtonClick = () => {
+    if (nextStatus === 'WORK_COMPLETED') {
+      setOpenDialog(true);
+    } else {
+      onUpdateStatus(id, nextStatus);
+    }
+  };
+
+  const handleConfirmCompletion = () => {
+    const numericAmount = parseFloat(amount);
+    if (isNaN(numericAmount)) {
+      setValidationError('Please enter a valid numeric amount.');
+      return;
+    }
+    if (numericAmount < 300) {
+      setValidationError('Minimum billing charge is ₹300.');
+      return;
+    }
+    setValidationError('');
+    setOpenDialog(false);
+    onUpdateStatus(id, 'WORK_COMPLETED', { amount: numericAmount });
+  };
 
   const activeStep = getActiveStep(status);
 
@@ -236,7 +269,7 @@ const ActiveJobPanel = ({ booking, onUpdateStatus, actionLoading = false, onRefr
                 color={buttonColor}
                 fullWidth
                 size="large"
-                onClick={() => onUpdateStatus(id, nextStatus)}
+                onClick={handleButtonClick}
                 disabled={actionLoading}
                 startIcon={buttonIcon}
                 sx={{
@@ -260,6 +293,9 @@ const ActiveJobPanel = ({ booking, onUpdateStatus, actionLoading = false, onRefr
                   <Typography variant="body2" color="success.main" fontWeight="bold">
                     Job Successfully Finished!
                   </Typography>
+                  <Typography variant="body2" fontWeight="700" sx={{ my: 0.5 }}>
+                    Billed Amount: ₹{booking.amount}
+                  </Typography>
                   <Typography variant="caption" color="text.secondary">
                     Wait for payment processing from the customer's end.
                   </Typography>
@@ -267,10 +303,42 @@ const ActiveJobPanel = ({ booking, onUpdateStatus, actionLoading = false, onRefr
               </Box>
             )}
           </Grid>
-
-
         </Grid>
       </CardContent>
+
+      {/* Dialog for completing job with billing amount */}
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+        <DialogTitle sx={{ fontWeight: 'bold' }}>Job Completion & Billing</DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ mb: 2 }}>
+            Please enter the final amount to charge the customer. 
+            The <strong>minimum charge is ₹300</strong>, and it can increase based on the work done.
+          </DialogContentText>
+          <DialogContentText sx={{ mb: 3, fontStyle: 'italic', fontSize: '0.85rem' }}>
+            Note: If you negotiated a different final amount in person with the customer, enter that negotiated amount here.
+          </DialogContentText>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Total Billing Amount (₹)"
+            type="number"
+            fullWidth
+            variant="outlined"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            error={!!validationError}
+            helperText={validationError || "Enter amount in Rupees (e.g. 350)"}
+          />
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2.5 }}>
+          <Button onClick={() => setOpenDialog(false)} color="inherit">
+            Cancel
+          </Button>
+          <Button onClick={handleConfirmCompletion} variant="contained" color="success">
+            Complete & Charge
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Card>
   );
 };

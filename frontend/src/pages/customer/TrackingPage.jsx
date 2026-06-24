@@ -125,6 +125,12 @@ const TrackingPage = () => {
               {/* Status Stepper */}
               <BookingStatusStepper status={booking.status} />
 
+              {!isPaid && !isCompleted && (
+                <Alert severity="info" sx={{ mt: 3, borderRadius: 2 }}>
+                  <strong>Billing Info:</strong> The final service charge is decided by the worker (minimum ₹300) and may vary based on the work done. You can negotiate the amount in person with the worker, and they will enter the agreed amount when completing the work.
+                </Alert>
+              )}
+
               <Divider sx={{ my: 3 }} />
 
               <Typography variant="subtitle2" fontWeight="700" color="text.secondary" gutterBottom>
@@ -144,35 +150,49 @@ const TrackingPage = () => {
           </Card>
 
           {/* Action Triggers */}
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            {isRequested && (
-              <Button
-                variant="outlined"
-                color="error"
-                fullWidth
-                size="large"
-                startIcon={<Ban size={18} />}
-                disabled={cancelling}
-                onClick={handleCancelBooking}
-                sx={{ py: 1.2 }}
-              >
-                {cancelling ? 'Cancelling SOS Dispatch...' : 'Cancel SOS Request'}
-              </Button>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {isCompleted && (
+              <Alert severity="success" sx={{ width: '100%', borderRadius: 2 }}>
+                <strong>Final Amount: ₹{booking.amount}</strong>. The worker has marked the job as completed. Please proceed to payment.
+              </Alert>
             )}
 
-            {(isCompleted || isPaid) && (
-              <Button
-                variant="contained"
-                color="secondary"
-                fullWidth
-                size="large"
-                endIcon={<ChevronRight size={18} />}
-                onClick={() => navigate(isPaid ? `/customer/review/${booking.id}` : `/customer/pay/${booking.id}`)}
-                sx={{ py: 1.2 }}
-              >
-                {isPaid ? 'Submit Rating & Feedback' : 'Proceed to Payment'}
-              </Button>
+            {isPaid && (
+              <Alert severity="info" sx={{ width: '100%', borderRadius: 2 }}>
+                <strong>Paid Amount: ₹{booking.amount}</strong>. Booking is closed successfully.
+              </Alert>
             )}
+
+            <Box sx={{ display: 'flex', gap: 2, width: '100%' }}>
+              {isRequested && (
+                <Button
+                  variant="outlined"
+                  color="error"
+                  fullWidth
+                  size="large"
+                  startIcon={<Ban size={18} />}
+                  disabled={cancelling}
+                  onClick={handleCancelBooking}
+                  sx={{ py: 1.2 }}
+                >
+                  {cancelling ? 'Cancelling SOS Dispatch...' : 'Cancel SOS Request'}
+                </Button>
+              )}
+
+              {(isCompleted || isPaid) && (
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  fullWidth
+                  size="large"
+                  endIcon={<ChevronRight size={18} />}
+                  onClick={() => navigate(isPaid ? `/customer/review/${booking.id}` : `/customer/pay/${booking.id}`)}
+                  sx={{ py: 1.2 }}
+                >
+                  {isPaid ? 'Submit Rating & Feedback' : 'Proceed to Payment'}
+                </Button>
+              )}
+            </Box>
           </Box>
         </Grid>
 

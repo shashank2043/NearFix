@@ -87,7 +87,7 @@ public class BookingController {
     public ResponseEntity<BookingResponse> updateWorkerLocation(
             @PathVariable Long id,
             @RequestBody UpdateBookingStatusRequest request) {
-        BookingResponse response = bookingService.updateWorkerLocation(id, request.getWorkerLatitude(), request.getWorkerLongitude());
+        BookingResponse response = bookingService.updateWorkerLocation(id, request.workerLatitude(), request.workerLongitude());
         return ResponseEntity.ok(response);
     }
 

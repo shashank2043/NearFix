@@ -1,115 +1,92 @@
-# NearFix — Emergency Local Skill Marketplace
+# 🎨 NearFix Frontend — Emergency Skill UI Portals
 
-NearFix is a premium, high-fidelity real-time emergency service finder matching local skilled technicians (Electricians, Plumbers, Carpenters, etc.) directly with customers needing urgent fixes. Designed with a sleek, dark-navy and teal layout inspired by Grab and Bolt.
+Welcome to the React client repository of **NearFix**, a Grab/Bolt inspired emergency marketplace application. The client application contains portals custom-tailored for Customers, Workers, and System Administrators.
 
 ---
 
-## 🚀 Setup & Installation Instructions
+## 🚀 Key Features
 
-Follow these steps to run both the frontend React application and the mock database backend server locally:
+* **Sleek Aesthetics:** Grab/Bolt inspired layout utilizing primary deep navy base themes paired with glowing teal accents.
+* **Role-Based Access Control:** Custom redirects separating customer, worker, and admin panels.
+* **Real-time SOS Booking Workflow:** Stepper timeline illustrating booking status steps from `REQUESTED` to `PAID`.
+* **State Management:** Simple, lightweight state sharing using React Context APIs (Auth, Theme, Toast contexts).
+* **Analytics Engine:** Interactive metrics displays utilizing Recharts widgets.
 
-### 1. Prerequisite Installations
-Ensure you have [Node.js](https://nodejs.org/) installed (LTS version recommended).
+---
 
-### 2. Dependency Configuration
-Navigate to the `frontend/` directory and install required node modules:
-```bash
-cd frontend
-npm install --legacy-peer-deps
-```
+## 📁 Folder Structure Reference
 
-### 3. Start the Mock Database Server (`json-server`)
-NearFix uses `json-server` to mock live databases, authentication, and dispatch states. Spin up the backend API node on port `3001`:
-```bash
-npm run server
-# or directly:
-npx json-server --watch db.json --port 3001
-```
+Refer to this breakdown to locate layout templates, contexts, and API call actions:
 
-### 4. Boot the Vite Development Client
-With the backend server active, open another terminal window and start the React client:
-```bash
-cd frontend
-npm run dev
-```
-Open [http://localhost:5173/](http://localhost:5173/) in your browser to view the application.
+* **[src/api/](file:///D:/nearfix/frontend/src/api):** Axios request configuration files.
+  * [axiosInstance.js](file:///D:/nearfix/frontend/src/api/axiosInstance.js) — Base router instance dynamically reading session JWT headers.
+  * [authApi.js](file:///D:/nearfix/frontend/src/api/authApi.js) — Login/Register services.
+  * [bookingApi.js](file:///D:/nearfix/frontend/src/api/bookingApi.js) — SOS booking updates and assignment endpoints.
+  * [workerApi.js](file:///D:/nearfix/frontend/src/api/workerApi.js) — Worker details and status update controls.
+  * [paymentApi.js](file:///D:/nearfix/frontend/src/api/paymentApi.js) — Payment checkout calls.
+* **[src/context/](file:///D:/nearfix/frontend/src/context):** Core app state definitions.
+  * [AuthContext.jsx](file:///D:/nearfix/frontend/src/context/AuthContext.jsx) — Tracks session client object, token details, and login status.
+  * [ThemeContext.jsx](file:///D:/nearfix/frontend/src/context/ThemeContext.jsx) — Controls UI Light/Dark style modes.
+  * [ToastContext.jsx](file:///D:/nearfix/frontend/src/context/ToastContext.jsx) — Global user notification banners.
+* **[src/hooks/](file:///D:/nearfix/frontend/src/hooks):** Custom react wrappers mapping hooks to context values.
+  * [useAuth.js](file:///D:/nearfix/frontend/src/hooks/useAuth.js) — Session wrapper hooks.
+  * [useBooking.js](file:///D:/nearfix/frontend/src/hooks/useBooking.js) — Orchestrates booking state interactions.
+  * [useWorkers.js](file:///D:/nearfix/frontend/src/hooks/useWorkers.js) — Reads worker availability stats.
+* **[src/pages/](file:///D:/nearfix/frontend/src/pages):** App Portal Layouts.
+  * [auth/](file:///D:/nearfix/frontend/src/pages/auth) — Session Login and Register screen templates.
+  * [customer/](file:///D:/nearfix/frontend/src/pages/customer) — SOS selection, tracking HUD, checkouts, and reviews.
+  * [worker/](file:///D:/nearfix/frontend/src/pages/worker) — Active dispatch sheets, toggles, profile updates, and earnings analytics.
+  * [admin/](file:///D:/nearfix/frontend/src/pages/admin) — Management consoles, compliance charts, and verification sheets.
 
 ---
 
 ## 🔑 Portal Login Credentials
 
-Use the following seeded accounts to test different roles and flows on the platform. All accounts use standard passwords.
+NearFix includes realistic seed data in [db.json](file:///D:/nearfix/frontend/db.json) for immediate testing. All accounts use password `password123` (or `admin123` for administrators).
 
-### 👤 Customer Portal
-Access SOS booking sheets, request emergency technicians, and track active bookings in real-time.
-* **Email:** `amit@nearfix.com` | **Password:** `password123`
-* **Email:** `priya@nearfix.com` | **Password:** `password123`
-
-### 🛠️ Worker Portal
-Toggle live availability status, accept/reject incoming emergency dispatches, and track financial statements.
-* **Email:** `rajesh@nearfix.com` | **Password:** `password123` *(Electrician - Verified & Available)*
-* **Email:** `vikram@nearfix.com` | **Password:** `password123` *(Plumber - Verified & Busy)*
-* **Email:** `suresh@nearfix.com` | **Password:** `password123` *(Carpenter - Pending Admin Verification)*
-
-### 👑 Administration Console
-Oversee registration lists, verify incoming technician certifications, analyze revenue trends, and resolve customer complaints.
-* **Email:** `admin1@nearfix.com` | **Password:** `admin123`
-* **Email:** `admin2@nearfix.com` | **Password:** `admin123`
+| Role | Username / Email | Password | Details |
+| :--- | :--- | :--- | :--- |
+| **Customer** | `amit@nearfix.com` | `password123` | Active customer with past bookings. |
+| **Customer** | `priya@nearfix.com` | `password123` | Active customer profile. |
+| **Worker** | `rajesh@nearfix.com` | `password123` | Verified Electrician (Status: `AVAILABLE`). |
+| **Worker** | `vikram@nearfix.com` | `password123` | Verified Plumber (Status: `BUSY`). |
+| **Worker** | `suresh@nearfix.com` | `password123` | Carpenter (Status: `OFFLINE`, pending verification). |
+| **Admin** | `admin1@nearfix.com` | `admin123` | Main admin portal credentials. |
 
 ---
 
-## 📂 Project Folder Structure
+## 🚀 Setup & Installation Instructions
 
-```
-frontend/
-├── db.json                 # Simulated local database seed file
-├── package.json            # Configuration and third-party dependencies (MUI, Recharts, Lucide)
-├── index.html              # Main HTML entrypoint
-└── src/
-    ├── App.jsx             # React root mounting wrapper and context orchestration
-    ├── main.jsx            # Entry point bundle mounting
-    ├── index.css           # Global core styling definitions
-    ├── api/                # Axios instance endpoints
-    │   ├── axiosInstance.js
-    │   ├── authApi.js
-    │   ├── bookingApi.js
-    │   ├── workerApi.js
-    │   └── paymentApi.js
-    ├── assets/             # Global Material UI theme setup definitions
-    │   └── theme.js
-    ├── components/         # Modular layout segments
-    │   ├── common/         # Shared layouts (Navbar, Sidebar, Stepper components)
-    │   ├── customer/       # Customer-only panel elements
-    │   ├── worker/         # Worker availability toggles, charts, profiles
-    │   └── admin/          # Admin stats summaries and user registries
-    ├── context/            # React Context API global states
-    │   ├── AuthContext.jsx
-    │   ├── ThemeContext.jsx
-    │   └── ToastContext.jsx
-    ├── hooks/              # Custom React hooks encapsulating business logic
-    │   ├── useAuth.js
-    │   ├── useBooking.js
-    │   ├── useWorkers.js
-    │   ├── useTheme.js
-    │   └── useToast.js
-    ├── pages/              # Portal page-level containers
-    │   ├── auth/           # Login & registration panels
-    │   ├── customer/       # SOS selector, live status tracking, checkout
-    │   ├── worker/         # Dashboard, Active HUD, statement sheets
-    │   └── admin/          # Console layouts, graphs, and compliance tables
-    ├── routes/             # App routing rules & Protected Routes configurations
-    │   └── AppRoutes.jsx
-    └── utils/              # Helper utilities and constant lists
-        ├── constants.js
-        └── helpers.js
+### 1. Prerequisites
+Ensure you have [Node.js LTS](https://nodejs.org/) installed on your machine.
+
+### 2. Dependency Installation
+Navigate to the [frontend](file:///D:/nearfix/frontend) directory and install the packages:
+```bash
+cd frontend
+npm install --legacy-peer-deps
 ```
 
----
+### 3. Running with Mock Data Server (`json-server`)
+If you want to run the frontend independently using the simulated mock database:
+```bash
+npm run server
+```
+This boots up a mock REST endpoint on `http://localhost:3001` matching the schema inside [db.json](file:///D:/nearfix/frontend/db.json).
 
-## 📸 Screenshots
+### 4. Running with the Live Microservices Backend
+To direct API requests to the live backend services:
+1. Ensure your Spring Boot services are active, running on port `8080` (API Gateway).
+2. Modify the `baseURL` inside [axiosInstance.js](file:///D:/nearfix/frontend/src/api/axiosInstance.js) to target port `8080`:
+   ```javascript
+   const axiosInstance = axios.create({
+     baseURL: 'http://localhost:8080',
+   });
+   ```
 
-*Place visual walkthrough images here once running in your development environment.*
-
-| Mobile Dispatch Tracking | Desktop Financial Metrics | Admin Compliance Console |
-| :---: | :---: | :---: |
-| *[Tracking HUD]* | *[Earnings Graph]* | *[Worker compliance]* |
+### 5. Running the Client App
+Start the Vite development web server:
+```bash
+npm run dev
+```
+Open [http://localhost:5173/](http://localhost:5173/) to access the portal dashboard.

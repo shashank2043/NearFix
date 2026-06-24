@@ -44,6 +44,9 @@ public class Booking {
     @Column(name = "distance")
     private Double distance;
 
+    @Column(name = "amount")
+    private Double amount;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 

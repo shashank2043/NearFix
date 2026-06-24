@@ -56,7 +56,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         } catch (Exception e) {
-            // Ignore token validation exception and let request continue
         }
         
         filterChain.doFilter(request, response);

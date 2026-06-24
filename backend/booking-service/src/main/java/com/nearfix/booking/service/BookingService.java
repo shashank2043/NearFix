@@ -15,13 +15,13 @@ import com.nearfix.booking.exception.BadRequestException;
 import com.nearfix.booking.exception.ConflictException;
 import com.nearfix.booking.exception.ResourceNotFoundException;
 import com.nearfix.booking.exception.UnauthorizedException;
+import com.nearfix.booking.mapper.BookingMapper;
 import com.nearfix.booking.repository.BookingRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -33,6 +33,7 @@ public class BookingService {
     private final AuthClient authClient;
     private final WorkerClient workerClient;
     private final NotificationClient notificationClient;
+    private final BookingMapper bookingMapper;
 
     private static final List<BookingStatus> ACTIVE_STATUSES = List.of(
             BookingStatus.REQUESTED,
@@ -46,15 +47,14 @@ public class BookingService {
     public BookingResponse createBooking(Long customerId, String customerRole, CreateBookingRequest request) {
         log.info("Creating booking for customerId: {}, role: {}", customerId, customerRole);
 
-        // Validation: Only CUSTOMER can create bookings
+
         if (!"CUSTOMER".equalsIgnoreCase(customerRole)) {
             throw new UnauthorizedException("Only customers are authorized to create bookings");
         }
 
-        // Validation: Customer must exist and be active
         try {
             UserDto user = authClient.getUserById(customerId);
-            if (user == null || !Boolean.TRUE.equals(user.getActive())) {
+            if (user == null || !Boolean.TRUE.equals(user.active())) {
                 throw new BadRequestException("Customer is inactive or not found");
             }
         } catch (Exception e) {
@@ -62,31 +62,27 @@ public class BookingService {
             throw new BadRequestException("Failed to validate customer. Auth Service unavailable or user not found.");
         }
 
-        // Validation: No duplicate active requests for the same service type
         boolean exists = bookingRepository.existsByCustomerIdAndServiceTypeAndStatusIn(
-                customerId, request.getServiceType(), ACTIVE_STATUSES);
+                customerId, request.serviceType(), ACTIVE_STATUSES);
         if (exists) {
-            throw new ConflictException("You already have an active request for service type: " + request.getServiceType());
+            throw new ConflictException("You already have an active request for service type: " + request.serviceType());
         }
 
         Booking booking = Booking.builder()
                 .customerId(customerId)
-                .serviceType(request.getServiceType())
-                .issueDescription(request.getIssueDescription())
-                .address(request.getAddress())
-                .city(request.getCity())
+                .serviceType(request.serviceType())
+                .issueDescription(request.issueDescription())
+                .address(request.address())
+                .city(request.city())
                 .status(BookingStatus.REQUESTED)
                 .build();
 
         Booking saved = bookingRepository.save(booking);
 
-        // Send Notification
         sendNotificationSafely(customerId, "Booking Created",
-                "Your request for " + request.getServiceType() + " service has been submitted successfully.");
+                "Your request for " + request.serviceType() + " service has been submitted successfully.");
 
-
-
-        return mapToResponse(saved);
+        return bookingMapper.toResponse(saved);
     }
 
     @Transactional(readOnly = true)
@@ -95,17 +91,17 @@ public class BookingService {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + id));
 
-        // Customers can only see their own bookings
+
         if ("CUSTOMER".equalsIgnoreCase(userRole) && !booking.getCustomerId().equals(userId)) {
             throw new UnauthorizedException("Access denied: You can only view your own bookings");
         }
 
-        // Workers can only see their own bookings if assigned
+
         if ("WORKER".equalsIgnoreCase(userRole) && !userId.equals(booking.getWorkerId())) {
             throw new UnauthorizedException("Access denied: You are not assigned to this booking");
         }
 
-        return mapToResponse(booking);
+        return bookingMapper.toResponse(booking);
     }
 
     @Transactional(readOnly = true)
@@ -113,7 +109,7 @@ public class BookingService {
         log.info("Fetching bookings for customer: {}", customerId);
         return bookingRepository.findByCustomerIdOrderByCreatedAtDesc(customerId)
                 .stream()
-                .map(this::mapToResponse)
+                .map(bookingMapper::toResponse)
                 .toList();
     }
 
@@ -122,7 +118,7 @@ public class BookingService {
         log.info("Fetching bookings for worker: {}", workerId);
         return bookingRepository.findByWorkerIdOrderByCreatedAtDesc(workerId)
                 .stream()
-                .map(this::mapToResponse)
+                .map(bookingMapper::toResponse)
                 .toList();
     }
 
@@ -147,24 +143,23 @@ public class BookingService {
             throw new ConflictException("Worker can only be assigned to REQUESTED bookings");
         }
 
-        // Validate Worker Profile
+
         try {
             WorkerProfileResponse workerProfile = workerClient.getWorkerProfile(workerId);
             if (workerProfile == null) {
                 throw new BadRequestException("Worker profile not found");
             }
-            if (!Boolean.TRUE.equals(workerProfile.getVerified())) {
+            if (!Boolean.TRUE.equals(workerProfile.verified())) {
                 throw new BadRequestException("Worker is not verified");
             }
-            if (!"AVAILABLE".equalsIgnoreCase(workerProfile.getStatus())) {
-                throw new BadRequestException("Worker is not available (Status: " + workerProfile.getStatus() + ")");
+            if (!"AVAILABLE".equalsIgnoreCase(workerProfile.status())) {
+                throw new BadRequestException("Worker is not available (Status: " + workerProfile.status() + ")");
             }
         } catch (Exception e) {
             log.error("Failed to validate worker details with Worker Service", e);
             throw new BadRequestException("Failed to validate worker details. Worker Service unavailable or worker not found.");
         }
 
-        // Verify worker has no other active booking (ACCEPTED, ON_THE_WAY, WORK_STARTED, WORK_COMPLETED)
         List<Booking> workerBookings = bookingRepository.findByWorkerIdOrderByCreatedAtDesc(workerId);
         boolean hasActive = workerBookings.stream()
                 .anyMatch(b -> b.getStatus() == BookingStatus.ACCEPTED 
@@ -177,19 +172,19 @@ public class BookingService {
         }
 
         booking.setWorkerId(workerId);
-        // "Once assigned: workerId is populated, status remains REQUESTED until accepted"
+
         Booking saved = bookingRepository.save(booking);
 
-        // Notify Worker
+
         sendNotificationSafely(workerId, "New Job Assignment",
                 "You have been assigned to booking #" + bookingId + ". Please accept or reject.");
 
-        return mapToResponse(saved);
+        return bookingMapper.toResponse(saved);
     }
 
     @Transactional
     public BookingResponse updateBookingStatus(Long id, Long userId, String userRole, UpdateBookingStatusRequest request) {
-        BookingStatus newStatus = request.getStatus();
+        BookingStatus newStatus = request.status();
         log.info("Updating booking: {} to status: {} by user: {}, role: {}", id, newStatus, userId, userRole);
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + id));
@@ -203,12 +198,11 @@ public class BookingService {
             throw new ConflictException("Paid bookings are closed and cannot be modified");
         }
 
-        // Handle Cancellation separate flow
         if (newStatus == BookingStatus.CANCELLED) {
             return cancelBooking(booking, userId, userRole);
         }
 
-        // State transitions workflow validation
+
         switch (currentStatus) {
             case REQUESTED:
                 if (newStatus == BookingStatus.REQUESTED) {
@@ -224,16 +218,16 @@ public class BookingService {
                 if (newStatus != BookingStatus.ACCEPTED) {
                     throw new ConflictException("Invalid transition from REQUESTED to " + newStatus);
                 }
-                // Acceptance rules
+
                 if (!"WORKER".equalsIgnoreCase(userRole)) {
                     throw new UnauthorizedException("Only workers can accept booking");
                 }
-                // Duplicate acceptance conflict check (First-to-accept wins)
+
                 if (booking.getWorkerId() != null && !userId.equals(booking.getWorkerId())) {
                     throw new ConflictException("This emergency dispatch has already been accepted by another responder.");
                 }
                 
-                // Change status of worker to BUSY in Worker service
+
                 try {
                     workerClient.updateWorkerStatus(userId, "BUSY");
                 } catch (Exception e) {
@@ -243,19 +237,18 @@ public class BookingService {
                 
                 booking.setWorkerId(userId);
                 booking.setStatus(BookingStatus.ACCEPTED);
-                booking.setWorkerLocation(formatCoordinates(request.getWorkerLatitude(), request.getWorkerLongitude()));
+                booking.setWorkerLocation(formatCoordinates(request.workerLatitude(), request.workerLongitude()));
                 
                 Double[] custCoords = parseCoordinates(booking.getAddress());
-                if (custCoords != null && request.getWorkerLatitude() != null && request.getWorkerLongitude() != null) {
-                    Double dist = calculateHaversineDistance(request.getWorkerLatitude(), request.getWorkerLongitude(), custCoords[0], custCoords[1]);
+                if (custCoords != null && request.workerLatitude() != null && request.workerLongitude() != null) {
+                    Double dist = calculateHaversineDistance(request.workerLatitude(), request.workerLongitude(), custCoords[0], custCoords[1]);
                     if (dist != null) {
                         booking.setDistance(Math.round(dist * 100.0) / 100.0);
                     }
                 } else {
-                    booking.setDistance(request.getDistance());
+                    booking.setDistance(request.distance());
                 }
                 
-                // Notify Customer
                 sendNotificationSafely(booking.getCustomerId(), "Booking Accepted", 
                         "Your service request has been accepted by the worker.");
                 break;
@@ -266,10 +259,6 @@ public class BookingService {
                 }
                 validateWorkerAccess(booking, userId, userRole);
                 booking.setStatus(BookingStatus.ON_THE_WAY);
-                
-                // Notify Customer
-                sendNotificationSafely(booking.getCustomerId(), "Worker On The Way", 
-                        "Your assigned worker is on their way.");
                 break;
 
             case ON_THE_WAY:
@@ -278,10 +267,7 @@ public class BookingService {
                 }
                 validateWorkerAccess(booking, userId, userRole);
                 booking.setStatus(BookingStatus.WORK_STARTED);
-                
-                // Notify Customer
-                sendNotificationSafely(booking.getCustomerId(), "Work Started", 
-                        "The worker has started the emergency service.");
+
                 break;
 
             case WORK_STARTED:
@@ -289,29 +275,35 @@ public class BookingService {
                     throw new ConflictException("Invalid transition from WORK_STARTED to " + newStatus);
                 }
                 validateWorkerAccess(booking, userId, userRole);
+                if (request.amount() == null) {
+                    throw new BadRequestException("Total amount is required to complete the work");
+                }
+                if (request.amount() < 300.0) {
+                    throw new BadRequestException("Minimum charge is 300");
+                }
+                booking.setAmount(request.amount());
                 booking.setStatus(BookingStatus.WORK_COMPLETED);
                 
-                // Notify Customer
+
                 sendNotificationSafely(booking.getCustomerId(), "Work Completed", 
-                        "The worker has completed the service. Please make payment.");
+                        "The worker has completed the service. Total amount to be paid: ₹" + request.amount() + ". Please make payment.");
                 break;
 
             case WORK_COMPLETED:
                 if (newStatus != BookingStatus.PAID) {
                     throw new ConflictException("Invalid transition from WORK_COMPLETED to " + newStatus);
                 }
-                // PAID is generally triggered by Payment Service
-                // Make sure payment service is calling or we are updating status
+
                 booking.setStatus(BookingStatus.PAID);
                 
-                // Worker goes back to AVAILABLE status since the booking is PAID (job completed)
+
                 try {
                     workerClient.updateWorkerStatus(booking.getWorkerId(), "AVAILABLE");
                 } catch (Exception e) {
                     log.error("Failed to set worker status back to AVAILABLE", e);
                 }
                 
-                // Notify Customer & Worker
+
                 sendNotificationSafely(booking.getCustomerId(), "Payment Successful", 
                         "Payment verified. Booking #" + booking.getId() + " is now completed.");
                 sendNotificationSafely(booking.getWorkerId(), "Payment Received", 
@@ -323,14 +315,14 @@ public class BookingService {
         }
 
         Booking saved = bookingRepository.save(booking);
-        return mapToResponse(saved);
+        return bookingMapper.toResponse(saved);
     }
 
     private BookingResponse cancelBooking(Booking booking, Long userId, String userRole) {
         BookingStatus currentStatus = booking.getStatus();
 
         if ("CUSTOMER".equalsIgnoreCase(userRole)) {
-            // Customer can cancel: Before ACCEPTED (i.e. only when status is REQUESTED)
+
             if (currentStatus != BookingStatus.REQUESTED) {
                 throw new ConflictException("Customers can only cancel bookings before they are accepted");
             }
@@ -338,7 +330,7 @@ public class BookingService {
                 throw new UnauthorizedException("You are not authorized to cancel this booking");
             }
         } else if ("WORKER".equalsIgnoreCase(userRole)) {
-            // Worker can cancel: Before WORK_STARTED (i.e. when status is ACCEPTED or ON_THE_WAY)
+
             if (currentStatus != BookingStatus.ACCEPTED && currentStatus != BookingStatus.ON_THE_WAY) {
                 throw new ConflictException("Workers can only cancel bookings before work starts");
             }
@@ -346,7 +338,7 @@ public class BookingService {
                 throw new UnauthorizedException("You are not the worker assigned to this booking");
             }
 
-            // Release worker status to AVAILABLE
+
             try {
                 workerClient.updateWorkerStatus(booking.getWorkerId(), "AVAILABLE");
             } catch (Exception e) {
@@ -359,7 +351,6 @@ public class BookingService {
         booking.setStatus(BookingStatus.CANCELLED);
         Booking saved = bookingRepository.save(booking);
 
-        // Notifications
         sendNotificationSafely(booking.getCustomerId(), "Booking Cancelled", 
                 "Booking #" + booking.getId() + " has been cancelled.");
         if (booking.getWorkerId() != null) {
@@ -367,7 +358,7 @@ public class BookingService {
                     "Booking #" + booking.getId() + " has been cancelled.");
         }
 
-        return mapToResponse(saved);
+        return bookingMapper.toResponse(saved);
     }
 
     private void validateWorkerAccess(Booking booking, Long userId, String userRole) {
@@ -382,8 +373,8 @@ public class BookingService {
     private void sendNotificationSafely(Long userId, String subject, String message) {
         try {
             UserDto user = authClient.getUserById(userId);
-            if (user != null && user.getEmail() != null) {
-                notificationClient.sendNotification(new NotificationRequest(user.getEmail(), subject, message));
+            if (user != null && user.email() != null) {
+                notificationClient.sendNotification(new NotificationRequest(user.email(), subject, message));
             } else {
                 log.warn("Could not send notification to user {}: User or email not found", userId);
             }
@@ -397,36 +388,8 @@ public class BookingService {
         log.info("Fetching all bookings in the system");
         return bookingRepository.findAll()
                 .stream()
-                .map(this::mapToResponse)
+                .map(bookingMapper::toResponse)
                 .toList();
-    }
-
-    private BookingResponse mapToResponse(Booking booking) {
-        Double lat = null;
-        Double lon = null;
-        if (booking.getWorkerLocation() != null) {
-            Double[] coords = parseCoordinates(booking.getWorkerLocation());
-            if (coords != null) {
-                lat = coords[0];
-                lon = coords[1];
-            }
-        }
-        return new BookingResponse(
-                booking.getId(),
-                booking.getId(),
-                booking.getCustomerId(),
-                booking.getWorkerId(),
-                booking.getServiceType(),
-                booking.getIssueDescription(),
-                booking.getAddress(),
-                booking.getCity(),
-                booking.getStatus(),
-                booking.getCreatedAt(),
-                lat,
-                lon,
-                booking.getWorkerLocation(),
-                booking.getDistance()
-        );
     }
 
     @Transactional(readOnly = true)
@@ -435,7 +398,7 @@ public class BookingService {
         return bookingRepository.findByStatusAndWorkerIdIsNullAndServiceTypeAndCity(
                 BookingStatus.REQUESTED, skill, city)
                 .stream()
-                .map(this::mapToResponse)
+                .map(bookingMapper::toResponse)
                 .toList();
     }
 
@@ -451,13 +414,12 @@ public class BookingService {
         if (custCoords != null && workerLatitude != null && workerLongitude != null) {
             Double distance = calculateHaversineDistance(workerLatitude, workerLongitude, custCoords[0], custCoords[1]);
             if (distance != null) {
-                // Round to 2 decimal places
                 booking.setDistance(Math.round(distance * 100.0) / 100.0);
             }
         }
 
         Booking saved = bookingRepository.save(booking);
-        return mapToResponse(saved);
+        return bookingMapper.toResponse(saved);
     }
 
     private Double calculateHaversineDistance(Double lat1, Double lon1, Double lat2, Double lon2) {
@@ -476,7 +438,6 @@ public class BookingService {
 
     private Double[] parseCoordinates(String addressStr) {
         if (addressStr == null) return null;
-        // Match patterns like "Coordinates: 12.971600° N, 77.594600° E"
         java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(-?\\d+\\.\\d+)\\s*°?\\s*([NSEW]?)");
         java.util.regex.Matcher matcher = pattern.matcher(addressStr);
         Double lat = null;

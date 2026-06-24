@@ -106,7 +106,7 @@ const PaymentPage = () => {
       // 2. Submit payment request to backend to create Razorpay Order and get transactionId
       const paymentResponse = await paymentApi.createPayment({
         bookingId: booking.id,
-        amount: 500, // standard emergency base callout rate
+        amount: booking.amount, 
       });
 
       const razorpayKey = paymentResponse.keyId || 'rzp_test_5g6h7i8j9k0l1m';
@@ -115,7 +115,7 @@ const PaymentPage = () => {
       // 3. Configure Razorpay checkout options
       const options = {
         key: razorpayKey,
-        amount: 500 * 100, // amount in paise
+        amount: booking.amount * 100, // amount in paise
         currency: 'INR',
         name: 'NearFix Portal',
         description: `Emergency Service Booking #${booking.id}`,
@@ -334,7 +334,7 @@ const PaymentPage = () => {
                     Total Amount Due
                   </Typography>
                   <Typography variant="h5" fontWeight="800" color="secondary.main">
-                    {formatCurrency(500)}
+                    {formatCurrency(booking.amount)}
                   </Typography>
                 </Box>
               </Box>
