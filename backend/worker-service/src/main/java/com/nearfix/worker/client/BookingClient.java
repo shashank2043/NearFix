@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @FeignClient(name = "booking-service", url = "${booking.service.url:http://localhost:8083}")
 public interface BookingClient {
-
     @GetMapping("/api/bookings/worker/has-active")
     Boolean hasActiveBooking(@RequestParam("workerId") Long workerId);
 }

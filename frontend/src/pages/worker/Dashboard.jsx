@@ -49,6 +49,7 @@ const Dashboard = () => {
   const [earnings, setEarnings] = useState(0);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [cities, setCities] = useState([]);
 
   // Profile Formik Form
   const profileFormik = useFormik({
@@ -101,6 +102,14 @@ const Dashboard = () => {
     try {
       setLoading(true);
       setError('');
+
+      // Fetch operating cities
+      try {
+        const list = await workerApi.getCities();
+        setCities(list);
+      } catch (err) {
+        console.warn('Could not load operating cities list:', err);
+      }
 
       // 1. Fetch Worker Profile
       let profile;
@@ -550,16 +559,26 @@ const Dashboard = () => {
                 />
 
                 <TextField
+                  select
                   name="city"
                   label="Operating City"
-                  placeholder="Enter city you operate in"
                   value={profileFormik.values.city}
                   onChange={profileFormik.handleChange}
                   onBlur={profileFormik.handleBlur}
                   error={profileFormik.touched.city && Boolean(profileFormik.errors.city)}
                   helperText={profileFormik.touched.city && profileFormik.errors.city}
                   fullWidth
-                />
+                >
+                  {(cities.length > 0 ? cities : [
+                    { id: 'blr', name: 'Bangalore' },
+                    { id: 'mum', name: 'Mumbai' },
+                    { id: 'del', name: 'Delhi' }
+                  ]).map((cityObj) => (
+                    <MenuItem key={cityObj.id} value={cityObj.name}>
+                      {cityObj.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
 
                 <Button
                   type="submit"

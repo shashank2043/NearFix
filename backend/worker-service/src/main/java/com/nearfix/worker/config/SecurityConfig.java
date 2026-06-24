@@ -24,6 +24,9 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/workers/profile/{id}", "/api/workers/search", "/api/workers/available").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/workers/cities").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/workers/cities").hasRole("ADMIN")
+                .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/workers/cities/**").hasRole("ADMIN")
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/api/workers/profile/*/verify").hasRole("ADMIN")
                 .requestMatchers("/api/workers/profile", "/api/workers/status").hasRole("WORKER")

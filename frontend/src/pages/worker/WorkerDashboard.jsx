@@ -39,6 +39,7 @@ const WorkerDashboard = () => {
 
   const [profile, setProfile] = useState(null);
   const [bookings, setBookings] = useState([]);
+  const [cities, setCities] = useState([]);
   const [availableRequests, setAvailableRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -94,6 +95,15 @@ const WorkerDashboard = () => {
     if (!user?.id) return;
     try {
       setError('');
+      
+      // Fetch operating cities
+      try {
+        const list = await workerApi.getCities();
+        setCities(list);
+      } catch (err) {
+        console.warn('Could not load operating cities list:', err);
+      }
+
       // Fetch profile
       let workerProfile = null;
       try {
@@ -221,16 +231,26 @@ const WorkerDashboard = () => {
                 />
 
                 <TextField
+                  select
                   name="city"
                   label="Operating City"
-                  placeholder="Enter city you serve (e.g. Bangalore)"
                   value={profileFormik.values.city}
                   onChange={profileFormik.handleChange}
                   onBlur={profileFormik.handleBlur}
                   error={profileFormik.touched.city && Boolean(profileFormik.errors.city)}
                   helperText={profileFormik.touched.city && profileFormik.errors.city}
                   fullWidth
-                />
+                >
+                  {(cities.length > 0 ? cities : [
+                    { id: 'blr', name: 'Bangalore' },
+                    { id: 'mum', name: 'Mumbai' },
+                    { id: 'del', name: 'Delhi' }
+                  ]).map((cityObj) => (
+                    <MenuItem key={cityObj.id} value={cityObj.name}>
+                      {cityObj.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
 
                 <TextField
                   name="aadhaarNumber"

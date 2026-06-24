@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import TextField from '@mui/material/TextField';
@@ -9,6 +9,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import Alert from '@mui/material/Alert';
 import { MapPin, Wrench, Navigation, Loader2 } from 'lucide-react';
 import { SERVICE_TYPES } from '../../utils/constants';
+import { workerApi } from '../../api/workerApi';
 
 // Form validation schema matching booking-service constraints
 const bookingSchema = Yup.object().shape({
@@ -33,6 +34,19 @@ const bookingSchema = Yup.object().shape({
 const EmergencyRequestForm = ({ initialService = 'Electrician', onSubmit, loading }) => {
   const [detecting, setDetecting] = useState(false);
   const [locError, setLocError] = useState('');
+  const [cities, setCities] = useState([]);
+
+  useEffect(() => {
+    const fetchCities = async () => {
+      try {
+        const list = await workerApi.getCities();
+        setCities(list);
+      } catch (err) {
+        console.warn('Could not load operating cities list:', err);
+      }
+    };
+    fetchCities();
+  }, []);
 
   const formik = useFormik({
     initialValues: {
@@ -65,10 +79,16 @@ const EmergencyRequestForm = ({ initialService = 'Electrician', onSubmit, loadin
       },
       (error) => {
         console.error('Geolocation error:', error);
-        // Fallback: mock coordinates if permission is blocked or timeout occurs
-        const coordinatesStr = 'Coordinates: 12.971600° N, 77.594600° E (Detected Location)';
-        formik.setFieldValue('address', coordinatesStr);
-        setLocError('Exact GPS access timed out or was blocked. Using local default dispatch coordinates.');
+        // Fallback: mock coordinates based on selected city if permission blocked/timeout
+        const selectedCity = formik.values.city || 'Bangalore';
+        let fallbackStr = 'Coordinates: 12.971600° N, 77.594600° E (Detected Location)'; // default Bangalore
+        if (selectedCity.toLowerCase() === 'delhi') {
+          fallbackStr = 'Coordinates: 28.613900° N, 77.209000° E (Detected Location)';
+        } else if (selectedCity.toLowerCase() === 'mumbai') {
+          fallbackStr = 'Coordinates: 19.076000° N, 72.877700° E (Detected Location)';
+        }
+        formik.setFieldValue('address', fallbackStr);
+        setLocError(`GPS access was blocked or timed out. Snapped to default dispatch center in ${selectedCity}.`);
         setDetecting(false);
       },
       { enableHighAccuracy: true, timeout: 5000 }
@@ -162,16 +182,26 @@ const EmergencyRequestForm = ({ initialService = 'Electrician', onSubmit, loadin
         />
 
         <TextField
+          select
           name="city"
           label="Dispatch City"
-          placeholder="Enter city (e.g. Bangalore)"
           value={formik.values.city}
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
           error={formik.touched.city && Boolean(formik.errors.city)}
           helperText={formik.touched.city && formik.errors.city}
           fullWidth
-        />
+        >
+          {(cities.length > 0 ? cities : [
+            { id: 'blr', name: 'Bangalore' },
+            { id: 'del', name: 'Delhi' },
+            { id: 'mum', name: 'Mumbai' }
+          ]).map((cityObj) => (
+            <MenuItem key={cityObj.id} value={cityObj.name}>
+              {cityObj.name}
+            </MenuItem>
+          ))}
+        </TextField>
 
         <Button
           type="submit"

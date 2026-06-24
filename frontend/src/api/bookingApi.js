@@ -62,6 +62,14 @@ export const bookingApi = {
     return response.data;
   },
 
+  updateWorkerLocation: async (bookingId, lat, lng) => {
+    const response = await axiosInstance.put(`/api/bookings/${bookingId}/worker-location`, {
+      workerLatitude: lat,
+      workerLongitude: lng
+    });
+    return response.data;
+  },
+
   /**
    * Assigns a worker to a specific booking and transitions its status to ACCEPTED.
    * @param {string} bookingId

@@ -15,7 +15,8 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Alert from '@mui/material/Alert';
-import { Users, ShieldCheck, HardDrive, IndianRupee, ArrowRight, UserPlus } from 'lucide-react';
+import TextField from '@mui/material/TextField';
+import { Users, ShieldCheck, HardDrive, IndianRupee, ArrowRight, UserPlus, Plus, Trash2, MapPin } from 'lucide-react';
 
 import { authApi } from '../../api/authApi';
 import { workerApi } from '../../api/workerApi';
@@ -43,6 +44,13 @@ const AdminDashboard = () => {
   const [bookings, setBookings] = useState([]);
   const [payments, setPayments] = useState([]);
 
+  // Operating Cities States
+  const [cities, setCities] = useState([]);
+  const [newCityName, setNewCityName] = useState('');
+  const [cityActionLoading, setCityActionLoading] = useState(false);
+  const [cityError, setCityError] = useState('');
+  const [citySuccess, setCitySuccess] = useState('');
+
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -59,11 +67,57 @@ const AdminDashboard = () => {
 
       const allUsers = await authApi.getUserById('');
       setUsers(Array.isArray(allUsers) ? allUsers : [allUsers]);
+
+      // Fetch Operating Cities
+      try {
+        const allCities = await workerApi.getCities();
+        setCities(allCities);
+      } catch (err) {
+        console.error('Failed to load cities:', err);
+      }
     } catch (err) {
       console.error(err);
       setError('Error compiling administration statistics. Ensure service nodes are active.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAddCity = async (e) => {
+    e.preventDefault();
+    if (!newCityName.trim()) return;
+    setCityActionLoading(true);
+    setCityError('');
+    setCitySuccess('');
+    try {
+      const created = await workerApi.createCity(newCityName.trim());
+      setCities((prev) => [...prev, created]);
+      setNewCityName('');
+      setCitySuccess(`City "${created.name}" added successfully.`);
+    } catch (err) {
+      console.error(err);
+      setCityError(err.response?.data?.message || 'Failed to add operating city. Ensure city is unique.');
+    } finally {
+      setCityActionLoading(false);
+    }
+  };
+
+  const handleDeleteCity = async (cityId, cityName) => {
+    if (!window.confirm(`Are you sure you want to remove "${cityName}" from operating cities?`)) {
+      return;
+    }
+    setCityActionLoading(true);
+    setCityError('');
+    setCitySuccess('');
+    try {
+      await workerApi.deleteCity(cityId);
+      setCities((prev) => prev.filter((c) => c.id !== cityId));
+      setCitySuccess(`City "${cityName}" removed successfully.`);
+    } catch (err) {
+      console.error(err);
+      setCityError(err.response?.data?.message || 'Failed to remove operating city.');
+    } finally {
+      setCityActionLoading(false);
     }
   };
 
@@ -315,6 +369,133 @@ const AdminDashboard = () => {
             <UserTable users={users} />
           </CardContent>
         </Card>
+      </Box>
+
+      {/* Row 5: Operating Cities Management */}
+      <Box sx={{ mt: 4, mb: 4 }}>
+        <Grid container spacing={3}>
+          {/* Left Column: Add Operating City Form */}
+          <Grid size={{ xs: 12, md: 5 }}>
+            <Card sx={{ height: '100%' }}>
+              <CardContent sx={{ p: 3, display: 'flex', flexDirection: 'column', height: '100%' }}>
+                <Typography variant="subtitle1" fontWeight="800" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <MapPin size={20} /> Add Operating City
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                  Introduce a new location where NearFix emergency dispatch agents operate.
+                </Typography>
+
+                {(cityError || citySuccess) && (
+                  <Box sx={{ mb: 2 }}>
+                    {cityError && (
+                      <Alert severity="error" onClose={() => setCityError('')} sx={{ borderRadius: 2 }}>
+                        {cityError}
+                      </Alert>
+                    )}
+                    {citySuccess && (
+                      <Alert severity="success" onClose={() => setCitySuccess('')} sx={{ borderRadius: 2 }}>
+                        {citySuccess}
+                      </Alert>
+                    )}
+                  </Box>
+                )}
+
+                <Box component="form" onSubmit={handleAddCity} sx={{ mt: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <TextField
+                    fullWidth
+                    label="City Name"
+                    placeholder="e.g. Hyderabad"
+                    value={newCityName}
+                    onChange={(e) => setNewCityName(e.target.value)}
+                    disabled={cityActionLoading}
+                    slotProps={{
+                      input: {
+                        sx: { borderRadius: 2 }
+                      }
+                    }}
+                  />
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    color="secondary"
+                    disabled={cityActionLoading || !newCityName.trim()}
+                    startIcon={<Plus size={18} />}
+                    sx={{ py: 1.2, fontWeight: 700, borderRadius: 2 }}
+                  >
+                    {cityActionLoading ? 'Adding City...' : 'Add Operating City'}
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Right Column: Operating Cities List */}
+          <Grid size={{ xs: 12, md: 7 }}>
+            <Card sx={{ height: '100%' }}>
+              <CardContent sx={{ p: 3, display: 'flex', flexDirection: 'column', height: '100%' }}>
+                <Typography variant="subtitle1" fontWeight="800" sx={{ mb: 2 }}>
+                  Active Service Locations
+                </Typography>
+
+                {cities.length === 0 ? (
+                  <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', flexGrow: 1, py: 4 }}>
+                    <MapPin size={36} color={theme.palette.text.secondary} />
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5 }}>
+                      No operating cities configured. System will fallback to standard defaults.
+                    </Typography>
+                  </Box>
+                ) : (
+                  <TableContainer
+                    component={Paper}
+                    sx={{
+                      boxShadow: 'none',
+                      border: `1px solid ${theme.palette.divider}`,
+                      borderRadius: 2,
+                      maxHeight: 280,
+                      overflowY: 'auto'
+                    }}
+                  >
+                    <Table size="small" stickyHeader>
+                      <TableHead sx={{ bgcolor: theme.palette.mode === 'light' ? '#F8FAFC' : '#070D19' }}>
+                        <TableRow>
+                          <TableCell sx={{ fontWeight: 800 }}>ID</TableCell>
+                          <TableCell sx={{ fontWeight: 800 }}>City Name</TableCell>
+                          <TableCell sx={{ fontWeight: 800 }} align="right">Actions</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {cities.map((cityObj) => (
+                          <TableRow
+                            key={cityObj.id}
+                            sx={{
+                              '&:last-child td, &:last-child th': { border: 0 },
+                              '&:hover': { bgcolor: theme.palette.mode === 'light' ? 'rgba(0, 180, 216, 0.02)' : 'rgba(0, 245, 212, 0.02)' }
+                            }}
+                          >
+                            <TableCell sx={{ fontWeight: '700' }}>#{cityObj.id}</TableCell>
+                            <TableCell sx={{ fontWeight: '600' }}>{cityObj.name}</TableCell>
+                            <TableCell align="right">
+                              <Button
+                                size="small"
+                                color="error"
+                                onClick={() => handleDeleteCity(cityObj.id, cityObj.name)}
+                                disabled={cityActionLoading}
+                                startIcon={<Trash2 size={14} />}
+                                sx={{ fontWeight: 700 }}
+                              >
+                                Delete
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
       </Box>
     </Container>
   );

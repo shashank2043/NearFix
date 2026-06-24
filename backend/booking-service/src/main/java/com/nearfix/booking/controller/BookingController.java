@@ -71,7 +71,7 @@ public class BookingController {
             @Valid @RequestBody UpdateBookingStatusRequest request) {
         Long userId = SecurityUtils.getUserId();
         String userRole = SecurityUtils.getUserRole();
-        BookingResponse response = bookingService.updateBookingStatus(id, userId, userRole, request.getStatus());
+        BookingResponse response = bookingService.updateBookingStatus(id, userId, userRole, request);
         return ResponseEntity.ok(response);
     }
 
@@ -80,6 +80,14 @@ public class BookingController {
             @PathVariable Long id,
             @PathVariable Long workerId) {
         BookingResponse response = bookingService.assignWorker(id, workerId);
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{id}/worker-location")
+    public ResponseEntity<BookingResponse> updateWorkerLocation(
+            @PathVariable Long id,
+            @RequestBody UpdateBookingStatusRequest request) {
+        BookingResponse response = bookingService.updateWorkerLocation(id, request.getWorkerLatitude(), request.getWorkerLongitude());
         return ResponseEntity.ok(response);
     }
 

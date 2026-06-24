@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
@@ -18,6 +18,7 @@ import Paper from '@mui/material/Paper';
 import Rating from '@mui/material/Rating';
 import { Search, MapPin, Zap, Wrench, Hammer, ShieldCheck, Clock, Award, ArrowRight, Star } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { workerApi } from '../api/workerApi';
 
 /**
  * Service categories matching seed data.
@@ -55,7 +56,23 @@ const LandingPage = () => {
   const navigate = useNavigate();
 
   const [city, setCity] = useState('Bangalore');
+  const [cities, setCities] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    const fetchCities = async () => {
+      try {
+        const list = await workerApi.getCities();
+        setCities(list);
+        if (list && list.length > 0) {
+          setCity(list[0].name);
+        }
+      } catch (err) {
+        console.warn('Could not load operating cities list:', err);
+      }
+    };
+    fetchCities();
+  }, []);
 
   const getDashboardPath = () => {
     if (role === 'CUSTOMER') return '/customer/dashboard';
@@ -171,9 +188,15 @@ const LandingPage = () => {
                   '& .MuiSelect-select': { py: 1.5, pl: 1, textAlign: 'left', fontWeight: 'bold' }
                 }}
               >
-                <MenuItem value="Bangalore">Bangalore</MenuItem>
-                <MenuItem value="Mumbai">Mumbai</MenuItem>
-                <MenuItem value="Delhi">Delhi</MenuItem>
+                {(cities.length > 0 ? cities : [
+                  { id: 'blr', name: 'Bangalore' },
+                  { id: 'mum', name: 'Mumbai' },
+                  { id: 'del', name: 'Delhi' }
+                ]).map((cityObj) => (
+                  <MenuItem key={cityObj.id} value={cityObj.name}>
+                    {cityObj.name}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
 
