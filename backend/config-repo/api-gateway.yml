@@ -1,0 +1,53 @@
+server:
+  port: 8080
+
+spring:
+  cloud:
+    loadbalancer:
+      cache:
+        enabled: true
+        ttl: 300s
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: auth-service
+              uri: lb://auth-service
+              predicates:
+                - Path=/api/auth/**
+            - id: worker-service
+              uri: lb://worker-service
+              predicates:
+                - Path=/api/workers/**
+            - id: booking-service
+              uri: lb://booking-service
+              predicates:
+                - Path=/api/bookings/**
+            - id: payment-service
+              uri: lb://payment-service
+              predicates:
+                - Path=/api/payments/**
+            - id: notification-service
+              uri: lb://notification-service
+              predicates:
+                - Path=/api/notifications/**
+            - id: review-route
+              uri: lb://booking-service
+              predicates:
+                - Path=/api/reviews/**
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowedOrigins: "*"
+                allowedMethods:
+                  - GET
+                  - POST
+                  - PUT
+                  - DELETE
+                  - OPTIONS
+                allowedHeaders: "*"
+
+eureka:
+  client:
+    registry-fetch-interval-seconds: 10
+    should-cache-registry: true
