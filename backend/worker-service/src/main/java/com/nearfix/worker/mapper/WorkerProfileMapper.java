@@ -3,20 +3,36 @@ package com.nearfix.worker.mapper;
 import com.nearfix.worker.dto.CreateWorkerProfileRequest;
 import com.nearfix.worker.dto.WorkerProfileResponse;
 import com.nearfix.worker.entity.WorkerProfile;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
+import org.springframework.stereotype.Component;
 
-@Mapper(componentModel = "spring")
-public interface WorkerProfileMapper {
+@Component
+public class WorkerProfileMapper {
 
-    WorkerProfileMapper INSTANCE = Mappers.getMapper(WorkerProfileMapper.class);
+    public WorkerProfile requestToEntity(CreateWorkerProfileRequest request) {
+        if (request == null) {
+            return null;
+        }
+        WorkerProfile profile = new WorkerProfile();
+        profile.setSkill(request.skill());
+        profile.setExperience(request.experience());
+        profile.setCity(request.city());
+        profile.setAadhaarNumber(request.aadhaarNumber());
+        return profile;
+    }
 
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "rating", ignore = true)
-    @Mapping(target = "verified", ignore = true)
-    @Mapping(target = "status", ignore = true)
-    WorkerProfile requestToEntity(CreateWorkerProfileRequest request);
-
-    WorkerProfileResponse entityToResponse(WorkerProfile entity);
+    public WorkerProfileResponse entityToResponse(WorkerProfile entity) {
+        if (entity == null) {
+            return null;
+        }
+        return new WorkerProfileResponse(
+            entity.getId(),
+            entity.getSkill(),
+            entity.getExperience(),
+            entity.getCity(),
+            entity.getAadhaarNumber(),
+            entity.getRating(),
+            entity.getVerified(),
+            entity.getStatus()
+        );
+    }
 }
