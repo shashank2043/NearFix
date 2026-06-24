@@ -27,9 +27,8 @@ const WorkerVerificationCard = ({ worker, workerUser = {}, onApprove, onReject }
   const email = workerUser.email || 'N/A';
   const phone = workerUser.phone || 'N/A';
 
-  // Fallbacks for Aadhaar and License if not present in worker object
+  // Fallback for Aadhaar if not present in worker object
   const displayAadhaar = aadhaarNumber || worker.aadhaar || 'Not Provided';
-  const licenseNumber = worker.license || `LIC-${(skill || 'SK').substring(0, 2).toUpperCase()}-${90000 + parseInt(id || 0)}`;
 
   // Determine status badge
   let badgeColor = 'warning';
@@ -127,7 +126,6 @@ const WorkerVerificationCard = ({ worker, workerUser = {}, onApprove, onReject }
           </Grid>
         </Grid>
 
-        {/* Document verification Details */}
         <Box 
           sx={{ 
             p: 2, 
@@ -140,24 +138,14 @@ const WorkerVerificationCard = ({ worker, workerUser = {}, onApprove, onReject }
           <Typography variant="subtitle2" fontWeight="700" sx={{ mb: 1.5, display: 'flex', alignItems: 'center', gap: 0.8, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             <FileText size={16} color={theme.palette.secondary.main} /> Verification Documents
           </Typography>
-          <Grid container spacing={1.5}>
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <Typography variant="caption" color="text.secondary" display="block">
-                Aadhaar Number
-              </Typography>
-              <Typography variant="body2" fontWeight="600" sx={{ fontFamily: 'monospace', letterSpacing: '0.05em' }}>
-                {displayAadhaar}
-              </Typography>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <Typography variant="caption" color="text.secondary" display="block">
-                Skill License ID
-              </Typography>
-              <Typography variant="body2" fontWeight="600" sx={{ fontFamily: 'monospace', letterSpacing: '0.05em' }}>
-                {licenseNumber}
-              </Typography>
-            </Grid>
-          </Grid>
+          <Box>
+            <Typography variant="caption" color="text.secondary" display="block">
+              Aadhaar Number
+            </Typography>
+            <Typography variant="body2" fontWeight="600" sx={{ fontFamily: 'monospace', letterSpacing: '0.05em' }}>
+              {displayAadhaar}
+            </Typography>
+          </Box>
         </Box>
 
         {/* Contact Info (Visible to Admin) */}

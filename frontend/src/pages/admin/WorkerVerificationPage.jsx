@@ -126,7 +126,7 @@ const WorkerVerificationPage = () => {
       {/* Dynamic Header */}
       <AdminHeader 
         title="Worker Verification Workspace" 
-        subtitle="Manage and inspect emergency technician profiles, credentials, identity numbers, and license certifications."
+        subtitle="Manage and inspect emergency technician profiles, credentials, and identity verification numbers."
       />
 
       {success && (

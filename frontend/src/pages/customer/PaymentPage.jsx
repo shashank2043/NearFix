@@ -122,12 +122,20 @@ const PaymentPage = () => {
         order_id: orderId,
         handler: async function (response) {
           try {
+            // Call backend verification endpoint to set status to SUCCESS and update booking status to PAID
+            await paymentApi.verifyPayment({
+              bookingId: booking.id,
+              transactionId: orderId,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
+            });
+
             // Keep frontend state in sync by updating status to PAID
             await updateBookingStatus(booking.id, 'PAID');
             navigate(`/customer/review/${booking.id}`);
           } catch (err) {
-            console.error('Failed to sync booking status to PAID in frontend:', err);
-            setError('Payment succeeded, but syncing state failed. Please check your bookings page.');
+            console.error('Failed to verify payment or sync booking status:', err);
+            setError('Payment verification failed or syncing state failed. Please check your bookings page.');
           } finally {
             setPaymentLoading(false);
           }

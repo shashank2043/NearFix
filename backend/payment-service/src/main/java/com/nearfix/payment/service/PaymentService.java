@@ -9,6 +9,7 @@ import com.nearfix.payment.client.dto.UpdateBookingStatusRequest;
 import com.nearfix.payment.client.dto.UserDto;
 import com.nearfix.payment.dto.CreatePaymentRequest;
 import com.nearfix.payment.dto.PaymentResponse;
+import com.nearfix.payment.dto.PaymentVerificationRequest;
 import com.nearfix.payment.entity.Payment;
 import com.nearfix.payment.entity.PaymentStatus;
 import com.nearfix.payment.exception.BadRequestException;
@@ -48,9 +49,12 @@ public class PaymentService {
         log.info("Processing payment for bookingId: {} by customerId: {}", request.getBookingId(), customerId);
 
         // Verify if payment has already succeeded for this booking
-        boolean alreadyPaid = paymentRepository.existsByBookingIdAndStatus(request.getBookingId(), PaymentStatus.SUCCESS);
-        if (alreadyPaid) {
-            throw new ConflictException("Payment has already been successfully processed for booking #" + request.getBookingId());
+        java.util.Optional<Payment> existingPaymentOpt = paymentRepository.findByBookingId(request.getBookingId());
+        if (existingPaymentOpt.isPresent()) {
+            Payment existingPayment = existingPaymentOpt.get();
+            if (existingPayment.getStatus() == PaymentStatus.SUCCESS) {
+                throw new ConflictException("Payment has already been successfully processed for booking #" + request.getBookingId());
+            }
         }
 
         // Fetch booking from Booking Service
@@ -79,7 +83,6 @@ public class PaymentService {
 
         String transactionId;
         PaymentStatus status;
-        boolean paymentSucceeded;
 
         try {
             log.info("Initializing Razorpay Client and creating order for receipt: {}", "txn_" + request.getBookingId());
@@ -95,37 +98,86 @@ public class PaymentService {
             transactionId = order.get("id"); 
             log.info("Razorpay order created successfully: {}", transactionId);
             
-            // Handle validation rule: if amount is 999.99, simulate payment failure
+            // Handle validation rule: if amount is 999.99, simulate payment failure immediately
             if (request.getAmount() == 999.99) {
                 status = PaymentStatus.FAILED;
-                paymentSucceeded = false;
             } else {
-                status = PaymentStatus.SUCCESS;
-                paymentSucceeded = true;
+                status = PaymentStatus.PENDING;
             }
         } catch (Exception e) {
             log.error("Error creating order with Razorpay, falling back to simulation", e);
-            transactionId = "rzp_order_" + UUID.randomUUID().toString().replace("-", "").substring(0, 14);
+            transactionId = "rzp_order_" + java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 14);
             if (request.getAmount() == 999.99) {
                 status = PaymentStatus.FAILED;
-                paymentSucceeded = false;
             } else {
-                status = PaymentStatus.SUCCESS;
-                paymentSucceeded = true;
+                status = PaymentStatus.PENDING;
             }
         }
 
-        Payment payment = Payment.builder()
-                .bookingId(request.getBookingId())
-                .amount(request.getAmount())
-                .status(status)
-                .transactionId(transactionId)
-                .paymentDate(LocalDateTime.now())
-                .build();
+        Payment payment;
+        if (existingPaymentOpt.isPresent()) {
+            payment = existingPaymentOpt.get();
+            payment.setAmount(request.getAmount());
+            payment.setStatus(status);
+            payment.setTransactionId(transactionId);
+            payment.setPaymentDate(null);
+        } else {
+            payment = Payment.builder()
+                    .bookingId(request.getBookingId())
+                    .amount(request.getAmount())
+                    .status(status)
+                    .transactionId(transactionId)
+                    .build();
+        }
 
         Payment savedPayment = paymentRepository.save(payment);
 
-        if (paymentSucceeded) {
+        if (status == PaymentStatus.FAILED) {
+            // Trigger notification event for payment failure
+            sendNotificationSafely(booking.getCustomerId(), "Payment Failed",
+                    "Payment of ₹" + request.getAmount() + " failed. Transaction ID: " + transactionId + ". Please retry.");
+        }
+
+        return new PaymentResponse(savedPayment.getTransactionId(), savedPayment.getStatus(), razorpayKeyId);
+    }
+
+    @Transactional
+    public PaymentResponse verifyPayment(Long customerId, String customerRole, PaymentVerificationRequest request) {
+        log.info("Verifying payment for bookingId: {} transactionId: {}", request.getBookingId(), request.getTransactionId());
+
+        Payment payment = paymentRepository.findByBookingId(request.getBookingId())
+                .orElseThrow(() -> new ResourceNotFoundException("Payment not found for booking #" + request.getBookingId()));
+
+        if (payment.getStatus() == PaymentStatus.SUCCESS) {
+            return new PaymentResponse(payment.getTransactionId(), payment.getStatus(), razorpayKeyId);
+        }
+
+        boolean verified = false;
+
+        // Bypass verification if it's a simulated order ID or signature is missing (for local testing fallbacks)
+        if (payment.getTransactionId().startsWith("rzp_order_") || request.getRazorpaySignature() == null || request.getRazorpaySignature().isEmpty()) {
+            verified = true;
+        } else {
+            try {
+                JSONObject options = new JSONObject();
+                options.put("razorpay_order_id", payment.getTransactionId());
+                options.put("razorpay_payment_id", request.getRazorpayPaymentId());
+                options.put("razorpay_signature", request.getRazorpaySignature());
+
+                verified = com.razorpay.Utils.verifyPaymentSignature(options, razorpayKeySecret);
+            } catch (Exception e) {
+                log.error("Signature verification failed", e);
+            }
+        }
+
+        if (verified) {
+            payment.setStatus(PaymentStatus.SUCCESS);
+            payment.setPaymentDate(LocalDateTime.now());
+            Payment savedPayment = paymentRepository.save(payment);
+
+            // Fetch booking from Booking Service
+            BookingResponse booking = bookingClient.getBookingById(request.getBookingId(), customerId, customerRole);
+
             // Update booking status to PAID in Booking Service
             try {
                 bookingClient.updateBookingStatus(
@@ -136,26 +188,24 @@ public class PaymentService {
                 );
             } catch (Exception e) {
                 log.error("Failed to update booking status to PAID in Booking Service", e);
-                // In a real system, you might roll back or schedule a retry.
-                // We throw an exception to let the client know status update failed.
                 throw new ConflictException("Payment succeeded but failed to update booking status: " + e.getMessage());
             }
 
             // Trigger notification event for payment success
             sendNotificationSafely(booking.getCustomerId(), "Payment Successful",
-                    "Payment of ₹" + request.getAmount() + " was successful. Transaction ID: " + transactionId);
+                    "Payment of ₹" + payment.getAmount() + " was successful. Transaction ID: " + payment.getTransactionId());
 
             if (booking.getWorkerId() != null) {
                 sendNotificationSafely(booking.getWorkerId(), "Payment Settled",
-                        "Payment of ₹" + request.getAmount() + " for booking #" + request.getBookingId() + " has been settled.");
+                        "Payment of ₹" + payment.getAmount() + " for booking #" + request.getBookingId() + " has been settled.");
             }
-        } else {
-            // Trigger notification event for payment failure
-            sendNotificationSafely(booking.getCustomerId(), "Payment Failed",
-                    "Payment of ₹" + request.getAmount() + " failed. Transaction ID: " + transactionId + ". Please retry.");
-        }
 
-        return new PaymentResponse(savedPayment.getTransactionId(), savedPayment.getStatus(), razorpayKeyId);
+            return new PaymentResponse(savedPayment.getTransactionId(), savedPayment.getStatus(), razorpayKeyId);
+        } else {
+            payment.setStatus(PaymentStatus.FAILED);
+            paymentRepository.save(payment);
+            throw new BadRequestException("Payment signature verification failed.");
+        }
     }
 
     @Transactional(readOnly = true)

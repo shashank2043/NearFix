@@ -38,5 +38,15 @@ export const paymentApi = {
   getAllPayments: async () => {
     const response = await axiosInstance.get('/api/payments');
     return response.data;
+  },
+
+  /**
+   * Verifies the Razorpay payment details on the backend.
+   * @param {Object} verificationData - { bookingId, transactionId, razorpayPaymentId, razorpaySignature }
+   * @returns {Promise<Object>}
+   */
+  verifyPayment: async (verificationData) => {
+    const response = await axiosInstance.post('/api/payments/verify', verificationData);
+    return response.data;
   }
 };

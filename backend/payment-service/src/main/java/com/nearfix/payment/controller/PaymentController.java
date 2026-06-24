@@ -3,6 +3,7 @@ package com.nearfix.payment.controller;
 import com.nearfix.payment.config.SecurityUtils;
 import com.nearfix.payment.dto.CreatePaymentRequest;
 import com.nearfix.payment.dto.PaymentResponse;
+import com.nearfix.payment.dto.PaymentVerificationRequest;
 import com.nearfix.payment.entity.Payment;
 import com.nearfix.payment.service.PaymentService;
 import jakarta.validation.Valid;
@@ -23,6 +24,15 @@ public class PaymentController {
         Long customerId = SecurityUtils.getUserId();
         String customerRole = SecurityUtils.getUserRole();
         PaymentResponse response = paymentService.processPayment(customerId, customerRole, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/verify")
+    public ResponseEntity<PaymentResponse> verifyPayment(
+            @Valid @RequestBody PaymentVerificationRequest request) {
+        Long customerId = SecurityUtils.getUserId();
+        String customerRole = SecurityUtils.getUserRole();
+        PaymentResponse response = paymentService.verifyPayment(customerId, customerRole, request);
         return ResponseEntity.ok(response);
     }
 
