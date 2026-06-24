@@ -8,15 +8,7 @@ import RatingStars from '../common/RatingStars';
 import Chip from '@mui/material/Chip';
 import { MapPin, Navigation } from 'lucide-react';
 
-/**
- * Reusable Card component for displaying worker summary details.
- * @param {Object} props
- * @param {string} props.name - Worker name
- * @param {string} props.skill - Service category
- * @param {number} props.rating - User reviews score
- * @param {string} [props.distance='1.2 km'] - Distance from customer
- * @param {string} [props.estimatedArrival='10 mins'] - Estimated ETA
- */
+
 const WorkerCard = ({ 
   name, 
   skill, 

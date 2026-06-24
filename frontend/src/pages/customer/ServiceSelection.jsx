@@ -8,10 +8,7 @@ import Button from '@mui/material/Button';
 import { Zap, Wrench, Hammer, Car, Wind, ArrowLeft } from 'lucide-react';
 import ServiceCard from '../../components/customer/ServiceCard';
 
-/**
- * ServiceSelection Component.
- * Presents a responsive grid of available emergency helper trades.
- */
+
 const ServiceSelection = () => {
   const navigate = useNavigate();
 
@@ -49,7 +46,7 @@ const ServiceSelection = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 6 }}>
-      {/* Header Navigation */}
+      
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
         <Button
           variant="text"
@@ -62,7 +59,7 @@ const ServiceSelection = () => {
         </Button>
       </Box>
 
-      {/* Main Header */}
+      
       <Box sx={{ mb: 5, textAlign: 'center' }}>
         <Typography variant="h4" fontWeight="800" color="text.primary" gutterBottom>
           Select Emergency Service
@@ -72,7 +69,7 @@ const ServiceSelection = () => {
         </Typography>
       </Box>
 
-      {/* Services Grid */}
+      
       <Grid container spacing={3} sx={{ justifyContent: 'center' }}>
         {services.map((service) => (
           <Grid xs={12} sm={6} md={4} key={service.name}>

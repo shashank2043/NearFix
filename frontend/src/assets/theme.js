@@ -6,13 +6,13 @@ export const getDesignTokens = (mode) => ({
     ...(mode === 'light'
       ? {
           primary: {
-            main: '#0B192C', // Deep Navy
+            main: '#0B192C', 
             light: '#1E2A38',
             dark: '#050B14',
             contrastText: '#FFFFFF',
           },
           secondary: {
-            main: '#00B4D8', // Teal Accent
+            main: '#00B4D8', 
             light: '#48CAE4',
             dark: '#0077B6',
             contrastText: '#FFFFFF',
@@ -29,20 +29,20 @@ export const getDesignTokens = (mode) => ({
         }
       : {
           primary: {
-            main: '#00F5D4', // Vibrant Teal
+            main: '#00F5D4', 
             light: '#33FFDE',
             dark: '#00C2A8',
             contrastText: '#0B192C',
           },
           secondary: {
-            main: '#00B4D8', // Cyan Accent
+            main: '#00B4D8', 
             light: '#48CAE4',
             dark: '#0077B6',
             contrastText: '#FFFFFF',
           },
           background: {
-            default: '#070D19', // Midnight Navy
-            paper: '#0F1A30', // Deep Card Navy
+            default: '#070D19', 
+            paper: '#0F1A30', 
           },
           text: {
             primary: '#F8FAFC',

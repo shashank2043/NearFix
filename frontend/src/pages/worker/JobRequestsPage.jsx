@@ -30,7 +30,7 @@ const parseCoordinates = (addressStr) => {
 };
 
 const calculateHaversineDistance = (lat1, lon1, lat2, lon2) => {
-  const R = 6371; // Radius of Earth in km
+  const R = 6371; 
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const a =
@@ -43,12 +43,7 @@ const calculateHaversineDistance = (lat1, lon1, lat2, lon2) => {
   return R * c;
 };
 
-/**
- * JobRequestsPage Component
- * Lists incoming emergency booking requests assigned to the logged-in worker.
- * Allows the worker to accept a job (which puts them on duty/busy and opens the tracking panel)
- * or reject a job (which opens the booking back up to other local providers).
- */
+
 const JobRequestsPage = () => {
   const { user } = useAuth();
   const { fetchWorkerBookings, updateBookingStatus, updateAvailability, loading: hookLoading } = useWorkers();
@@ -65,18 +60,18 @@ const JobRequestsPage = () => {
     try {
       setError('');
       
-      // 1. Fetch worker profile details
+      
       const profile = await workerApi.getProfileById(user.id);
       
       if (profile && profile.verified && profile.status === 'AVAILABLE') {
-        // 2. Fetch unassigned requests matching skill & city
+        
         const available = await bookingApi.getAvailableBookings(profile.skill, profile.city);
         
-        // 3. Fetch pre-assigned requested bookings (if any)
+        
         const bookingsList = await fetchWorkerBookings(user.id);
         const assignedRequested = bookingsList.filter((b) => b.status === 'REQUESTED');
         
-        // 4. Merge lists ensuring no duplicates
+        
         const merged = [...assignedRequested];
         available.forEach((b) => {
           if (!merged.some((m) => m.id === b.id)) {
@@ -123,7 +118,7 @@ const JobRequestsPage = () => {
         }
       }
 
-      // Default mock fallback if geolocation completely blocked or fails
+      
       if (!finalWorkerLoc) {
         const bookingCity = matchedReq ? matchedReq.city : 'Bangalore';
         if (bookingCity.toLowerCase() === 'delhi') {
@@ -144,7 +139,7 @@ const JobRequestsPage = () => {
             custLoc.latitude,
             custLoc.longitude
           );
-          // Snap worker close to customer if they are in different cities/fallbacks (>50km)
+          
           if (dist > 50) {
             finalWorkerLoc = {
               latitude: custLoc.latitude + (Math.random() * 0.02 - 0.01),
@@ -167,10 +162,10 @@ const JobRequestsPage = () => {
         distance: distanceVal
       };
 
-      // 1. Advance booking status to ACCEPTED (atomic backend assignment)
+      
       await updateBookingStatus(bookingId, 'ACCEPTED', extraPayload);
 
-      // 2. Mark worker availability status as BUSY
+      
       try {
         await updateAvailability(user.id, 'BUSY');
       } catch (err) {
@@ -179,7 +174,7 @@ const JobRequestsPage = () => {
 
       setSuccess('Job accepted successfully! Proceeding to dispatch tracking.');
       
-      // Navigate to Active Job Page after a brief moment
+      
       setTimeout(() => {
         navigate('/worker/active-job');
       }, 1000);
@@ -195,11 +190,11 @@ const JobRequestsPage = () => {
     setError('');
     setSuccess('');
     try {
-      // Re-opens booking for other workers by status: REQUESTED and workerId: null
+      
       await updateBookingStatus(bookingId, 'REQUESTED', { workerId: null });
       setSuccess('Job request rejected. It is now re-opened for other providers.');
       
-      // Reload bookings to reflect the update
+      
       await loadRequests();
     } catch (err) {
       console.error(err);
@@ -215,7 +210,7 @@ const JobRequestsPage = () => {
 
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 6 }}>
-      {/* Page Header */}
+      
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4 }}>
         <Button
           variant="outlined"
@@ -236,7 +231,7 @@ const JobRequestsPage = () => {
         </Box>
       </Box>
 
-      {/* Alert Notifications */}
+      
       {success && (
         <Alert severity="success" onClose={() => setSuccess('')} sx={{ mb: 3, borderRadius: 3 }}>
           {success}

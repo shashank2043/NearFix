@@ -3,19 +3,13 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 
-/**
- * Reusable AdminHeader component that displays the workspace title and description.
- * 
- * @param {Object} props
- * @param {string} props.title - Title of the active sub-page
- * @param {string} [props.subtitle] - Optional subtitle text
- */
+
 const AdminHeader = ({ title, subtitle }) => {
   const theme = useTheme();
 
   return (
     <Box sx={{ mb: 2 }}>
-      {/* Header section with styling */}
+      
       <Box 
         sx={{ 
           py: 4, 
@@ -31,7 +25,7 @@ const AdminHeader = ({ title, subtitle }) => {
           border: `1px solid ${theme.palette.mode === 'light' ? '#050B14' : '#1E293B'}`,
         }}
       >
-        {/* Dynamic Glowing Teal Background shapes */}
+        
         <Box 
           sx={{ 
             position: 'absolute',

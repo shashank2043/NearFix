@@ -6,12 +6,7 @@ import Typography from '@mui/material/Typography';
 import { Menu } from 'lucide-react';
 import Sidebar from './Sidebar';
 
-/**
- * AdminLayout Component
- * Wraps all administration console sub-pages (Dashboard, Verifications, Analytics, Complaints).
- * Sets up a flexible multi-column grid layout rendering the collapsible Sidebar on the left
- * and the router Outlet main viewport on the right, providing responsive triggers for small screen sizes.
- */
+
 const AdminLayout = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -25,10 +20,10 @@ const AdminLayout = () => {
 
   return (
     <Box sx={{ display: 'flex', minHeight: 'calc(100vh - 64px)', width: '100%' }}>
-      {/* Collapsible Admin Sidebar */}
+      
       <Sidebar mobileOpen={mobileOpen} onClose={handleDrawerClose} />
 
-      {/* Main Administrative Viewport */}
+      
       <Box 
         component="div" 
         sx={{ 
@@ -39,7 +34,7 @@ const AdminLayout = () => {
           bgcolor: 'background.default'
         }}
       >
-        {/* Mobile Header Bar (Only visible on viewport widths under 'md') */}
+        
         <Box 
           sx={{ 
             display: { xs: 'flex', md: 'none' }, 
@@ -65,7 +60,7 @@ const AdminLayout = () => {
           </Typography>
         </Box>
 
-        {/* Dynamic Nested Page Content Container */}
+        
         <Box sx={{ flexGrow: 1 }}>
           <Outlet />
         </Box>

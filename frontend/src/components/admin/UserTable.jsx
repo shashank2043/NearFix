@@ -13,16 +13,11 @@ import Avatar from '@mui/material/Avatar';
 import { Calendar, Phone, Mail } from 'lucide-react';
 import { useTheme } from '@mui/material/styles';
 
-/**
- * UserTable component showing list of users and system personnel with role badges and creation dates.
- * 
- * @param {Object} props
- * @param {Array<Object>} props.users - System users list
- */
+
 const UserTable = ({ users }) => {
   const theme = useTheme();
 
-  // Role style selector
+  
   const getRoleStyle = (role) => {
     switch (role) {
       case 'ADMIN':
@@ -90,14 +85,14 @@ const UserTable = ({ users }) => {
                   '&:hover': { bgcolor: theme.palette.mode === 'light' ? 'rgba(0, 180, 216, 0.02)' : 'rgba(0, 245, 212, 0.02)' }
                 }}
               >
-                {/* ID */}
+                
                 <TableCell component="th" scope="row">
                   <Typography variant="body2" fontWeight="700">
                     #{user.id}
                   </Typography>
                 </TableCell>
 
-                {/* Name and avatar */}
+                
                 <TableCell>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <Avatar 
@@ -127,7 +122,7 @@ const UserTable = ({ users }) => {
                   </Box>
                 </TableCell>
 
-                {/* Contact Info */}
+                
                 <TableCell>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.2 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
@@ -145,7 +140,7 @@ const UserTable = ({ users }) => {
                   </Box>
                 </TableCell>
 
-                {/* Role Chip */}
+                
                 <TableCell>
                   <Chip 
                     label={roleStyle.label} 
@@ -161,7 +156,7 @@ const UserTable = ({ users }) => {
                   />
                 </TableCell>
 
-                {/* Joined Date */}
+                
                 <TableCell>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
                     <Calendar size={14} />
@@ -171,7 +166,7 @@ const UserTable = ({ users }) => {
                   </Box>
                 </TableCell>
 
-                {/* Status indicator */}
+                
                 <TableCell align="center">
                   <Chip 
                     label={user.active !== false ? "Active" : "Disabled"} 

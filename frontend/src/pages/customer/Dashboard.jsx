@@ -41,25 +41,25 @@ import EmptyState from '../../components/common/EmptyState';
 const Dashboard = () => {
   const { user } = useAuth();
 
-  // Local State
+  
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // Booking Tracking Modal
+  
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [assignedWorker, setAssignedWorker] = useState(null);
   const [assignedWorkerUser, setAssignedWorkerUser] = useState(null);
   const [trackingModalOpen, setTrackingModalOpen] = useState(false);
 
-  // Payment State
+  
   const [paymentLoading, setPaymentLoading] = useState(false);
 
-  // Review State
+  
   const [hasReviewed, setHasReviewed] = useState(false);
 
-  // Booking Formik Form
+  
   const bookingFormik = useFormik({
     initialValues: {
       serviceType: 'Electrician',
@@ -96,7 +96,7 @@ const Dashboard = () => {
     },
   });
 
-  // Review Formik Form
+  
   const reviewFormik = useFormik({
     initialValues: {
       rating: 5,
@@ -124,7 +124,7 @@ const Dashboard = () => {
           comment: values.comment,
         });
 
-        // Update worker overall rating
+        
         const reviews = await reviewApi.getReviewsByWorker(assignedWorker.id);
         const avgRating = reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length;
         await workerApi.updateProfile(assignedWorker.id, { rating: Number(avgRating.toFixed(1)) });
@@ -146,7 +146,7 @@ const Dashboard = () => {
     try {
       setLoading(true);
       const data = await bookingApi.getBookingsByCustomer(user.id);
-      // Sort bookings by newest first
+      
       setBookings(data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
     } catch (err) {
       setError('Failed to fetch bookings history');
@@ -164,7 +164,7 @@ const Dashboard = () => {
 
 
 
-  // Timeline Tracker Steps mapping
+  
   const getStepIndex = (status) => {
     switch (status) {
       case 'REQUESTED': return 0;
@@ -189,15 +189,15 @@ const Dashboard = () => {
 
     if (booking.workerId) {
       try {
-        // Fetch worker profile details
+        
         const workerProfile = await workerApi.getProfileById(booking.workerId);
         setAssignedWorker(workerProfile);
         
-        // Fetch worker user details (for name and phone)
+        
         const workerUser = await authApi.getUserById(booking.workerId);
         setAssignedWorkerUser(workerUser);
 
-        // Check if review already exists
+        
         const reviews = await reviewApi.getReviewByBooking(booking.id);
         if (reviews && reviews.length > 0) {
           setHasReviewed(true);
@@ -212,16 +212,16 @@ const Dashboard = () => {
     if (!selectedBooking) return;
     setPaymentLoading(true);
     try {
-      // 1. Submit Mock Payment
+      
       await paymentApi.createPayment({
         bookingId: selectedBooking.id,
-        amount: 500, // Flat rate for emergency dispatch
+        amount: 500, 
       });
 
-      // 2. Update Booking Status
+      
       const updatedBooking = await bookingApi.updateBookingStatus(selectedBooking.id, 'PAID');
       
-      // Update local state
+      
       setSelectedBooking(updatedBooking);
       setSuccess('Payment processed successfully!');
       fetchBookings();
@@ -235,14 +235,14 @@ const Dashboard = () => {
 
 
 
-  // Compute metrics
+  
   const totalRequests = bookings.length;
   const activeBookings = bookings.filter(b => !['WORK_COMPLETED', 'PAID', 'CANCELLED'].includes(b.status)).length;
   const completedBookings = bookings.filter(b => ['WORK_COMPLETED', 'PAID'].includes(b.status)).length;
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 6 }}>
-      {/* Alert Notices */}
+      
       {success && (
         <Alert severity="success" onClose={() => setSuccess('')} sx={{ mb: 3, borderRadius: 2 }}>
           {success}
@@ -254,7 +254,7 @@ const Dashboard = () => {
         </Alert>
       )}
 
-      {/* Metrics Row */}
+      
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid size={{ xs: 12, sm: 4 }}>
           <Card sx={{ bgcolor: 'background.paper' }}>
@@ -309,9 +309,9 @@ const Dashboard = () => {
         </Grid>
       </Grid>
 
-      {/* Main Content Area */}
+      
       <Grid container spacing={4}>
-        {/* Create Request Column */}
+        
         <Grid size={{ xs: 12, md: 5 }}>
           <Card sx={{ height: '100%' }}>
             <CardContent>
@@ -394,7 +394,7 @@ const Dashboard = () => {
           </Card>
         </Grid>
 
-        {/* History Column */}
+        
         <Grid size={{ xs: 12, md: 7 }}>
           <Card sx={{ height: '100%' }}>
             <CardContent>
@@ -458,7 +458,7 @@ const Dashboard = () => {
         </Grid>
       </Grid>
 
-      {/* Booking Tracker + Payments + Reviews Dialog */}
+      
       {selectedBooking && (
         <Dialog
           open={trackingModalOpen}
@@ -474,7 +474,7 @@ const Dashboard = () => {
             <StatusBadge status={selectedBooking.status} size="medium" />
           </DialogTitle>
           <DialogContent>
-            {/* Timeline Stepper */}
+            
             {selectedBooking.status !== 'CANCELLED' ? (
               <Box sx={{ width: '100%', py: 2 }}>
                 <Stepper activeStep={getStepIndex(selectedBooking.status)} alternativeLabel>
@@ -493,7 +493,7 @@ const Dashboard = () => {
 
             <Divider sx={{ my: 2 }} />
 
-            {/* Description Info */}
+            
             <Typography variant="subtitle2" fontWeight="700" color="text.secondary" gutterBottom>
               Description of Emergency
             </Typography>
@@ -508,7 +508,7 @@ const Dashboard = () => {
               {selectedBooking.address}
             </Typography>
 
-            {/* Assigned Helper Card */}
+            
             {assignedWorkerUser ? (
               <Card sx={{ bgcolor: 'action.hover', border: '1px solid', borderColor: 'divider', mb: 3 }}>
                 <CardContent sx={{ py: 1.5, '&:last-child': { pb: 1.5 } }}>
@@ -549,7 +549,7 @@ const Dashboard = () => {
               )
             )}
 
-            {/* Payment Section (Shown when work is completed) */}
+            
             {selectedBooking.status === 'WORK_COMPLETED' && (
               <Box sx={{ mt: 3, p: 2, bgcolor: 'rgba(0, 245, 212, 0.05)', border: '1px dashed #00F5D4', borderRadius: 3 }}>
                 <Typography variant="subtitle1" fontWeight="700" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>

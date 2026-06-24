@@ -21,11 +21,7 @@ import { Sun, Moon, LogOut, LayoutDashboard, Menu as MenuIcon, X, LogIn, UserPlu
 import { useAuth } from '../../hooks/useAuth';
 import { useTheme } from '../../hooks/useTheme';
 
-/**
- * Global Responsive Navigation Header component for NearFix.
- * Automatically adapts layouts for mobile (drawer menus) and desktop screens,
- * manages theme toggling, and displays session state.
- */
+
 const Navbar = () => {
   const { user, token, logout, role, isAuthenticated } = useAuth();
   const { mode, toggleTheme } = useTheme();
@@ -65,7 +61,7 @@ const Navbar = () => {
     navigate(path);
   };
 
-  // Content for the mobile side navigation drawer
+  
   const mobileDrawerContent = (
     <Box sx={{ width: 260, height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'background.paper' }}>
       <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid', borderColor: 'divider' }}>
@@ -144,7 +140,7 @@ const Navbar = () => {
     <AppBar position="sticky">
       <Container maxWidth="lg">
         <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
-          {/* Logo Section */}
+          
           <Typography
             variant="h6"
             noWrap
@@ -167,15 +163,15 @@ const Navbar = () => {
             Near<span>Fix</span>
           </Typography>
 
-          {/* Action Section (Responsive side-by-side layout) */}
+          
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'nowrap' }}>
-            {/* Theme Toggle Button (Always visible side-by-side) */}
+            
             <IconButton onClick={toggleTheme} color="inherit" size="small">
               {mode === 'light' ? <Moon size={20} /> : <Sun size={20} />}
             </IconButton>
 
             {isAuthenticated ? (
-              // Authenticated View
+              
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Tooltip title="Account menu">
                   <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
@@ -248,9 +244,9 @@ const Navbar = () => {
                 </Menu>
               </Box>
             ) : (
-              // Unauthenticated View
+              
               <>
-                {/* Desktop Buttons */}
+                
                 <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1 }}>
                   <Button component={Link} to="/login" variant="text" color="inherit">
                     Login
@@ -260,7 +256,7 @@ const Navbar = () => {
                   </Button>
                 </Box>
                 
-                {/* Hamburger Icon (Mobile/Tablet unauthenticated) */}
+                
                 <IconButton
                   color="inherit"
                   aria-label="open navigation menu"
@@ -272,7 +268,7 @@ const Navbar = () => {
               </>
             )}
 
-            {/* Mobile Hamburger Drawer for Authenticated also if drawer preferred on very small screen */}
+            
             {isAuthenticated && (
               <IconButton
                 color="inherit"
@@ -287,7 +283,7 @@ const Navbar = () => {
         </Toolbar>
       </Container>
 
-      {/* Navigation Drawer for Mobile View */}
+      
       <Drawer
         anchor="right"
         open={mobileDrawerOpen}

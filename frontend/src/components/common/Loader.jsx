@@ -3,9 +3,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
-/**
- * Premium loading spinner component supporting inline and full-page overlay modes.
- */
+
 const Loader = ({ fullPage, message = 'Loading NearFix...' }) => {
   const content = (
     <Box

@@ -21,10 +21,7 @@ import ProtectedRoute from '../components/common/ProtectedRoute';
 import AdminLayout from '../components/common/AdminLayout';
 import { useAuth } from '../hooks/useAuth';
 
-/**
- * Custom component to automatically redirect users navigating to '/' 
- * directly to their respective portals or to the login page.
- */
+
 const HomeRedirect = () => {
   const { token, role } = useAuth();
 
@@ -39,9 +36,7 @@ const HomeRedirect = () => {
   return <Navigate to="/login" replace />;
 };
 
-/**
- * Prevents authenticated users from visiting registration or login panels.
- */
+
 const AuthRoute = ({ children }) => {
   const { token, role } = useAuth();
   
@@ -57,10 +52,10 @@ const AuthRoute = ({ children }) => {
 const AppRoutes = () => {
   return (
     <Routes>
-      {/* Index Path Redirect */}
+      
       <Route path="/" element={<LandingPage />} />
 
-      {/* Authentication Pages */}
+      
       <Route 
         path="/login" 
         element={
@@ -78,7 +73,7 @@ const AppRoutes = () => {
         } 
       />
       
-      {/* Protected Customer Space */}
+      
       <Route 
         path="/customer/dashboard" 
         element={
@@ -128,7 +123,7 @@ const AppRoutes = () => {
         } 
       />
 
-      {/* Protected Worker Space */}
+      
       <Route 
         path="/worker/dashboard" 
         element={
@@ -162,7 +157,7 @@ const AppRoutes = () => {
         } 
       />
 
-      {/* Protected Admin Space */}
+      
       <Route 
         element={
           <ProtectedRoute allowedRoles={['ADMIN']}>
@@ -176,7 +171,7 @@ const AppRoutes = () => {
         <Route path="/admin/complaints" element={<ComplaintsPage />} />
       </Route>
 
-      {/* Fallback Redirect */}
+      
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

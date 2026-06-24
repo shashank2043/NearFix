@@ -17,10 +17,7 @@ import { authApi } from '../../api/authApi';
 import ReviewForm from '../../components/customer/ReviewForm';
 import Loader from '../../components/common/Loader';
 
-/**
- * ReviewPage Component.
- * Collects ratings and comment feedback for assigned worker and triggers average score updates.
- */
+
 const ReviewPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -62,7 +59,7 @@ const ReviewPage = () => {
     setError('');
     setSuccess('');
     try {
-      // 1. Submit review
+      
       await reviewApi.createReview({
         bookingId: booking.id,
         customerId: booking.customerId,
@@ -71,12 +68,12 @@ const ReviewPage = () => {
         comment,
       });
 
-      // 2. Query all ratings of this worker to calculate fresh mean score
+      
       const allReviews = await reviewApi.getReviewsByWorker(booking.workerId);
       const sum = allReviews.reduce((acc, r) => acc + r.rating, 0);
       const avg = Number((sum / allReviews.length).toFixed(1));
 
-      // 3. Save new score in worker profile records using the rating-specific endpoint
+      
       await workerApi.updateRating(booking.workerId, avg);
 
       setSuccess('Review submitted! Navigating to dashboard...');
@@ -117,7 +114,7 @@ const ReviewPage = () => {
             </Alert>
           )}
 
-          {/* Helper details display */}
+          
           {workerUser && workerProfile && (
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5, mb: 4 }}>
               <Avatar 
@@ -152,7 +149,7 @@ const ReviewPage = () => {
 
           <Divider sx={{ mb: 4 }} />
 
-          {/* Form */}
+          
           <ReviewForm
             onSubmit={handleReviewSubmit}
             loading={submitting}

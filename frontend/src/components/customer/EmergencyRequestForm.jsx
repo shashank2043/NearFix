@@ -11,7 +11,7 @@ import { MapPin, Wrench, Navigation, Loader2 } from 'lucide-react';
 import { SERVICE_TYPES } from '../../utils/constants';
 import { workerApi } from '../../api/workerApi';
 
-// Form validation schema matching booking-service constraints
+
 const bookingSchema = Yup.object().shape({
   serviceType: Yup.string()
     .required('Service type is required'),
@@ -24,13 +24,7 @@ const bookingSchema = Yup.object().shape({
     .required('City is required')
 });
 
-/**
- * Reusable Emergency SOS Booking Form.
- * @param {Object} props
- * @param {string} [props.initialService='Electrician'] - default prefilled service
- * @param {function} props.onSubmit - Submission callback returning {serviceType, issueDescription, address, city}
- * @param {boolean} props.loading - Form submission loading state
- */
+
 const EmergencyRequestForm = ({ initialService = 'Electrician', onSubmit, loading }) => {
   const [detecting, setDetecting] = useState(false);
   const [locError, setLocError] = useState('');
@@ -79,9 +73,9 @@ const EmergencyRequestForm = ({ initialService = 'Electrician', onSubmit, loadin
       },
       (error) => {
         console.error('Geolocation error:', error);
-        // Fallback: mock coordinates based on selected city if permission blocked/timeout
+        
         const selectedCity = formik.values.city || 'Bangalore';
-        let fallbackStr = 'Coordinates: 12.971600° N, 77.594600° E (Detected Location)'; // default Bangalore
+        let fallbackStr = 'Coordinates: 12.971600° N, 77.594600° E (Detected Location)'; 
         if (selectedCity.toLowerCase() === 'delhi') {
           fallbackStr = 'Coordinates: 28.613900° N, 77.209000° E (Detected Location)';
         } else if (selectedCity.toLowerCase() === 'mumbai') {

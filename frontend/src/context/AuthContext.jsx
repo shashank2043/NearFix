@@ -24,14 +24,14 @@ export const AuthContextProvider = ({ children }) => {
       
       if (storedToken && storedRole) {
         try {
-          // Retrieve fresh profile info based on current token
+          
           const profile = await authApi.getProfile();
           setUser(profile);
           setToken(storedToken);
           setRole(storedRole);
         } catch (error) {
           console.error('Failed to initialize session:', error);
-          // Auto-clear invalid local storage data
+          
           localStorage.removeItem('token');
           localStorage.removeItem('role');
         }
@@ -42,11 +42,7 @@ export const AuthContextProvider = ({ children }) => {
     initializeAuth();
   }, []);
 
-  /**
-   * Log user in and save credential session.
-   * @param {string} email
-   * @param {string} password
-   */
+  
   const login = async (email, password) => {
     try {
       const data = await authApi.login(email, password);
@@ -55,7 +51,7 @@ export const AuthContextProvider = ({ children }) => {
       localStorage.setItem('token', data.token);
       localStorage.setItem('role', data.role);
       
-      // Fetch full profile info to seed state
+      
       let profile = null;
       if (data && data.id) {
         try {
@@ -77,9 +73,7 @@ export const AuthContextProvider = ({ children }) => {
     }
   };
 
-  /**
-   * Clears authentication states and terminates session.
-   */
+  
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('role');

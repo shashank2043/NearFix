@@ -38,13 +38,13 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
-  // Data States
+  
   const [users, setUsers] = useState([]);
   const [workers, setWorkers] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [payments, setPayments] = useState([]);
 
-  // Operating Cities States
+  
   const [cities, setCities] = useState([]);
   const [newCityName, setNewCityName] = useState('');
   const [cityActionLoading, setCityActionLoading] = useState(false);
@@ -68,7 +68,7 @@ const AdminDashboard = () => {
       const allUsers = await authApi.getUserById('');
       setUsers(Array.isArray(allUsers) ? allUsers : [allUsers]);
 
-      // Fetch Operating Cities
+      
       try {
         const allCities = await workerApi.getCities();
         setCities(allCities);
@@ -125,7 +125,7 @@ const AdminDashboard = () => {
     fetchData();
   }, []);
 
-  // Compute metrics
+  
   const totalUsers = users.length;
   const activeWorkers = workers.filter(w => w.status === 'AVAILABLE').length;
   const completedJobs = bookings.filter(b => b.status === 'WORK_COMPLETED' || b.status === 'PAID').length;
@@ -133,12 +133,12 @@ const AdminDashboard = () => {
   const completedPayments = payments.filter(p => p.status === 'COMPLETED' || p.status === 'SUCCESS');
   const totalRevenue = completedPayments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
 
-  // Compute pending verifications
+  
   const pendingVerificationsCount = workers.filter(
     w => w.verificationStatus === 'PENDING' || (!w.verified && w.verificationStatus !== 'REJECTED')
   ).length;
 
-  // Compute 7 Days Revenue Trend
+  
   const getRevenueChartData = () => {
     const chartData = [];
     const today = new Date();
@@ -152,7 +152,7 @@ const AdminDashboard = () => {
         day: 'numeric',
       });
       
-      // Filter payments on this calendar day
+      
       const dayPayments = completedPayments.filter(p => {
         if (!p.paymentDate) return false;
         const pDate = new Date(p.paymentDate);
@@ -171,7 +171,7 @@ const AdminDashboard = () => {
 
   const revenueData = getRevenueChartData();
 
-  // Get recent 10 bookings
+  
   const getRecentBookings = () => {
     return [...bookings]
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
@@ -180,7 +180,7 @@ const AdminDashboard = () => {
 
   const recentBookings = getRecentBookings();
 
-  // Helper to resolve customer/worker fullNames
+  
   const getUserName = (userId) => {
     const matched = users.find(u => u.id === userId);
     return matched ? matched.fullName : `User #${userId}`;
@@ -192,7 +192,7 @@ const AdminDashboard = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 2 }}>
-      {/* Unified Admin Navigation and Header */}
+      
       <AdminHeader 
         title="Operations Dashboard" 
         subtitle="Real-time operational summary, revenue trackers, recent dispatch calls, and worker verification requests."
@@ -204,7 +204,7 @@ const AdminDashboard = () => {
         </Alert>
       )}
 
-      {/* Row 1: Quick Stats Cards */}
+      
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <StatsCard 
@@ -244,7 +244,7 @@ const AdminDashboard = () => {
         </Grid>
       </Grid>
 
-      {/* Row 2: Verification Alert Banner */}
+      
       {pendingVerificationsCount > 0 && (
         <Card 
           sx={{ 
@@ -283,9 +283,9 @@ const AdminDashboard = () => {
         </Card>
       )}
 
-      {/* Row 3: Revenue Chart and Recent Bookings */}
+      
       <Grid container spacing={3}>
-        {/* Left Column: Recharts Line Chart */}
+        
         <Grid size={{ xs: 12, lg: 7 }}>
           <AnalyticsChart 
             title="Revenue Trend (Last 7 Days)"
@@ -298,7 +298,7 @@ const AdminDashboard = () => {
           />
         </Grid>
 
-        {/* Right Column: Recent Booking Table */}
+        
         <Grid size={{ xs: 12, lg: 5 }}>
           <Card sx={{ height: '100%' }}>
             <CardContent sx={{ p: 3, display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -359,7 +359,7 @@ const AdminDashboard = () => {
         </Grid>
       </Grid>
 
-      {/* Row 4: Registered Users Registry */}
+      
       <Box sx={{ mt: 4 }}>
         <Card>
           <CardContent sx={{ p: 3 }}>
@@ -371,10 +371,10 @@ const AdminDashboard = () => {
         </Card>
       </Box>
 
-      {/* Row 5: Operating Cities Management */}
+      
       <Box sx={{ mt: 4, mb: 4 }}>
         <Grid container spacing={3}>
-          {/* Left Column: Add Operating City Form */}
+          
           <Grid size={{ xs: 12, md: 5 }}>
             <Card sx={{ height: '100%' }}>
               <CardContent sx={{ p: 3, display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -429,7 +429,7 @@ const AdminDashboard = () => {
             </Card>
           </Grid>
 
-          {/* Right Column: Operating Cities List */}
+          
           <Grid size={{ xs: 12, md: 7 }}>
             <Card sx={{ height: '100%' }}>
               <CardContent sx={{ p: 3, display: 'flex', flexDirection: 'column', height: '100%' }}>

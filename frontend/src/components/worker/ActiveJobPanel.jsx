@@ -33,9 +33,7 @@ const parseCoordinates = (addressStr) => {
   return null;
 };
 
-/**
- * Steps mapping for the job status tracker.
- */
+
 const STEPS = [
   { label: 'Accepted', status: 'ACCEPTED' },
   { label: 'On The Way', status: 'ON_THE_WAY' },
@@ -58,11 +56,7 @@ const getActiveStep = (status) => {
   }
 };
 
-/**
- * ActiveJobPanel Component
- * Displays the current active job including customer details, a visual progress tracker,
- * an interactive simulated map HUD, and dynamic action buttons for state transitions.
- */
+
 const ActiveJobPanel = ({ booking, onUpdateStatus, actionLoading = false, onRefreshLocation, refreshingLocation = false }) => {
   const { id, customerId, serviceType, issueDescription, address, status, workerLatitude, workerLongitude, distance } = booking;
   const [customerName, setCustomerName] = useState('Loading Customer...');
@@ -123,7 +117,7 @@ const ActiveJobPanel = ({ booking, onUpdateStatus, actionLoading = false, onRefr
 
   const activeStep = getActiveStep(status);
 
-  // Determine next action button configuration based on booking status
+  
   let buttonText = '';
   let nextStatus = '';
   let buttonColor = 'primary';
@@ -148,7 +142,7 @@ const ActiveJobPanel = ({ booking, onUpdateStatus, actionLoading = false, onRefr
 
   return (
     <Card sx={{ border: '1px solid', borderColor: 'divider' }}>
-      {/* Visual Indicator of Dispatch Status */}
+      
       <Box sx={{ p: 2.5, bgcolor: 'background.default', borderBottom: '1px solid', borderColor: 'divider' }}>
         <Stepper activeStep={activeStep} alternativeLabel>
           {STEPS.map((step) => (
@@ -170,7 +164,7 @@ const ActiveJobPanel = ({ booking, onUpdateStatus, actionLoading = false, onRefr
 
       <CardContent sx={{ p: 4 }}>
         <Grid container spacing={4}>
-          {/* Left Column: Job & Customer Details */}
+          
           <Grid size={{ xs: 12 }}>
             <Box>
               <Chip label={`Booking ID: #${id}`} color="primary" size="small" sx={{ fontWeight: 'bold', mb: 1.5 }} />
@@ -184,7 +178,7 @@ const ActiveJobPanel = ({ booking, onUpdateStatus, actionLoading = false, onRefr
 
             <Divider sx={{ my: 3 }} />
 
-            {/* Customer Details */}
+            
             <Typography variant="subtitle2" fontWeight="800" sx={{ mb: 2, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary' }}>
               Customer Details
             </Typography>
@@ -262,7 +256,7 @@ const ActiveJobPanel = ({ booking, onUpdateStatus, actionLoading = false, onRefr
               </Box>
             </Box>
 
-            {/* Status ADVANCE Action Button */}
+            
             {buttonText && (
               <Button
                 variant="contained"

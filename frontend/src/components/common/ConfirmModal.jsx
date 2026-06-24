@@ -6,18 +6,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 
-/**
- * ConfirmModal wrapper utilizing MUI Dialog components.
- * @param {Object} props
- * @param {boolean} props.open
- * @param {string} props.title
- * @param {string} props.message
- * @param {function} props.onConfirm
- * @param {function} props.onCancel
- * @param {string} [props.confirmText='Confirm']
- * @param {string} [props.cancelText='Cancel']
- * @param {'primary' | 'secondary' | 'error' | 'success' | 'warning'} [props.color='primary']
- */
+
 const ConfirmModal = ({
   open,
   title,

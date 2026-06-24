@@ -7,10 +7,7 @@ import { ToastContextProvider } from './context/ToastContext';
 import AppRoutes from './routes/AppRoutes';
 import Navbar from './components/common/Navbar';
 
-/**
- * Root Entrypoint Component.
- * Orchestrates contexts for routing, global session state, and Material UI styling themes.
- */
+
 function App() {
   return (
     <Router>
@@ -27,10 +24,10 @@ function App() {
                 transition: 'background-color 0.3s ease, color 0.3s ease',
               }}
             >
-              {/* Header Navigation */}
+              
               <Navbar />
 
-              {/* Core Application Page Routes */}
+              
               <Box component="main" sx={{ flexGrow: 1 }}>
                 <AppRoutes />
               </Box>

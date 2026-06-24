@@ -27,11 +27,7 @@ import WorkerProfileCard from '../../components/worker/WorkerProfileCard';
 import AvailabilityToggle from '../../components/worker/AvailabilityToggle';
 import Loader from '../../components/common/Loader';
 
-/**
- * WorkerDashboard Component
- * The main panel for emergency workers. Shows their profile summary, lets them toggle live availability,
- * alerts them to pending bookings, and links them to dispatch & earnings portals.
- */
+
 const WorkerDashboard = () => {
   const { user } = useAuth();
   const { fetchWorkerById, updateAvailability, fetchWorkerBookings, loading: hookLoading, error: hookError } = useWorkers();
@@ -45,10 +41,10 @@ const WorkerDashboard = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // Profile setup states for new/unconfigured workers
+  
   const [showSetup, setShowSetup] = useState(false);
 
-  // Profile Setup Formik Form
+  
   const profileFormik = useFormik({
     enableReinitialize: true,
     initialValues: {
@@ -80,7 +76,7 @@ const WorkerDashboard = () => {
         setProfile(data);
         setShowSetup(false);
         setSuccess('Profile configured successfully! Waiting for Admin verification.');
-        // Refresh
+        
         const bookingsList = await fetchWorkerBookings(user.id);
         setBookings(bookingsList);
       } catch (err) {
@@ -96,7 +92,7 @@ const WorkerDashboard = () => {
     try {
       setError('');
       
-      // Fetch operating cities
+      
       try {
         const list = await workerApi.getCities();
         setCities(list);
@@ -104,22 +100,22 @@ const WorkerDashboard = () => {
         console.warn('Could not load operating cities list:', err);
       }
 
-      // Fetch profile
+      
       let workerProfile = null;
       try {
         workerProfile = await fetchWorkerById(user.id);
         setProfile(workerProfile);
       } catch (err) {
-        // Profile not created yet
+        
         setShowSetup(true);
       }
 
       if (workerProfile) {
-        // Fetch bookings assigned to this worker
+        
         const bookingsList = await fetchWorkerBookings(user.id);
         setBookings(bookingsList);
 
-        // Fetch nearby available dispatches
+        
         if (workerProfile.verified && workerProfile.status === 'AVAILABLE') {
           const availableList = await bookingApi.getAvailableBookings(
             workerProfile.skill,
@@ -161,7 +157,7 @@ const WorkerDashboard = () => {
     return <Loader message="Accessing dispatcher feed..." />;
   }
 
-  // Filter lists based on status
+  
   const assignedRequested = bookings.filter((b) => b.status === 'REQUESTED');
   const pendingRequests = [...assignedRequested];
   availableRequests.forEach((b) => {
@@ -174,7 +170,7 @@ const WorkerDashboard = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 6 }}>
-      {/* Alert Notifications */}
+      
       {success && (
         <Alert severity="success" onClose={() => setSuccess('')} sx={{ mb: 3, borderRadius: 3 }}>
           {success}
@@ -187,7 +183,6 @@ const WorkerDashboard = () => {
       )}
 
       {showSetup ? (
-        /* Setup Form for unconfigured workers */
         <Card sx={{ maxWidth: 550, mx: 'auto', mt: 4, border: '1px solid', borderColor: 'divider' }}>
           <CardContent sx={{ p: 4 }}>
             <Box sx={{ textAlign: 'center', mb: 3 }}>
@@ -281,9 +276,9 @@ const WorkerDashboard = () => {
           </CardContent>
         </Card>
       ) : (
-        /* Standard Worker Dashboard Grid */
+        
         <>
-          {/* Hero Welcome banner */}
+          
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4, flexWrap: 'wrap', gap: 2 }}>
             <Box>
               <Typography variant="h4" fontWeight="800" color="text.primary">
@@ -303,7 +298,7 @@ const WorkerDashboard = () => {
             )}
           </Box>
 
-          {/* Active Job Alert Banner if one is in progress */}
+          
           {activeJob && (
             <Alert
               severity="info"
@@ -327,7 +322,7 @@ const WorkerDashboard = () => {
           )}
 
           <Grid container spacing={4}>
-            {/* Left side: Profile summary & live availability */}
+            
             <Grid size={{ xs: 12, md: 5 }}>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <WorkerProfileCard user={user} profile={profile} />
@@ -351,10 +346,10 @@ const WorkerDashboard = () => {
               </Box>
             </Grid>
 
-            {/* Right side: Quick stats cards & navigation blocks */}
+            
             <Grid size={{ xs: 12, md: 7 }}>
               <Grid container spacing={3}>
-                {/* Pending Bookings count card */}
+                
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Card sx={{ height: '100%', border: '1px solid', borderColor: 'divider' }}>
                     <CardContent sx={{ p: 3, display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -394,7 +389,7 @@ const WorkerDashboard = () => {
                   </Card>
                 </Grid>
 
-                {/* Total jobs completed card */}
+                
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Card sx={{ height: '100%', border: '1px solid', borderColor: 'divider' }}>
                     <CardContent sx={{ p: 3, display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -431,7 +426,7 @@ const WorkerDashboard = () => {
                   </Card>
                 </Grid>
 
-                {/* Quick Link Navigation Blocks */}
+                
                 <Grid size={12}>
                   <Card sx={{ p: 1, border: '1px solid', borderColor: 'divider', background: 'linear-gradient(135deg, #0F1A30 0%, #16243F 100%)' }}>
                     <CardContent sx={{ p: 2 }}>

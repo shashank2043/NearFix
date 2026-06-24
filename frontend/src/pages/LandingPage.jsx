@@ -20,37 +20,28 @@ import { Search, MapPin, Zap, Wrench, Hammer, ShieldCheck, Clock, Award, ArrowRi
 import { useAuth } from '../hooks/useAuth';
 import { workerApi } from '../api/workerApi';
 
-/**
- * Service categories matching seed data.
- */
+
 const SERVICES = [
   { name: 'Electrician', desc: 'Short circuits, wiring repairs, socket fixes', icon: <Zap size={24} />, color: '#00F5D4' },
   { name: 'Plumber', desc: 'Leakages, pipe bursts, tap installations', icon: <Wrench size={24} />, color: '#00B4D8' },
   { name: 'Carpenter', desc: 'Lock repairs, door alignment, furniture fixes', icon: <Hammer size={24} />, color: '#ffb703' },
 ];
 
-/**
- * Trust value matrices.
- */
+
 const TRUST_FACTORS = [
   { title: '15-Min SOS Response', desc: 'Our technicians are dispatched instantly to resolve dangerous failures.', icon: <Clock size={28} /> },
   { title: 'Verified Technicians', desc: 'Every professional is background checked and verified by our admins.', icon: <ShieldCheck size={28} /> },
   { title: 'Insured Services', desc: 'Get peace of mind with insured repairs and transparent flat-rate billing.', icon: <Award size={28} /> },
 ];
 
-/**
- * Mock Client Testimonials.
- */
+
 const TESTIMONIALS = [
   { name: 'Rohan Sharma', role: 'Homeowner', text: 'Sparks were flying from my distribution board. The electrician arrived in 12 minutes and fixed it safely! Incredible response time.', rating: 5 },
   { name: 'Sanjana Sen', role: 'Apartment Tenant', text: 'Main pipe burst in the kitchen on a Sunday evening. Plumber accepted and solved it immediately. NearFix is a lifesaver.', rating: 5 },
   { name: 'Vikram Mehta', role: 'Property Manager', text: 'Transparent billing and verified professionals. Very easy to handle repairs across my rental buildings.', rating: 4.8 },
 ];
 
-/**
- * LandingPage Component
- * A premium homepage inspired by the Urban Company clean search & service tile layout.
- */
+
 const LandingPage = () => {
   const { token, role, isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -95,19 +86,19 @@ const LandingPage = () => {
     e.preventDefault();
     if (!searchQuery) return;
     
-    // Find if search matches any categories
+    
     const query = searchQuery.toLowerCase();
     const matched = SERVICES.find(s => s.name.toLowerCase().includes(query) || s.desc.toLowerCase().includes(query));
     if (matched) {
       handleServiceSelect(matched.name);
     } else {
-      handleServiceSelect('Electrician'); // Default fallback
+      handleServiceSelect('Electrician'); 
     }
   };
 
   return (
     <Box sx={{ width: '100%' }}>
-      {/* 1. Hero Search Section (Urban Company Style) */}
+      
       <Box 
         sx={{ 
           pt: { xs: 8, md: 12 }, 
@@ -145,7 +136,7 @@ const LandingPage = () => {
             NearFix links you directly with verified local plumbers, electricians, and carpenters to solve home emergencies in real-time.
           </Typography>
 
-          {/* Urban Company Search Bar */}
+          
           <Paper
             component="form"
             onSubmit={handleSearchSubmit}
@@ -166,7 +157,7 @@ const LandingPage = () => {
               gap: { xs: 1, sm: 0 }
             }}
           >
-            {/* Location Selector */}
+            
             <FormControl 
               variant="standard"
               sx={{ 
@@ -200,7 +191,7 @@ const LandingPage = () => {
               </Select>
             </FormControl>
 
-            {/* Service Input */}
+            
             <TextField
               fullWidth
               placeholder="Search for 'pipe burst', 'short circuit'..."
@@ -254,7 +245,7 @@ const LandingPage = () => {
             </Button>
           </Paper>
 
-          {/* Logged in redirect option */}
+          
           {isAuthenticated && (
             <Box sx={{ mt: 4 }}>
               <Button
@@ -272,7 +263,7 @@ const LandingPage = () => {
         </Container>
       </Box>
 
-      {/* 2. Service Category Grid */}
+      
       <Container maxWidth="lg" sx={{ py: 10 }}>
         <Box sx={{ mb: 6, textAlign: 'center' }}>
           <Typography variant="h4" fontWeight="800" gutterBottom>
@@ -335,7 +326,7 @@ const LandingPage = () => {
 
       <Divider />
 
-      {/* 3. Trust Matrices Section */}
+      
       <Box sx={{ py: 10, bgcolor: 'background.default' }}>
         <Container maxWidth="lg">
           <Box sx={{ mb: 8, textAlign: 'center' }}>
@@ -378,7 +369,7 @@ const LandingPage = () => {
 
       <Divider />
 
-      {/* 4. Customer Success Testimonials */}
+      
       <Container maxWidth="lg" sx={{ py: 10 }}>
         <Box sx={{ mb: 8, textAlign: 'center' }}>
           <Typography variant="h4" fontWeight="800" gutterBottom>

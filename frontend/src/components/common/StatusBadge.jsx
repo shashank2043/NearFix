@@ -3,12 +3,7 @@ import Chip from '@mui/material/Chip';
 import { getStatusColor } from '../../utils/helpers';
 import { STATUS_LABELS } from '../../utils/constants';
 
-/**
- * Renders a colored, styled badge based on booking or transaction status.
- * @param {Object} props
- * @param {string} props.status
- * @param {'small' | 'medium'} [props.size='small']
- */
+
 const StatusBadge = ({ status, size = 'small' }) => {
   const color = getStatusColor(status);
   const label = STATUS_LABELS[status] || status;

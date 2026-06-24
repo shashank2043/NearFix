@@ -18,11 +18,7 @@ import BookingStatusStepper from '../../components/customer/BookingStatusStepper
 import WorkerCard from '../../components/customer/WorkerCard';
 import Loader from '../../components/common/Loader';
 
-/**
- * TrackingPage Component.
- * Fetches current booking status and details, polls for worker status updates,
- * and renders a static placeholder map representing mock tracking coordinates.
- */
+
 const TrackingPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -53,7 +49,7 @@ const TrackingPage = () => {
     }
   };
 
-  // Poll booking details every 5 seconds to simulate real-time worker changes
+  
   useEffect(() => {
     let active = true;
 
@@ -63,7 +59,7 @@ const TrackingPage = () => {
         if (!active) return;
         setBooking(details);
 
-        // Fetch details of worker if assigned
+        
         if (details.workerId && !workerUser) {
           const profile = await workerApi.getProfileById(details.workerId);
           const userObj = await authApi.getUserById(details.workerId);
@@ -111,7 +107,7 @@ const TrackingPage = () => {
     <Container maxWidth="lg" sx={{ mt: 4, mb: 6 }}>
       <Grid container spacing={4}>
         
-        {/* Live Tracking Column */}
+        
         <Grid xs={12} md={7}>
           <Card sx={{ mb: 4 }}>
             <CardContent sx={{ p: 3 }}>
@@ -122,7 +118,7 @@ const TrackingPage = () => {
                 SOS Dispatch ID: <strong>#{booking.id}</strong> | Service Category: <strong>{booking.serviceType}</strong>
               </Typography>
 
-              {/* Status Stepper */}
+              
               <BookingStatusStepper status={booking.status} />
 
               {!isPaid && !isCompleted && (
@@ -149,7 +145,7 @@ const TrackingPage = () => {
             </CardContent>
           </Card>
 
-          {/* Action Triggers */}
+          
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {isCompleted && (
               <Alert severity="success" sx={{ width: '100%', borderRadius: 2 }}>
@@ -196,13 +192,13 @@ const TrackingPage = () => {
           </Box>
         </Grid>
 
-        {/* Worker Info Map Column */}
+        
         <Grid xs={12} md={5}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             
 
 
-            {/* Helper Card */}
+            
             {workerUser && workerProfile ? (
               <Box>
                 <Typography variant="subtitle2" fontWeight="700" color="text.secondary" sx={{ mb: 1.5 }}>

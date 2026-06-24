@@ -30,13 +30,13 @@ const ComplaintsPage = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // Core Data States
+  
   const [bookings, setBookings] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [workers, setWorkers] = useState([]);
   const [users, setUsers] = useState([]);
 
-  // Filter State
+  
   const [selectedService, setSelectedService] = useState('All');
 
   const loadData = async () => {
@@ -67,7 +67,7 @@ const ComplaintsPage = () => {
     loadData();
   }, []);
 
-  // Merge reviews and bookings with rating <= 2
+  
   const getComplaints = () => {
     return reviews
       .filter(r => Number(r.rating) <= 2)
@@ -87,7 +87,7 @@ const ComplaintsPage = () => {
 
   const complaints = getComplaints();
 
-  // Extract unique service types for filtering dropdown
+  
   const getServiceTypes = () => {
     const services = complaints.map(c => c.serviceType).filter(Boolean);
     return ['All', ...new Set(services)];
@@ -95,7 +95,7 @@ const ComplaintsPage = () => {
 
   const serviceTypesList = getServiceTypes();
 
-  // Filter complaints list
+  
   const filteredComplaints = selectedService === 'All'
     ? complaints
     : complaints.filter(c => c.serviceType === selectedService);
@@ -105,7 +105,7 @@ const ComplaintsPage = () => {
       setError('');
       setSuccess('');
 
-      // Send request to suspend/unverify worker profile
+      
       await workerApi.verifyWorker(workerId, false);
 
       setSuccess(`Worker ID ${workerId} has been flagged for low quality reports.`);
@@ -122,7 +122,7 @@ const ComplaintsPage = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 2 }}>
-      {/* Complaints Header */}
+      
       <AdminHeader 
         title="Complaints & Quality Desk" 
         subtitle="Audit emergency calls that received low customer reviews (rating ≤ 2). Flag workers who breach compliance rules."
@@ -140,7 +140,7 @@ const ComplaintsPage = () => {
         </Alert>
       )}
 
-      {/* Filter and Action bar */}
+      
       <Card sx={{ mb: 4 }}>
         <CardContent sx={{ p: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -169,7 +169,7 @@ const ComplaintsPage = () => {
         </CardContent>
       </Card>
 
-      {/* Complaints Table Grid */}
+      
       {filteredComplaints.length === 0 ? (
         <EmptyState 
           title="No Active Complaints"

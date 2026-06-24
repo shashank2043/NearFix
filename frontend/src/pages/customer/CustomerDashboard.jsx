@@ -19,10 +19,7 @@ import Loader from '../../components/common/Loader';
 import EmptyState from '../../components/common/EmptyState';
 import { formatDate } from '../../utils/helpers';
 
-/**
- * Customer Main Dashboard.
- * Displays greeting headers, prominent red SOS dispatches, quick categories, and a summary list of recent bookings.
- */
+
 const CustomerDashboard = () => {
   const { user } = useAuth();
   const { fetchMyBookings, loading, error } = useBooking();
@@ -57,7 +54,7 @@ const CustomerDashboard = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 6 }}>
-      {/* Welcome Banner */}
+      
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" fontWeight="800" gutterBottom color="text.primary">
           Hello, {user?.fullName || 'Customer'}
@@ -67,7 +64,7 @@ const CustomerDashboard = () => {
         </Typography>
       </Box>
 
-      {/* SOS Button Area */}
+      
       <Card 
         sx={{ 
           bgcolor: 'error.dark', 
@@ -131,7 +128,7 @@ const CustomerDashboard = () => {
         </CardContent>
       </Card>
 
-      {/* Quick Services Grid */}
+      
       <Box sx={{ mb: 5 }}>
         <Typography variant="h6" fontWeight="700" sx={{ mb: 2.5 }} color="text.primary">
           Quick Select Categories
@@ -176,7 +173,7 @@ const CustomerDashboard = () => {
         </Grid>
       </Box>
 
-      {/* Recent Bookings */}
+      
       <Box>
         <Typography variant="h6" fontWeight="700" sx={{ mb: 2.5 }} color="text.primary">
           Recent SOS Bookings

@@ -8,7 +8,7 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import { Star } from 'lucide-react';
 
-// Form validation schema
+
 const reviewSchema = Yup.object().shape({
   rating: Yup.number()
     .required('Rating is required')
@@ -19,12 +19,7 @@ const reviewSchema = Yup.object().shape({
     .max(1000, 'Comment must be at most 1000 characters')
 });
 
-/**
- * Reusable Feedback and Rating Stars Submission Form.
- * @param {Object} props
- * @param {function} props.onSubmit - Submission callback returning {rating, comment}
- * @param {boolean} props.loading - Form loading lock
- */
+
 const ReviewForm = ({ onSubmit, loading }) => {
   const [hoverRating, setHoverRating] = useState(0);
 
@@ -54,7 +49,7 @@ const ReviewForm = ({ onSubmit, loading }) => {
     <form onSubmit={formik.handleSubmit}>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3.5 }}>
         
-        {/* Rating Selector */}
+        
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
           <Typography variant="body2" fontWeight="700" color="text.secondary">
             How would you rate the technician's speed & quality?

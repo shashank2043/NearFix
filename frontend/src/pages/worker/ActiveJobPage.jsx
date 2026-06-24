@@ -28,7 +28,7 @@ const parseCoordinates = (addressStr) => {
 };
 
 const calculateHaversineDistance = (lat1, lon1, lat2, lon2) => {
-  const R = 6371; // Radius of Earth in km
+  const R = 6371; 
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const a =
@@ -41,12 +41,7 @@ const calculateHaversineDistance = (lat1, lon1, lat2, lon2) => {
   return R * c;
 };
 
-/**
- * ActiveJobPage Component
- * Manages the layout and logic for the current active job dispatch.
- * Performs real-time updates to advance the booking status, manages worker duty status,
- * and renders customer contact and location HUD components.
- */
+
 const ActiveJobPage = () => {
   const { user } = useAuth();
   const { fetchWorkerBookings, updateBookingStatus, updateAvailability, loading: hookLoading } = useWorkers();
@@ -75,7 +70,7 @@ const ActiveJobPage = () => {
         let workerLat = pos.coords.latitude;
         let workerLng = pos.coords.longitude;
 
-        // Snap to customer coords if offset is > 50km
+        
         const custLoc = parseCoordinates(activeJob.address);
         if (custLoc) {
           const dist = calculateHaversineDistance(workerLat, workerLng, custLoc.latitude, custLoc.longitude);
@@ -110,7 +105,7 @@ const ActiveJobPage = () => {
     try {
       setError('');
       const bookingsList = await fetchWorkerBookings(user.id);
-      // Look for any job that is currently active or recently marked complete
+      
       const job = bookingsList.find((b) =>
         ['ACCEPTED', 'ON_THE_WAY', 'WORK_STARTED', 'WORK_COMPLETED'].includes(b.status)
       );
@@ -139,12 +134,12 @@ const ActiveJobPage = () => {
             let workerLat = pos.coords.latitude;
             let workerLng = pos.coords.longitude;
 
-            // Check if we need to snap to customer coordinates to prevent 100km+ inter-city values
+            
             const custLoc = parseCoordinates(activeJob.address);
             if (custLoc) {
               const dist = calculateHaversineDistance(workerLat, workerLng, custLoc.latitude, custLoc.longitude);
               if (dist > 50) {
-                // snap close to customer
+                
                 workerLat = custLoc.latitude + (Math.random() * 0.01 - 0.005);
                 workerLng = custLoc.longitude + (Math.random() * 0.01 - 0.005);
               }
@@ -176,7 +171,7 @@ const ActiveJobPage = () => {
       await updateBookingStatus(bookingId, nextStatus, extraData);
 
       if (nextStatus === 'WORK_COMPLETED') {
-        // Free up the worker status back to AVAILABLE
+        
         try {
           await updateAvailability(user.id, 'AVAILABLE');
         } catch (err) {
@@ -187,7 +182,7 @@ const ActiveJobPage = () => {
         setSuccess(`Status updated to: ${nextStatus.replace(/_/g, ' ')}`);
       }
 
-      // Reload job state
+      
       await loadActiveJob();
     } catch (err) {
       console.error(err);
@@ -203,7 +198,7 @@ const ActiveJobPage = () => {
 
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 6 }}>
-      {/* Header Panel */}
+      
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4 }}>
         <Button
           variant="outlined"
@@ -224,7 +219,7 @@ const ActiveJobPage = () => {
         </Box>
       </Box>
 
-      {/* Notifications */}
+      
       {success && (
         <Alert severity="success" onClose={() => setSuccess('')} sx={{ mb: 3, borderRadius: 3 }}>
           {success}

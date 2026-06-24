@@ -27,7 +27,7 @@ const WorkerVerificationPage = () => {
   const [workers, setWorkers] = useState([]);
   const [users, setUsers] = useState([]);
   
-  // Tab State: 0 = All, 1 = Pending, 2 = Approved, 3 = Rejected
+  
   const [tabValue, setTabValue] = useState(1); 
 
   const loadData = async () => {
@@ -57,7 +57,7 @@ const WorkerVerificationPage = () => {
       setError('');
       setSuccess('');
       
-      // Update worker verificationStatus to APPROVED, set verified to true via backend API
+      
       await workerApi.verifyWorker(id, true);
 
       setSuccess('Worker profile approved and activated successfully.');
@@ -73,7 +73,7 @@ const WorkerVerificationPage = () => {
       setError('');
       setSuccess('');
 
-      // Update worker verificationStatus to REJECTED, set verified to false via backend API
+      
       await workerApi.verifyWorker(id, false);
 
       setSuccess('Worker profile rejected.');
@@ -90,25 +90,25 @@ const WorkerVerificationPage = () => {
     setError('');
   };
 
-  // Helper to find associated user object
+  
   const getWorkerUser = (workerId) => {
     return users.find(u => u.id === workerId) || {};
   };
 
-  // Filter workers based on active tab
+  
   const getFilteredWorkers = () => {
     return workers.filter(worker => {
-      // Resolve status safely
+      
       const status = worker.verificationStatus || (worker.verified ? 'APPROVED' : 'PENDING');
       
       switch (tabValue) {
-        case 1: // Pending
+        case 1: 
           return status === 'PENDING' || (!worker.verified && worker.verificationStatus !== 'REJECTED' && worker.verificationStatus !== 'APPROVED');
-        case 2: // Approved
+        case 2: 
           return status === 'APPROVED' || worker.verified === true;
-        case 3: // Rejected
+        case 3: 
           return status === 'REJECTED';
-        case 0: // All
+        case 0: 
         default:
           return true;
       }
@@ -123,7 +123,7 @@ const WorkerVerificationPage = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 2 }}>
-      {/* Dynamic Header */}
+      
       <AdminHeader 
         title="Worker Verification Workspace" 
         subtitle="Manage and inspect emergency technician profiles, credentials, and identity verification numbers."
@@ -141,7 +141,7 @@ const WorkerVerificationPage = () => {
         </Alert>
       )}
 
-      {/* Filter Options */}
+      
       <Paper 
         sx={{ 
           mb: 4, 
@@ -173,7 +173,7 @@ const WorkerVerificationPage = () => {
         </Tabs>
       </Paper>
 
-      {/* Grid List */}
+      
       {filteredWorkers.length === 0 ? (
         <EmptyState 
           title={

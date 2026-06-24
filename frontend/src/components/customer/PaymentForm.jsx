@@ -13,7 +13,7 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { CreditCard, Smartphone, ShieldCheck } from 'lucide-react';
 
-// Conditional payment validation schema
+
 const paymentSchema = Yup.object().shape({
   method: Yup.string().required('Payment method is required'),
   upiId: Yup.string().when('method', {
@@ -46,13 +46,7 @@ const paymentSchema = Yup.object().shape({
   }),
 });
 
-/**
- * Reusable Payment Selection and Details Form.
- * @param {Object} props
- * @param {function} props.onSubmit - Submission callback returning selector credentials
- * @param {boolean} props.loading - Processing state
- * @param {number} props.amount - Price summary total
- */
+
 const PaymentForm = ({ onSubmit, loading, amount }) => {
   const formik = useFormik({
     initialValues: {
@@ -86,7 +80,7 @@ const PaymentForm = ({ onSubmit, loading, amount }) => {
         >
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             
-            {/* UPI Option */}
+            
             <Box
               sx={{
                 display: 'flex',
@@ -133,7 +127,7 @@ const PaymentForm = ({ onSubmit, loading, amount }) => {
               </Box>
             )}
 
-            {/* CARD Option */}
+            
             <Box
               sx={{
                 display: 'flex',
@@ -218,7 +212,7 @@ const PaymentForm = ({ onSubmit, loading, amount }) => {
         </RadioGroup>
       </FormControl>
 
-      {/* Safety Notice */}
+      
       <Box 
         sx={{ 
           display: 'flex',
@@ -238,7 +232,7 @@ const PaymentForm = ({ onSubmit, loading, amount }) => {
         </Typography>
       </Box>
 
-      {/* Action Button */}
+      
       <Button
         type="submit"
         variant="contained"

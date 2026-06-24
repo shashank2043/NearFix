@@ -66,7 +66,7 @@ const AnalyticsPage = () => {
     loadData();
   }, []);
 
-  // 1. Compute total revenue by service type (for Pie Chart)
+  
   const getRevenueByServiceType = () => {
     const revenueMap = {};
     const completedPayments = payments.filter(p => p.status === 'COMPLETED' || p.status === 'SUCCESS');
@@ -83,7 +83,7 @@ const AnalyticsPage = () => {
       value: revenueMap[service],
     }));
 
-    // Fallback if no payment records yet
+    
     if (dataset.length === 0) {
       return [
         { name: 'Electrician', value: 0 },
@@ -97,7 +97,7 @@ const AnalyticsPage = () => {
 
   const revenueByServiceData = getRevenueByServiceType();
 
-  // 2. Compute bookings per day (for Bar Chart)
+  
   const getBookingsPerDay = () => {
     const chartData = [];
     const today = new Date();
@@ -127,7 +127,7 @@ const AnalyticsPage = () => {
 
   const bookingsPerDayData = getBookingsPerDay();
 
-  // 3. Compute Top 5 workers by rating
+  
   const getTopWorkers = () => {
     return [...workers]
       .sort((a, b) => (b.rating || 0) - (a.rating || 0))
@@ -149,7 +149,7 @@ const AnalyticsPage = () => {
 
   const topWorkers = getTopWorkers();
 
-  // 4. Top 5 busiest locations (mock table)
+  
   const busiestLocations = [
     { rank: 1, neighborhood: 'Green Glen Layout, Bangalore', requestCount: 48, topService: 'Electrician' },
     { rank: 2, neighborhood: 'HSR Layout, Bangalore', requestCount: 39, topService: 'Plumber' },
@@ -164,7 +164,7 @@ const AnalyticsPage = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 2 }}>
-      {/* Analytics Header */}
+      
       <AdminHeader 
         title="Performance Analytics" 
         subtitle="Deconstruct platform performance: revenues per category, booking frequency, top emergency workers, and active service zones."
@@ -176,7 +176,7 @@ const AnalyticsPage = () => {
         </Alert>
       )}
 
-      {/* Row 1: Graphs */}
+      
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid size={{ xs: 12, md: 6 }}>
           <AnalyticsChart 
@@ -201,9 +201,9 @@ const AnalyticsPage = () => {
         </Grid>
       </Grid>
 
-      {/* Row 2: Top Lists Tables */}
+      
       <Grid container spacing={3}>
-        {/* Top 5 Workers */}
+        
         <Grid size={{ xs: 12, md: 7 }}>
           <Card sx={{ height: '100%' }}>
             <CardContent sx={{ p: 3 }}>
@@ -298,7 +298,7 @@ const AnalyticsPage = () => {
           </Card>
         </Grid>
 
-        {/* Top 5 Busiest Locations (Mock Table) */}
+        
         <Grid size={{ xs: 12, md: 5 }}>
           <Card sx={{ height: '100%' }}>
             <CardContent sx={{ p: 3 }}>

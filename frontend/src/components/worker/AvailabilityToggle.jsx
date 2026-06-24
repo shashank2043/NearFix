@@ -5,14 +5,7 @@ import ToggleButton from '@mui/material/ToggleButton';
 import Typography from '@mui/material/Typography';
 import { CheckCircle2, AlertCircle, XCircle } from 'lucide-react';
 
-/**
- * AvailabilityToggle Component
- * A stylized 3-state selector (AVAILABLE / BUSY / UNAVAILABLE) with color coding and smooth hover effects.
- * 
- * @param {string} status - Current status of the worker.
- * @param {function} onChange - Callback triggered when status is toggled.
- * @param {boolean} disabled - Whether the toggle is interactive.
- */
+
 const AvailabilityToggle = ({ status, onChange, disabled = false }) => {
   const handleAlignment = (event, newStatus) => {
     if (newStatus !== null && onChange) {

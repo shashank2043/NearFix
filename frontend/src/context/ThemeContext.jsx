@@ -11,7 +11,7 @@ export const ThemeContext = createContext({
 export const ThemeContextProvider = ({ children }) => {
   const [mode, setMode] = useState(() => {
     const savedMode = localStorage.getItem('themeMode');
-    // Default to 'dark' for the premium dark navy + teal accent aesthetic
+    
     return savedMode ? savedMode : 'dark';
   });
 

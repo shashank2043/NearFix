@@ -38,10 +38,10 @@ import EmptyState from '../../components/common/EmptyState';
 const Dashboard = () => {
   const { user, setUser } = useAuth();
 
-  // Navigation tab index
+  
   const [tabValue, setTabValue] = useState(0);
 
-  // States
+  
   const [loading, setLoading] = useState(true);
   const [workerProfile, setWorkerProfile] = useState(null);
   const [availableRequests, setAvailableRequests] = useState([]);
@@ -51,7 +51,7 @@ const Dashboard = () => {
   const [success, setSuccess] = useState('');
   const [cities, setCities] = useState([]);
 
-  // Profile Formik Form
+  
   const profileFormik = useFormik({
     enableReinitialize: true,
     initialValues: {
@@ -97,13 +97,13 @@ const Dashboard = () => {
     },
   });
 
-  // Fetch all dashboard data
+  
   const loadDashboardData = async () => {
     try {
       setLoading(true);
       setError('');
 
-      // Fetch operating cities
+      
       try {
         const list = await workerApi.getCities();
         setCities(list);
@@ -111,35 +111,35 @@ const Dashboard = () => {
         console.warn('Could not load operating cities list:', err);
       }
 
-      // 1. Fetch Worker Profile
+      
       let profile;
       try {
         profile = await workerApi.getProfileById(user.id);
         setWorkerProfile(profile);
       } catch (err) {
-        // Profile might not exist yet, we will prompt worker to create profile
+        
         console.warn('Worker profile not found. Need creation.');
       }
 
       if (profile) {
-        // 2. Fetch Bookings
+        
         const allBookings = await bookingApi.getAllBookings();
         
-        // Match AVAILABLE jobs (Requested status AND matches worker's skill)
+        
         const matchedRequests = allBookings.filter(
           (b) => b.status === 'REQUESTED' && b.serviceType === profile.skill
         );
         setAvailableRequests(matchedRequests);
 
-        // Fetch ACTIVE jobs (Assigned to this worker and not fully closed)
+        
         const workerAssignedJobs = allBookings.filter(
           (b) => b.workerId === user.id && ['ACCEPTED', 'ON_THE_WAY', 'WORK_STARTED'].includes(b.status)
         );
         setActiveJobs(workerAssignedJobs);
 
-        // 3. Fetch Payments & compute earnings
+        
         const payments = await paymentApi.getAllPayments();
-        // Filter payments matching completed bookings of this worker
+        
         const completedBookingIds = allBookings
           .filter((b) => b.workerId === user.id && ['WORK_COMPLETED', 'PAID'].includes(b.status))
           .map((b) => b.id);
@@ -178,10 +178,10 @@ const Dashboard = () => {
 
   const handleAcceptJob = async (bookingId) => {
     try {
-      // 1. Assign worker and update booking status to ACCEPTED
+      
       await bookingApi.assignWorker(bookingId, user.id);
       
-      // 2. Set worker status to BUSY
+      
       const updatedProfile = await workerApi.updateStatus(user.id, 'BUSY');
       setWorkerProfile(updatedProfile);
 
@@ -202,7 +202,7 @@ const Dashboard = () => {
       await bookingApi.updateBookingStatus(bookingId, nextStatus);
       
       if (nextStatus === 'WORK_COMPLETED') {
-        // Free up the worker status back to AVAILABLE
+        
         const updatedProfile = await workerApi.updateStatus(user.id, 'AVAILABLE');
         setWorkerProfile(updatedProfile);
         setSuccess('Work completed! Earnings added to your ledger.');
@@ -225,7 +225,7 @@ const Dashboard = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 6 }}>
-      {/* Notifications */}
+      
       {success && (
         <Alert severity="success" onClose={() => setSuccess('')} sx={{ mb: 3, borderRadius: 2 }}>
           {success}
@@ -237,7 +237,7 @@ const Dashboard = () => {
         </Alert>
       )}
 
-      {/* Tabs Layout */}
+      
       <Tabs value={tabValue} onChange={handleTabChange} sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }} color="secondary">
         <Tab label="Worker Dashboard" icon={<ClipboardList size={16} />} iconPosition="start" />
         <Tab label="Profile Details" icon={<User size={16} />} iconPosition="start" />
@@ -245,7 +245,7 @@ const Dashboard = () => {
 
       {tabValue === 0 && (
         <>
-          {/* Metrics Row */}
+          
           <Grid container spacing={3} sx={{ mb: 4 }}>
             <Grid item xs={12} sm={4}>
               <Card>

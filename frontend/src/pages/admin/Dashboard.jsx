@@ -27,10 +27,10 @@ import Loader from '../../components/common/Loader';
 import EmptyState from '../../components/common/EmptyState';
 
 const Dashboard = () => {
-  // Navigation Tabs state
+  
   const [tabValue, setTabValue] = useState(0);
 
-  // States
+  
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState([]);
   const [workers, setWorkers] = useState([]);
@@ -39,7 +39,7 @@ const Dashboard = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // Complaint Management Mock State
+  
   const [complaints, setComplaints] = useState([
     {
       id: 'CMP-101',
@@ -62,7 +62,7 @@ const Dashboard = () => {
       setLoading(true);
       setError('');
 
-      // Fetch all core system data
+      
       const allBookings = await bookingApi.getAllBookings();
       setBookings(allBookings);
 
@@ -72,12 +72,12 @@ const Dashboard = () => {
       const allPayments = await paymentApi.getAllPayments();
       setPayments(allPayments);
 
-      // Fetch all users
-      // Since json-server /users gets everyone, we fetch that list.
-      const usersCheck = await authApi.getUserById(''); // standard query to get all if no id, or we fetch manually using custom fetch
-      // Wait, let's verify if authApi.getUserById('') gets all, or if we can make a direct call.
-      // If we look at authApi: getUserById: (id) => axiosInstance.get(`/users/${id}`)
-      // If we pass empty string, it fetches `/users/` which gets all users in json-server. This is perfect!
+      
+      
+      const usersCheck = await authApi.getUserById(''); 
+      
+      
+      
       const responseUsers = await authApi.getUserById('');
       setUsers(Array.isArray(responseUsers) ? responseUsers : [responseUsers]);
     } catch (err) {
@@ -94,10 +94,10 @@ const Dashboard = () => {
 
   const handleApproveWorker = async (workerId) => {
     try {
-      // 1. Verify worker profile
+      
       await workerApi.verifyWorker(workerId, true);
       
-      // 2. Set worker status to AVAILABLE (online)
+      
       await workerApi.updateStatus(workerId, 'AVAILABLE');
 
       setSuccess('Worker verified and activated successfully!');
@@ -109,7 +109,7 @@ const Dashboard = () => {
 
   const handleRejectWorker = async (workerId) => {
     try {
-      // Reject worker sets verified to false and status UNAVAILABLE
+      
       await workerApi.verifyWorker(workerId, false);
       await workerApi.updateStatus(workerId, 'UNAVAILABLE');
       
@@ -133,23 +133,23 @@ const Dashboard = () => {
     setSuccess('');
   };
 
-  // Metrics computation
+  
   const totalUsersCount = users.length;
   const workersCount = workers.length;
   const bookingsCount = bookings.length;
-  // Sum payments with SUCCESS/COMPLETED status
+  
   const grossRevenue = payments
     .filter((p) => p.status === 'COMPLETED' || p.status === 'SUCCESS')
     .reduce((sum, curr) => sum + curr.amount, 0);
 
-  // Filter workers awaiting verification
+  
   const pendingWorkers = workers.filter((w) => !w.verified);
 
   if (loading) return <Loader message="Compiling admin dashboard ledger..." />;
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 6 }}>
-      {/* Alert logs */}
+      
       {success && (
         <Alert severity="success" onClose={() => setSuccess('')} sx={{ mb: 3, borderRadius: 2 }}>
           {success}
@@ -161,7 +161,7 @@ const Dashboard = () => {
         </Alert>
       )}
 
-      {/* Metrics Header */}
+      
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={3}>
           <Card>
@@ -233,14 +233,14 @@ const Dashboard = () => {
         </Grid>
       </Grid>
 
-      {/* Tabs */}
+      
       <Tabs value={tabValue} onChange={handleTabChange} sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }} color="secondary">
         <Tab label={`Worker Verification (${pendingWorkers.length})`} icon={<ShieldCheck size={16} />} iconPosition="start" />
         <Tab label="Booking Registry" icon={<FileText size={16} />} iconPosition="start" />
         <Tab label="Complaints Desk" icon={<AlertTriangle size={16} />} iconPosition="start" />
       </Tabs>
 
-      {/* Verification tab */}
+      
       {tabValue === 0 && (
         <Card>
           <CardContent>
@@ -306,7 +306,7 @@ const Dashboard = () => {
         </Card>
       )}
 
-      {/* Bookings log tab */}
+      
       {tabValue === 1 && (
         <Card>
           <CardContent>
@@ -359,7 +359,7 @@ const Dashboard = () => {
         </Card>
       )}
 
-      {/* Complaints desk tab */}
+      
       {tabValue === 2 && (
         <Card>
           <CardContent>

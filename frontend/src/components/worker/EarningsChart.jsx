@@ -4,9 +4,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 
-/**
- * Custom Tooltip component for the Recharts BarChart.
- */
+
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
@@ -32,12 +30,7 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
-/**
- * EarningsChart Component
- * Renders a stylized bar chart representing daily earnings.
- * 
- * @param {Array} data - Array of objects matching { name: string, amount: number }.
- */
+
 const EarningsChart = ({ data }) => {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
@@ -70,7 +63,7 @@ const EarningsChart = ({ data }) => {
     );
   }
 
-  // Accent colors for the bars
+  
   const fillGradient = isDark ? '#00F5D4' : '#00B4D8';
   const gridColor = isDark ? '#1E293B' : '#E2E8F0';
 

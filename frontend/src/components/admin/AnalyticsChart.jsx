@@ -20,19 +20,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import { useTheme } from '@mui/material/styles';
 
-/**
- * Reusable Analytics Chart component integrating with Recharts.
- * Supports line, bar, and pie charts.
- * 
- * @param {Object} props
- * @param {string} props.title - Title of the chart card
- * @param {'line' | 'bar' | 'pie'} props.type - Chart representation type
- * @param {Array<Object>} props.data - Dataset array
- * @param {string} [props.xAxisKey] - X-axis data property name (for line & bar)
- * @param {string} props.dataKey - Value data property name
- * @param {Array<string>} [props.colors] - Override colors for charts
- * @param {number} [props.height=300] - Render height of chart container
- */
+
 const AnalyticsChart = ({
   title,
   type,
@@ -62,14 +50,14 @@ const AnalyticsChart = ({
     };
   }, []);
   
-  // Resolve theme colors
+  
   const defaultColors = theme.palette.mode === 'light'
-    ? ['#0B192C', '#00B4D8', '#48CAE4', '#0077B6', '#94A3B8'] // Light mode palette
-    : ['#00F5D4', '#00B4D8', '#48CAE4', '#0077B6', '#1E293B']; // Dark mode palette
+    ? ['#0B192C', '#00B4D8', '#48CAE4', '#0077B6', '#94A3B8'] 
+    : ['#00F5D4', '#00B4D8', '#48CAE4', '#0077B6', '#1E293B']; 
 
   const activeColors = colors || defaultColors;
 
-  // Custom tooltips for premium visual card look
+  
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (

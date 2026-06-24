@@ -11,14 +11,7 @@ import Grid from '@mui/material/Grid';
 import { Award, MapPin, Shield, FileText, Check, X, ShieldCheck, ShieldAlert, ShieldAlert as PendingIcon } from 'lucide-react';
 import { useTheme } from '@mui/material/styles';
 
-/**
- * WorkerVerificationCard component.
- * @param {Object} props
- * @param {Object} props.worker - The worker profile details
- * @param {Object} props.workerUser - The corresponding user details (fullName, email, phone)
- * @param {Function} props.onApprove - Action when Approve is clicked
- * @param {Function} props.onReject - Action when Reject is clicked
- */
+
 const WorkerVerificationCard = ({ worker, workerUser = {}, onApprove, onReject }) => {
   const theme = useTheme();
   
@@ -27,10 +20,10 @@ const WorkerVerificationCard = ({ worker, workerUser = {}, onApprove, onReject }
   const email = workerUser.email || 'N/A';
   const phone = workerUser.phone || 'N/A';
 
-  // Fallback for Aadhaar if not present in worker object
+  
   const displayAadhaar = aadhaarNumber || worker.aadhaar || 'Not Provided';
 
-  // Determine status badge
+  
   let badgeColor = 'warning';
   let badgeLabel = 'Pending';
   let badgeIcon = <PendingIcon size={14} />;
@@ -60,7 +53,7 @@ const WorkerVerificationCard = ({ worker, workerUser = {}, onApprove, onReject }
       }}
     >
       <CardContent sx={{ p: 3 }}>
-        {/* Top Section: Avatar & Status */}
+        
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2.5 }}>
           <Box sx={{ display: 'flex', gap: 2 }}>
             <Avatar 
@@ -96,7 +89,7 @@ const WorkerVerificationCard = ({ worker, workerUser = {}, onApprove, onReject }
 
         <Divider sx={{ mb: 2 }} />
 
-        {/* Worker Professional Details */}
+        
         <Grid container spacing={2} sx={{ mb: 2.5 }}>
           <Grid size={6}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -148,14 +141,14 @@ const WorkerVerificationCard = ({ worker, workerUser = {}, onApprove, onReject }
           </Box>
         </Box>
 
-        {/* Contact Info (Visible to Admin) */}
+        
         <Box sx={{ mb: 3 }}>
           <Typography variant="caption" color="text.secondary" display="block">
             Contact: <span style={{ fontWeight: 600, color: theme.palette.text.primary }}>{phone}</span> | Email: <span style={{ fontWeight: 600, color: theme.palette.text.primary }}>{email}</span>
           </Typography>
         </Box>
 
-        {/* Action Buttons */}
+        
         {(!verificationStatus || verificationStatus === 'PENDING' || (!worker.verified && verificationStatus !== 'REJECTED')) && (
           <Box display="flex" sx={{ gap: 2 }}>
             <Button

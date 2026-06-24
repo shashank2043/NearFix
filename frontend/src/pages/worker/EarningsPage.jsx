@@ -25,18 +25,14 @@ import EarningsChart from '../../components/worker/EarningsChart';
 import Loader from '../../components/common/Loader';
 import EmptyState from '../../components/common/EmptyState';
 
-/**
- * EarningsPage Component
- * Provides a financial dashboard for workers. Integrates a Recharts bar chart
- * and completed jobs feed, filterable by Today, This Week, or This Month timeframes.
- */
+
 const EarningsPage = () => {
   const { user } = useAuth();
   const { fetchWorkerBookings, loading: hookLoading } = useWorkers();
   const navigate = useNavigate();
 
-  // Tab Index: 0 -> Today, 1 -> This Week, 2 -> This Month
-  const [tabValue, setTabValue] = useState(1); // Default to "This Week"
+  
+  const [tabValue, setTabValue] = useState(1); 
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -44,7 +40,7 @@ const EarningsPage = () => {
   const [allBookings, setAllBookings] = useState([]);
   const [usersMap, setUsersMap] = useState({});
 
-  // States filtered by current tab selection
+  
   const [summaryAmount, setSummaryAmount] = useState(0);
   const [filteredBookings, setFilteredBookings] = useState([]);
   const [chartData, setChartData] = useState([]);
@@ -55,23 +51,23 @@ const EarningsPage = () => {
       setLoading(true);
       setError('');
 
-      // 1. Fetch completed bookings for this worker
+      
       const bookingsList = await fetchWorkerBookings(user.id);
       const completedBookings = bookingsList.filter((b) =>
         ['WORK_COMPLETED', 'PAID'].includes(b.status)
       );
       setAllBookings(completedBookings);
 
-      // 2. Fetch payments
+      
       const paymentsList = await paymentApi.getAllPayments();
-      // Filter payments belonging to this worker's completed bookings
+      
       const completedIds = completedBookings.map((b) => b.id);
       const workerPayments = paymentsList.filter(
         (p) => completedIds.includes(p.bookingId) && (p.status === 'COMPLETED' || p.status === 'SUCCESS')
       );
       setAllPayments(workerPayments);
 
-      // 3. Fetch all users to map customer IDs to names
+      
       try {
         const usersResponse = await axiosInstance.get('/api/auth/users');
         const map = {};
@@ -97,21 +93,21 @@ const EarningsPage = () => {
   useEffect(() => {
     if (loading) return;
 
-    // Filter calculations based on tab selection
+    
     const now = new Date();
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     
-    // Start of week: 7 days ago
+    
     const startOfWeek = new Date(startOfToday.getTime() - 7 * 24 * 60 * 60 * 1000);
     
-    // Start of month: 30 days ago
+    
     const startOfMonth = new Date(startOfToday.getTime() - 30 * 24 * 60 * 60 * 1000);
 
     let thresholdDate = startOfWeek;
     if (tabValue === 0) thresholdDate = startOfToday;
     if (tabValue === 2) thresholdDate = startOfMonth;
 
-    // Filter payments
+    
     const matchedPayments = allPayments.filter((p) => {
       const dateStr = p.paymentDate || allBookings.find((b) => b.id === p.bookingId)?.createdAt;
       if (!dateStr) return false;
@@ -119,19 +115,19 @@ const EarningsPage = () => {
       return pDate >= thresholdDate;
     });
 
-    // Calculate total amount
+    
     const total = matchedPayments.reduce((sum, curr) => sum + curr.amount, 0);
     setSummaryAmount(total);
 
-    // Find the corresponding completed bookings to list
+    
     const matchedBookingIds = matchedPayments.map((p) => p.bookingId);
     const matchedBookings = allBookings.filter((b) => matchedBookingIds.includes(b.id));
     setFilteredBookings(matchedBookings);
 
-    // Compute chart data depending on time period
+    
     let computedChart = [];
     if (tabValue === 0 || tabValue === 1) {
-      // 7 Days Daily Breakdown
+      
       const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
       for (let i = 6; i >= 0; i--) {
         const d = new Date(startOfToday.getTime() - i * 24 * 60 * 60 * 1000);
@@ -153,7 +149,7 @@ const EarningsPage = () => {
         }
       });
     } else {
-      // 30 Days Breakdown
+      
       for (let i = 29; i >= 0; i--) {
         const d = new Date(startOfToday.getTime() - i * 24 * 60 * 60 * 1000);
         const label = `${d.getDate()} ${d.toLocaleString('en-US', { month: 'short' })}`;
@@ -182,7 +178,7 @@ const EarningsPage = () => {
     return <Loader message="Reconciliation of accounts..." />;
   }
 
-  // Get matching payment amount for a specific booking
+  
   const getBookingAmount = (bookingId) => {
     const payment = allPayments.find((p) => p.bookingId === bookingId);
     return payment ? payment.amount : 0;
@@ -190,7 +186,7 @@ const EarningsPage = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 6 }}>
-      {/* Header Panel */}
+      
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4 }}>
         <Button
           variant="outlined"
@@ -217,7 +213,7 @@ const EarningsPage = () => {
         </Alert>
       )}
 
-      {/* Filter Tabs */}
+      
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 4 }}>
         <Tabs
           value={tabValue}
@@ -233,10 +229,10 @@ const EarningsPage = () => {
       </Box>
 
       <Grid container spacing={4}>
-        {/* Left Column: Financial Card + Recharts Bar Chart */}
+        
         <Grid size={{ xs: 12, md: 7 }}>
           <Grid container spacing={3}>
-            {/* Earnings Summary Card */}
+            
             <Grid size={{ xs: 12, sm: 6 }}>
               <Card sx={{ border: '1px solid', borderColor: 'divider' }}>
                 <CardContent sx={{ p: 3, display: 'flex', alignItems: 'center', gap: 2.5 }}>
@@ -255,7 +251,7 @@ const EarningsPage = () => {
               </Card>
             </Grid>
 
-            {/* Total Jobs Summary Card */}
+            
             <Grid size={{ xs: 12, sm: 6 }}>
               <Card sx={{ border: '1px solid', borderColor: 'divider' }}>
                 <CardContent sx={{ p: 3, display: 'flex', alignItems: 'center', gap: 2.5 }}>
@@ -274,7 +270,7 @@ const EarningsPage = () => {
               </Card>
             </Grid>
 
-            {/* Earnings Chart Card */}
+            
             <Grid size={12}>
               <Card sx={{ border: '1px solid', borderColor: 'divider' }}>
                 <CardContent sx={{ p: 3 }}>
@@ -291,7 +287,7 @@ const EarningsPage = () => {
           </Grid>
         </Grid>
 
-        {/* Right Column: Statement list of Completed Jobs */}
+        
         <Grid size={{ xs: 12, md: 5 }}>
           <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', border: '1px solid', borderColor: 'divider' }}>
             <CardContent sx={{ p: 4, display: 'flex', flexDirection: 'column', height: '100%' }}>

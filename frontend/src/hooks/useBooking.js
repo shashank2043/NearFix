@@ -3,19 +3,14 @@ import { bookingApi } from '../api/bookingApi';
 import { useAuth } from './useAuth';
 import { useToast } from './useToast';
 
-/**
- * Custom hook to manage booking operations for the active session.
- * Integrates global toast alerts for consistent error feedbacks.
- */
+
 export const useBooking = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const { showToast } = useToast();
 
-  /**
-   * Fetches a booking by its unique ID.
-   */
+  
   const fetchBookingById = useCallback(async (id) => {
     setLoading(true);
     setError(null);
@@ -32,16 +27,14 @@ export const useBooking = () => {
     }
   }, [showToast]);
 
-  /**
-   * Fetches all bookings belonging to the currently logged in customer.
-   */
+  
   const fetchMyBookings = useCallback(async () => {
     if (!user?.id) return [];
     setLoading(true);
     setError(null);
     try {
       const data = await bookingApi.getBookingsByCustomer(user.id);
-      // Sort newest first
+      
       return data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     } catch (err) {
       const errMsg = err.response?.data?.message || err.message || 'Failed to fetch your bookings history.';
@@ -53,9 +46,7 @@ export const useBooking = () => {
     }
   }, [user?.id, showToast]);
 
-  /**
-   * Creates a new emergency booking request.
-   */
+  
   const createBooking = useCallback(async (bookingData) => {
     if (!user?.id) throw new Error('User not authenticated.');
     setLoading(true);
@@ -77,9 +68,7 @@ export const useBooking = () => {
     }
   }, [user?.id, showToast]);
 
-  /**
-   * Updates the status of an existing booking.
-   */
+  
   const updateBookingStatus = useCallback(async (id, status) => {
     setLoading(true);
     setError(null);

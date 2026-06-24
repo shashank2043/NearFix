@@ -9,13 +9,7 @@ import Rating from '@mui/material/Rating';
 import { Award, ShieldCheck, ShieldAlert, Star } from 'lucide-react';
 import RatingStars from '../common/RatingStars';
 
-/**
- * WorkerProfileCard Component
- * Displays a summary of the worker's details: avatar, name, skill, rating, and experience badge.
- * 
- * @param {Object} user - The basic user account info (fullName, email, phone).
- * @param {Object} profile - The worker profile details (skill, experience, rating, verified, status).
- */
+
 const WorkerProfileCard = ({ user, profile }) => {
   if (!user) return null;
 
@@ -27,11 +21,11 @@ const WorkerProfileCard = ({ user, profile }) => {
 
   return (
     <Card sx={{ border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
-      {/* Visual top gradient banner */}
+      
       <Box sx={{ height: 70, background: 'linear-gradient(90deg, #00F5D4 0%, #00B4D8 100%)' }} />
       
       <CardContent sx={{ pt: 0, px: 3, pb: 3, position: 'relative' }}>
-        {/* Large Avatar overlapping top banner */}
+        
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', mt: -5, mb: 2 }}>
           <Avatar
             sx={{
@@ -49,7 +43,7 @@ const WorkerProfileCard = ({ user, profile }) => {
             {fullName.charAt(0).toUpperCase()}
           </Avatar>
 
-          {/* Verification Badge */}
+          
           <Chip
             icon={verified ? <ShieldCheck size={14} /> : <ShieldAlert size={14} />}
             label={verified ? 'Verified Pro' : 'Pending Verification'}
@@ -63,7 +57,7 @@ const WorkerProfileCard = ({ user, profile }) => {
           />
         </Box>
 
-        {/* Worker Info */}
+        
         <Box sx={{ mb: 2.5 }}>
           <Typography variant="h5" fontWeight="800" color="text.primary" gutterBottom>
             {fullName}
@@ -80,7 +74,7 @@ const WorkerProfileCard = ({ user, profile }) => {
         </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2, borderRadius: 3, bgcolor: 'background.default', border: '1px solid', borderColor: 'divider' }}>
-          {/* Experience Badge */}
+          
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Award size={18} className="text-secondary" />
             <Box>
@@ -95,7 +89,7 @@ const WorkerProfileCard = ({ user, profile }) => {
 
           <Box sx={{ borderRight: '1px solid', borderColor: 'divider', height: 28 }} />
 
-          {/* Rating Section */}
+          
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Box>
               <Typography variant="caption" color="text.secondary" fontWeight="700" display="block" align="right">
@@ -111,7 +105,7 @@ const WorkerProfileCard = ({ user, profile }) => {
           </Box>
         </Box>
 
-        {/* Additional Ratings Breakdown */}
+        
         {profile?.rating !== undefined && profile?.rating !== null && (
           <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
             <RatingStars value={rating} size="small" />

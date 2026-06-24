@@ -15,25 +15,17 @@ import Avatar from '@mui/material/Avatar';
 import { ShieldAlert, AlertOctagon } from 'lucide-react';
 import { useTheme } from '@mui/material/styles';
 
-/**
- * ComplaintTable component displaying completed bookings with low reviews (<= 2 stars).
- * 
- * @param {Object} props
- * @param {Array<Object>} props.bookings - The bookings data with status COMPLETED (or WORK_COMPLETED/PAID)
- * @param {Array<Object>} props.users - System users list to resolve names
- * @param {Array<Object>} props.workers - Workers details list to check if they are flagged
- * @param {Function} props.onFlagWorker - Callback to flag a worker by their ID
- */
+
 const ComplaintTable = ({ bookings, users, workers, onFlagWorker }) => {
   const theme = useTheme();
 
-  // Helper to find username by id
+  
   const getUserName = (id) => {
     const u = users.find((user) => user.id === id);
     return u ? u.fullName : `User #${id}`;
   };
 
-  // Helper to find worker flag status
+  
   const isWorkerFlagged = (workerId) => {
     const w = workers.find((wrk) => wrk.id === workerId);
     return w ? !!w.flagged : false;
@@ -75,14 +67,14 @@ const ComplaintTable = ({ bookings, users, workers, onFlagWorker }) => {
                   '&:hover': { bgcolor: theme.palette.mode === 'light' ? 'rgba(0, 180, 216, 0.02)' : 'rgba(0, 245, 212, 0.02)' }
                 }}
               >
-                {/* Booking ID */}
+                
                 <TableCell component="th" scope="row">
                   <Typography variant="body2" fontWeight="700">
                     #{booking.id}
                   </Typography>
                 </TableCell>
                 
-                {/* Customer */}
+                
                 <TableCell>
                   <Box display="flex" alignItems="center" sx={{ gap: 1.5 }}>
                     <Avatar 
@@ -107,7 +99,7 @@ const ComplaintTable = ({ bookings, users, workers, onFlagWorker }) => {
                   </Box>
                 </TableCell>
                 
-                {/* Worker */}
+                
                 <TableCell>
                   <Box display="flex" alignItems="center" sx={{ gap: 1.5 }}>
                     <Avatar 
@@ -132,7 +124,7 @@ const ComplaintTable = ({ bookings, users, workers, onFlagWorker }) => {
                   </Box>
                 </TableCell>
                 
-                {/* Service Type */}
+                
                 <TableCell>
                   <Chip 
                     label={booking.serviceType} 
@@ -145,7 +137,7 @@ const ComplaintTable = ({ bookings, users, workers, onFlagWorker }) => {
                   />
                 </TableCell>
                 
-                {/* Rating */}
+                
                 <TableCell>
                   <Box display="flex" alignItems="center" sx={{ gap: 0.5 }}>
                     <Rating 
@@ -161,7 +153,7 @@ const ComplaintTable = ({ bookings, users, workers, onFlagWorker }) => {
                   </Box>
                 </TableCell>
                 
-                {/* Comment */}
+                
                 <TableCell sx={{ maxWidth: 220 }}>
                   <Typography 
                     variant="body2" 
@@ -179,7 +171,7 @@ const ComplaintTable = ({ bookings, users, workers, onFlagWorker }) => {
                   </Typography>
                 </TableCell>
                 
-                {/* Action: Flag Worker */}
+                
                 <TableCell align="center">
                   {flagged ? (
                     <Chip 

@@ -7,12 +7,7 @@ import Chip from '@mui/material/Chip';
 import { AlertCircle, Zap } from 'lucide-react';
 import { formatCurrency } from '../../utils/helpers';
 
-/**
- * Price Estimator component calculating dynamic service charges.
- * @param {Object} props
- * @param {string} props.serviceType - e.g. Electrician, Plumber, Carpenter, Mechanic, AC Technician
- * @param {'DAY' | 'NIGHT'} props.timeOfDay - active time of dispatch
- */
+
 const PriceEstimator = ({ serviceType, timeOfDay }) => {
   const estimation = useMemo(() => {
     let min = 200;
@@ -58,7 +53,7 @@ const PriceEstimator = ({ serviceType, timeOfDay }) => {
       <CardContent sx={{ py: 2.2, '&:last-child': { pb: 2.2 } }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
           
-          {/* Header Row */}
+          
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Typography variant="body2" fontWeight="700" color="text.secondary">
               Estimated Service Callout Fee
@@ -74,7 +69,7 @@ const PriceEstimator = ({ serviceType, timeOfDay }) => {
             )}
           </Box>
 
-          {/* Pricing Estimation Range */}
+          
           <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5 }}>
             <Typography variant="h5" fontWeight="800" color="text.primary">
               {formatCurrency(estimation.min)} - {formatCurrency(estimation.max)}
@@ -84,7 +79,7 @@ const PriceEstimator = ({ serviceType, timeOfDay }) => {
             </Typography>
           </Box>
 
-          {/* Guidelines warning */}
+          
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
             <AlertCircle size={14} style={{ flexShrink: 0 }} />
             <Typography variant="caption" color="text.secondary">
@@ -92,7 +87,7 @@ const PriceEstimator = ({ serviceType, timeOfDay }) => {
             </Typography>
           </Box>
 
-          {/* Detailed Pricing and Negotiation Notice */}
+          
           <Box sx={{ borderTop: '1px solid', borderColor: 'divider', pt: 2, mt: 1 }}>
             <Typography variant="body2" fontWeight="700" color="text.primary" gutterBottom>
               SOS Billing & Negotiation Terms

@@ -4,15 +4,7 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import { HardDrive } from 'lucide-react';
 
-/**
- * EmptyState placeholder component for lists and dashboards.
- * @param {Object} props
- * @param {string} props.title
- * @param {string} [props.description]
- * @param {string} [props.actionLabel]
- * @param {function} [props.onAction]
- * @param {React.ComponentType} [props.icon]
- */
+
 const EmptyState = ({
   title = 'No Data Found',
   description,

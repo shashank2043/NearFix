@@ -6,11 +6,7 @@ import Box from '@mui/material/Box';
 
 const steps = ['Requested', 'Accepted', 'On The Way', 'Work Started', 'Completed'];
 
-/**
- * MUI Custom Stepper wrapper for booking status tracking.
- * @param {Object} props
- * @param {string} props.status - current booking status
- */
+
 const BookingStatusStepper = ({ status }) => {
   const getStepIndex = (currentStatus) => {
     if (!currentStatus) return 0;

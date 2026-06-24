@@ -13,14 +13,7 @@ import { LayoutDashboard, UserCheck, BarChart3, AlertOctagon, ShieldAlert } from
 
 const DRAWER_WIDTH = 240;
 
-/**
- * Sidebar Component
- * Provides a standardized left-side navigation for the Admin portal.
- * Renders as a sliding temporary Drawer on mobile and a sticky static panel on desktop.
- * 
- * @param {boolean} mobileOpen - Control state for temporary mobile drawer.
- * @param {function} onClose - Handler to close mobile drawer.
- */
+
 const Sidebar = ({ mobileOpen, onClose }) => {
   const theme = useTheme();
   const location = useLocation();
@@ -35,7 +28,7 @@ const Sidebar = ({ mobileOpen, onClose }) => {
 
   const drawerContent = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      {/* Brand / Title Header inside sidebar */}
+      
       <Box sx={{ p: 3, display: 'flex', alignItems: 'center', gap: 1.5 }}>
         <Box sx={{ p: 1, borderRadius: 2, bgcolor: isDark ? 'primary.main' : 'primary.dark', color: isDark ? 'primary.contrastText' : '#FFFFFF' }}>
           <ShieldAlert size={20} />
@@ -52,7 +45,7 @@ const Sidebar = ({ mobileOpen, onClose }) => {
 
       <Divider sx={{ mb: 2 }} />
 
-      {/* Navigation List */}
+      
       <List component="nav" sx={{ px: 2, flexGrow: 1 }}>
         {menuItems.map((item) => {
           const isActive = location.pathname === item.path;
@@ -115,7 +108,7 @@ const Sidebar = ({ mobileOpen, onClose }) => {
 
       <Divider />
       
-      {/* Footer Branding Info */}
+      
       <Box sx={{ p: 2.5, textAlign: 'center' }}>
         <Typography variant="caption" color="text.secondary" fontWeight="500">
           NearFix Administrator
@@ -129,12 +122,12 @@ const Sidebar = ({ mobileOpen, onClose }) => {
 
   return (
     <>
-      {/* Mobile Drawer (sliding drawer overlay) */}
+      
       <Drawer
         variant="temporary"
         open={mobileOpen}
         onClose={onClose}
-        ModalProps={{ keepMounted: true }} // Better open performance on mobile
+        ModalProps={{ keepMounted: true }} 
         sx={{
           display: { xs: 'block', md: 'none' },
           '& .MuiDrawer-paper': {
@@ -150,7 +143,7 @@ const Sidebar = ({ mobileOpen, onClose }) => {
         {drawerContent}
       </Drawer>
 
-      {/* Desktop Sidebar (sticky permanent left panel) */}
+      
       <Box
         sx={{
           display: { xs: 'none', md: 'block' },

@@ -18,9 +18,7 @@ import { authApi } from '../../api/authApi';
 import Loader from '../../components/common/Loader';
 import { formatCurrency } from '../../utils/helpers';
 
-/**
- * Dynamically loads the Razorpay checkout script.
- */
+
 const loadRazorpayScript = () => {
   return new Promise((resolve) => {
     if (window.Razorpay) {
@@ -36,10 +34,7 @@ const loadRazorpayScript = () => {
   });
 };
 
-/**
- * PaymentPage Component.
- * Fetches the specific booking, displays invoice details, and triggers Razorpay Checkout.
- */
+
 const PaymentPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -53,7 +48,7 @@ const PaymentPage = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    // Load Razorpay script early on mount
+    
     loadRazorpayScript();
   }, []);
 
@@ -63,7 +58,7 @@ const PaymentPage = () => {
         const details = await fetchBookingById(id);
         setBooking(details);
 
-        // If booking is already paid, redirect to review page immediately
+        
         if (details.status === 'PAID') {
           navigate(`/customer/review/${details.id}`);
           return;
@@ -74,7 +69,7 @@ const PaymentPage = () => {
           setWorkerUser(userObj);
         }
 
-        // Fetch current user details for pre-filling checkout options
+        
         try {
           const profile = await authApi.getProfile();
           setCustomerUser(profile);
@@ -97,13 +92,13 @@ const PaymentPage = () => {
     setError('');
 
     try {
-      // 1. Ensure Razorpay SDK is loaded
+      
       const isLoaded = await loadRazorpayScript();
       if (!isLoaded) {
         throw new Error('Razorpay SDK failed to load. Please verify your internet connection.');
       }
 
-      // 2. Submit payment request to backend to create Razorpay Order and get transactionId
+      
       const paymentResponse = await paymentApi.createPayment({
         bookingId: booking.id,
         amount: booking.amount, 
@@ -112,17 +107,17 @@ const PaymentPage = () => {
       const razorpayKey = paymentResponse.keyId || 'rzp_test_5g6h7i8j9k0l1m';
       const orderId = paymentResponse.transactionId;
 
-      // 3. Configure Razorpay checkout options
+      
       const options = {
         key: razorpayKey,
-        amount: booking.amount * 100, // amount in paise
+        amount: booking.amount * 100, 
         currency: 'INR',
         name: 'NearFix Portal',
         description: `Emergency Service Booking #${booking.id}`,
         order_id: orderId,
         handler: async function (response) {
           try {
-            // Call backend verification endpoint to set status to SUCCESS and update booking status to PAID
+            
             await paymentApi.verifyPayment({
               bookingId: booking.id,
               transactionId: orderId,
@@ -130,7 +125,7 @@ const PaymentPage = () => {
               razorpaySignature: response.razorpay_signature,
             });
 
-            // Keep frontend state in sync by updating status to PAID
+            
             await updateBookingStatus(booking.id, 'PAID');
             navigate(`/customer/review/${booking.id}`);
           } catch (err) {
@@ -146,7 +141,7 @@ const PaymentPage = () => {
           contact: customerUser?.phone || '9999999999'
         },
         theme: {
-          color: '#6366f1' // modern theme primary color
+          color: '#6366f1' 
         },
         modal: {
           ondismiss: function () {
@@ -156,13 +151,13 @@ const PaymentPage = () => {
         }
       };
 
-      // 4. Open Razorpay Checkout modal
+      
       const rzp = new window.Razorpay(options);
       rzp.open();
     } catch (err) {
       console.error('Razorpay checkout initiation failed:', err);
       
-      // If the booking is already paid (conflict), redirect to review page immediately
+      
       if (err.response?.status === 409 || err.message?.toLowerCase().includes('already')) {
         navigate(`/customer/review/${booking.id}`);
         return;
@@ -181,7 +176,7 @@ const PaymentPage = () => {
     <Container maxWidth="lg" sx={{ mt: 4, mb: 6 }}>
       <Grid container spacing={4}>
         
-        {/* Payment Select Form Column */}
+        
         <Grid xs={12} md={7}>
           <Card sx={{ borderRadius: 4, boxShadow: '0 8px 32px rgba(0,0,0,0.06)' }}>
             <CardContent sx={{ p: 4 }}>
@@ -209,7 +204,7 @@ const PaymentPage = () => {
                 </Alert>
               )}
 
-              {/* Supported payment instruments chips */}
+              
               <Box sx={{ mb: 4 }}>
                 <Typography variant="subtitle2" fontWeight="700" color="text.secondary" sx={{ mb: 1.8, fontSize: '0.8rem', letterSpacing: 0.5 }}>
                   ACCEPTED CHANNELS
@@ -231,7 +226,7 @@ const PaymentPage = () => {
                 </Box>
               </Box>
 
-              {/* Action Trigger Button */}
+              
               <Button
                 variant="contained"
                 color="secondary"
@@ -260,7 +255,7 @@ const PaymentPage = () => {
                 {paymentLoading ? 'Connecting Secure Gateway...' : `Pay with Razorpay`}
               </Button>
 
-              {/* Trust Badge and Safe Checkout Footer */}
+              
               <Box 
                 sx={{ 
                   display: 'flex',
@@ -283,7 +278,7 @@ const PaymentPage = () => {
           </Card>
         </Grid>
 
-        {/* Invoice Summary Column */}
+        
         <Grid xs={12} md={5}>
           <Card sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 4 }}>
             <CardContent sx={{ p: 4 }}>

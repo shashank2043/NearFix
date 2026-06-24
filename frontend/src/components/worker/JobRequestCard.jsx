@@ -11,9 +11,7 @@ import { MapPin, Navigation, User, Calendar, Zap, Wrench, Hammer, Scissors, Chec
 import { authApi } from '../../api/authApi';
 import { formatDate } from '../../utils/helpers';
 
-/**
- * Maps service type to appropriate Lucide React icon.
- */
+
 const getServiceIcon = (type) => {
   if (!type) return <Wrench size={18} />;
   switch (type.toUpperCase()) {
@@ -45,7 +43,7 @@ const parseCoordinates = (addressStr) => {
 };
 
 const calculateHaversineDistance = (lat1, lon1, lat2, lon2) => {
-  const R = 6371; // Radius of Earth in km
+  const R = 6371; 
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const a =
@@ -58,15 +56,7 @@ const calculateHaversineDistance = (lat1, lon1, lat2, lon2) => {
   return R * c;
 };
 
-/**
- * JobRequestCard Component
- * Displays a premium booking request card with customer details, distance, description, location, and action buttons.
- * 
- * @param {Object} booking - Booking request object.
- * @param {function} onAccept - Action callback to accept the booking.
- * @param {function} onReject - Action callback to reject the booking.
- * @param {boolean} actionLoading - State to disable buttons during operations.
- */
+
 const JobRequestCard = ({ booking, onAccept, onReject, actionLoading = false }) => {
   const { id, customerId, serviceType, issueDescription, address, createdAt } = booking;
   const [customerName, setCustomerName] = useState('Loading Customer...');
@@ -130,7 +120,7 @@ const JobRequestCard = ({ booking, onAccept, onReject, actionLoading = false }) 
 
   return (
     <Card sx={{ position: 'relative', overflow: 'visible', transition: 'transform 0.2s ease, box-shadow 0.2s ease', '&:hover': { transform: 'translateY(-2px)' } }}>
-      {/* Top Banner Alert for Emergency */}
+      
       <Box sx={{ height: 4, bgcolor: 'error.main', borderTopLeftRadius: 16, borderTopRightRadius: 16 }} />
       
       <CardContent sx={{ p: 3 }}>
@@ -160,7 +150,7 @@ const JobRequestCard = ({ booking, onAccept, onReject, actionLoading = false }) 
 
         <Divider sx={{ my: 1.5 }} />
 
-        {/* Customer Detail section */}
+        
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, my: 2 }}>
           <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: '0.9rem' }}>
             <User size={16} />
@@ -177,7 +167,7 @@ const JobRequestCard = ({ booking, onAccept, onReject, actionLoading = false }) 
           </Box>
         </Box>
 
-        {/* Issue Description */}
+        
         <Box sx={{ mb: 2, p: 2, borderRadius: 2, bgcolor: 'background.default', border: '1px solid', borderColor: 'divider' }}>
           <Typography variant="caption" color="text.secondary" fontWeight="700" display="block" sx={{ mb: 0.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Issue Description
@@ -187,7 +177,7 @@ const JobRequestCard = ({ booking, onAccept, onReject, actionLoading = false }) 
           </Typography>
         </Box>
 
-        {/* Location Address */}
+        
         <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 3 }}>
           <MapPin size={18} className="text-secondary" style={{ marginTop: 2, flexShrink: 0 }} />
           <Box>
@@ -202,7 +192,7 @@ const JobRequestCard = ({ booking, onAccept, onReject, actionLoading = false }) 
 
         <Divider sx={{ mb: 2.5 }} />
 
-        {/* Action Buttons */}
+        
         <Box sx={{ display: 'flex', gap: 2 }}>
           <Button
             variant="contained"

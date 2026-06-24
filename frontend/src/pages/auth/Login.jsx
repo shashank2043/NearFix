@@ -15,7 +15,7 @@ import Container from '@mui/material/Container';
 import { Eye, EyeOff, Mail, Lock, ShieldAlert } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
-// Login validation schema
+
 const loginSchema = Yup.object().shape({
   email: Yup.string()
     .required('Email is required')
@@ -24,9 +24,7 @@ const loginSchema = Yup.object().shape({
     .required('Password is required')
 });
 
-/**
- * Unified Login Page for CUSTOMER, WORKER, and ADMIN roles.
- */
+
 const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -47,7 +45,7 @@ const Login = () => {
           setError('Login failed: User role is missing.');
           return;
         }
-        // Redirect based on user role
+        
         if (user.role === 'CUSTOMER') {
           navigate('/customer/dashboard');
         } else if (user.role === 'WORKER') {
@@ -75,7 +73,7 @@ const Login = () => {
           justifyContent: 'center',
         }}
       >
-        {/* Brand Header */}
+        
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
           <ShieldAlert size={32} color="#00F5D4" strokeWidth={2.5} />
           <Typography variant="h4" fontWeight="800" sx={{ color: 'text.primary' }}>
@@ -83,7 +81,7 @@ const Login = () => {
           </Typography>
         </Box>
 
-        {/* Login Form Card */}
+        
         <Card sx={{ width: '100%', p: 2 }}>
           <CardContent>
             <Typography variant="h5" fontWeight="700" sx={{ textAlign: 'center' }} gutterBottom>
@@ -101,7 +99,7 @@ const Login = () => {
 
             <form onSubmit={formik.handleSubmit}>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-                {/* Email Input */}
+                
                 <TextField
                   name="email"
                   label="Email Address"
@@ -124,7 +122,7 @@ const Login = () => {
                   }}
                 />
 
-                {/* Password Input */}
+                
                 <TextField
                   name="password"
                   label="Password"
@@ -158,7 +156,7 @@ const Login = () => {
                   }}
                 />
 
-                {/* Submit Button */}
+                
                 <Button
                   type="submit"
                   variant="contained"

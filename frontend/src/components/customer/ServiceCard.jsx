@@ -5,14 +5,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 
-/**
- * Reusable Service Type Card.
- * @param {Object} props
- * @param {React.ComponentType} props.icon - Lucide icon component
- * @param {string} props.name - Service name
- * @param {string} props.description - Brief description
- * @param {function} props.onClick - Click handler
- */
+
 const ServiceCard = ({ icon: Icon, name, description, onClick }) => {
   const theme = useTheme();
 

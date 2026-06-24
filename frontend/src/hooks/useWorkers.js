@@ -3,19 +3,13 @@ import { workerApi } from '../api/workerApi';
 import { bookingApi } from '../api/bookingApi';
 import { useToast } from './useToast';
 
-/**
- * Custom hook to manage worker-related operations, including fetching profiles,
- * updating availability, and managing assigned booking statuses.
- * Integrates global toast notifications for transparent error reporting.
- */
+
 export const useWorkers = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const { showToast } = useToast();
 
-  /**
-   * Fetches a worker profile by ID.
-   */
+  
   const fetchWorkerById = useCallback(async (id) => {
     setLoading(true);
     setError(null);
@@ -32,9 +26,7 @@ export const useWorkers = () => {
     }
   }, [showToast]);
 
-  /**
-   * Updates the worker availability status (AVAILABLE, BUSY, UNAVAILABLE).
-   */
+  
   const updateAvailability = useCallback(async (id, status) => {
     setLoading(true);
     setError(null);
@@ -52,15 +44,13 @@ export const useWorkers = () => {
     }
   }, [showToast]);
 
-  /**
-   * Fetches bookings assigned to a specific worker.
-   */
+  
   const fetchWorkerBookings = useCallback(async (workerId) => {
     setLoading(true);
     setError(null);
     try {
       const data = await bookingApi.getBookingsByWorker(workerId);
-      // Sort newest first
+      
       return data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     } catch (err) {
       const errMsg = err.response?.data?.message || err.message || 'Failed to fetch worker bookings.';
@@ -72,9 +62,7 @@ export const useWorkers = () => {
     }
   }, [showToast]);
 
-  /**
-   * Updates the status of a specific booking, with optional extra payload details.
-   */
+  
   const updateBookingStatus = useCallback(async (id, status, extraData = {}) => {
     setLoading(true);
     setError(null);

@@ -6,21 +6,13 @@ const ToastContext = createContext({
   showToast: (message, severity) => {}
 });
 
-/**
- * ToastContextProvider Component
- * Provides a context wrapper exposing a global showToast function.
- * Manages an auto-hiding Snackbar containing customized Alerts (success/warning/info/error).
- */
+
 export const ToastContextProvider = ({ children }) => {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState('');
   const [severity, setSeverity] = useState('info');
 
-  /**
-   * Displays a toast notification.
-   * @param {string} msg - Message content.
-   * @param {string} [sev] - Alert severity type ('error' | 'warning' | 'info' | 'success').
-   */
+  
   const showToast = (msg, sev = 'info') => {
     setMessage(msg);
     setSeverity(sev);
@@ -63,9 +55,7 @@ export const ToastContextProvider = ({ children }) => {
   );
 };
 
-/**
- * Custom hook to consume the ToastContext.
- */
+
 export const useToast = () => {
   const context = useContext(ToastContext);
   if (!context) {

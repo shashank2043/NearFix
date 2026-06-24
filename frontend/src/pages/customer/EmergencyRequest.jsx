@@ -14,10 +14,7 @@ import EmergencyRequestForm from '../../components/customer/EmergencyRequestForm
 import PriceEstimator from '../../components/customer/PriceEstimator';
 import { useBooking } from '../../hooks/useBooking';
 
-/**
- * EmergencyRequest Page.
- * Houses the request form and the pricing estimations sidebar.
- */
+
 const EmergencyRequest = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -27,7 +24,7 @@ const EmergencyRequest = () => {
     return searchParams.get('service') || 'Electrician';
   }, [searchParams]);
 
-  // Detect system hour to evaluate NIGHT surges (9 PM to 6 AM)
+  
   const timeOfDay = useMemo(() => {
     const hour = new Date().getHours();
     return hour >= 21 || hour < 6 ? 'NIGHT' : 'DAY';
@@ -36,7 +33,7 @@ const EmergencyRequest = () => {
   const handleBookingSubmit = async (formData) => {
     try {
       const response = await createBooking(formData);
-      // Route straight to tracking board upon successful match dispatch
+      
       navigate(`/customer/track/${response.id}`);
     } catch (err) {
       console.error('SOS booking match dispatch failed:', err);
@@ -45,7 +42,7 @@ const EmergencyRequest = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 6 }}>
-      {/* Header back navigation */}
+      
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
         <Button
           variant="text"
@@ -59,7 +56,7 @@ const EmergencyRequest = () => {
       </Box>
 
       <Grid container spacing={4}>
-        {/*SOS Dispatch form */}
+        
         <Grid size={{ xs: 12, md: 7 }}>
           <Card>
             <CardContent sx={{ p: 3 }}>
@@ -85,7 +82,7 @@ const EmergencyRequest = () => {
           </Card>
         </Grid>
 
-        {/* Dynamic Sidebar Estimator */}
+        
         <Grid size={{ xs: 12, md: 5 }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             

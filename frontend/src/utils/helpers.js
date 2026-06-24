@@ -1,8 +1,4 @@
-/**
- * Formats a numeric value into INR currency format.
- * @param {number} amount
- * @returns {string}
- */
+
 export const formatCurrency = (amount) => {
   if (amount === undefined || amount === null || isNaN(amount)) {
     return '₹0.00';
@@ -13,11 +9,7 @@ export const formatCurrency = (amount) => {
   }).format(amount);
 };
 
-/**
- * Formats an ISO date string into a readable date and time string.
- * @param {string} dateString
- * @returns {string}
- */
+
 export const formatDate = (dateString) => {
   if (!dateString) return 'N/A';
   const date = new Date(dateString);
@@ -28,11 +20,7 @@ export const formatDate = (dateString) => {
   }).format(date);
 };
 
-/**
- * Maps booking and payment statuses to Material-UI color tokens.
- * @param {string} status
- * @returns {string}
- */
+
 export const getStatusColor = (status) => {
   if (!status) return 'default';
   

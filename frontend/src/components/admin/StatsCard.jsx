@@ -6,15 +6,7 @@ import Typography from '@mui/material/Typography';
 import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { useTheme } from '@mui/material/styles';
 
-/**
- * StatsCard component for displaying administrative metrics.
- * @param {Object} props
- * @param {React.Component} props.icon - Lucide React Icon component
- * @param {string} props.label - Metric name/description
- * @param {string|number} props.value - Metric value
- * @param {number|string} [props.trend] - Percentage change (positive/negative)
- * @param {boolean} [props.isPositive=true] - Determine trend direction and color
- */
+
 const StatsCard = ({ icon: Icon, label, value, trend, isPositive = true }) => {
   const theme = useTheme();
   

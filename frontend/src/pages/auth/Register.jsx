@@ -16,7 +16,7 @@ import MenuItem from '@mui/material/MenuItem';
 import { Eye, EyeOff, Mail, Lock, User, Phone, Briefcase, ShieldAlert } from 'lucide-react';
 import { authApi } from '../../api/authApi';
 
-// Form validation schema matching backend constraints
+
 const registerSchema = Yup.object().shape({
   fullName: Yup.string()
     .required('Full name is required')
@@ -35,10 +35,7 @@ const registerSchema = Yup.object().shape({
     .oneOf(['CUSTOMER', 'WORKER'])
 });
 
-/**
- * Account Registration Page.
- * Allows users to register as either a CUSTOMER or a WORKER.
- */
+
 const Register = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
@@ -81,7 +78,7 @@ const Register = () => {
           justifyContent: 'center',
         }}
       >
-        {/* Brand Header */}
+        
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
           <ShieldAlert size={32} color="#00F5D4" strokeWidth={2.5} />
           <Typography variant="h4" fontWeight="800" sx={{ color: 'text.primary' }}>
@@ -89,7 +86,7 @@ const Register = () => {
           </Typography>
         </Box>
 
-        {/* Register Form Card */}
+        
         <Card sx={{ width: '100%', p: 2 }}>
           <CardContent>
             <Typography variant="h5" fontWeight="700" sx={{ textAlign: 'center' }} gutterBottom>
@@ -113,7 +110,7 @@ const Register = () => {
 
             <form onSubmit={formik.handleSubmit}>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.2 }}>
-                {/* Full Name Input */}
+                
                 <TextField
                   name="fullName"
                   label="Full Name"
@@ -136,7 +133,7 @@ const Register = () => {
                   }}
                 />
 
-                {/* Email Input */}
+                
                 <TextField
                   name="email"
                   label="Email Address"
@@ -159,7 +156,7 @@ const Register = () => {
                   }}
                 />
 
-                {/* Phone Input */}
+                
                 <TextField
                   name="phone"
                   label="Mobile Number"
@@ -182,7 +179,7 @@ const Register = () => {
                   }}
                 />
 
-                {/* Password Input */}
+                
                 <TextField
                   name="password"
                   label="Password"
@@ -216,7 +213,7 @@ const Register = () => {
                   }}
                 />
 
-                {/* Role Selector */}
+                
                 <TextField
                   select
                   name="role"
@@ -242,7 +239,7 @@ const Register = () => {
                   <MenuItem value="WORKER">Worker (Provide Services)</MenuItem>
                 </TextField>
 
-                {/* Submit Button */}
+                
                 <Button
                   type="submit"
                   variant="contained"
