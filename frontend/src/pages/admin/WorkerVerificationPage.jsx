@@ -57,12 +57,8 @@ const WorkerVerificationPage = () => {
       setError('');
       setSuccess('');
       
-      // Update worker verificationStatus to APPROVED, set verified to true, status to AVAILABLE
-      await axiosInstance.patch(`/workers/${id}`, {
-        verificationStatus: 'APPROVED',
-        verified: true,
-        status: 'AVAILABLE'
-      });
+      // Update worker verificationStatus to APPROVED, set verified to true via backend API
+      await workerApi.verifyWorker(id, true);
 
       setSuccess('Worker profile approved and activated successfully.');
       await loadData();
@@ -77,12 +73,8 @@ const WorkerVerificationPage = () => {
       setError('');
       setSuccess('');
 
-      // Update worker verificationStatus to REJECTED, set verified to false, status to UNAVAILABLE
-      await axiosInstance.patch(`/workers/${id}`, {
-        verificationStatus: 'REJECTED',
-        verified: false,
-        status: 'UNAVAILABLE'
-      });
+      // Update worker verificationStatus to REJECTED, set verified to false via backend API
+      await workerApi.verifyWorker(id, false);
 
       setSuccess('Worker profile rejected.');
       await loadData();

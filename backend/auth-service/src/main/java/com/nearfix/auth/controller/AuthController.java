@@ -33,6 +33,12 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/users")
+    public ResponseEntity<java.util.List<UserResponse>> getAllUsers() {
+        java.util.List<UserResponse> response = authService.getAllUsers();
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/profile")
     public ResponseEntity<UserResponse> getProfile() {
         UserResponse response = authService.getCurrentUserProfile();

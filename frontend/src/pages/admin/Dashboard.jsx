@@ -139,7 +139,7 @@ const Dashboard = () => {
   const bookingsCount = bookings.length;
   // Sum payments with SUCCESS/COMPLETED status
   const grossRevenue = payments
-    .filter((p) => p.status === 'COMPLETED')
+    .filter((p) => p.status === 'COMPLETED' || p.status === 'SUCCESS')
     .reduce((sum, curr) => sum + curr.amount, 0);
 
   // Filter workers awaiting verification

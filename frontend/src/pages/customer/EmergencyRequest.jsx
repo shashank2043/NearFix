@@ -46,7 +46,7 @@ const EmergencyRequest = () => {
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 6 }}>
       {/* Header back navigation */}
-      <Box display="flex" alignItems="center" sx={{ gap: 1, mb: 3 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
         <Button
           variant="text"
           color="inherit"

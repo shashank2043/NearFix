@@ -3,17 +3,11 @@ import axiosInstance from './axiosInstance';
 export const bookingApi = {
   /**
    * Creates a new service booking request.
-   * @param {Object} bookingData - { customerId, serviceType, issueDescription, address }
+   * @param {Object} bookingData - { serviceType, issueDescription, address }
    * @returns {Promise<Object>}
    */
   createBooking: async (bookingData) => {
-    const payload = {
-      ...bookingData,
-      workerId: null,
-      status: 'REQUESTED',
-      createdAt: new Date().toISOString()
-    };
-    const response = await axiosInstance.post('/bookings', payload);
+    const response = await axiosInstance.post('/api/bookings', bookingData);
     return response.data;
   },
 
@@ -23,27 +17,27 @@ export const bookingApi = {
    * @returns {Promise<Object>}
    */
   getBookingById: async (id) => {
-    const response = await axiosInstance.get(`/bookings/${id}`);
+    const response = await axiosInstance.get(`/api/bookings/${id}`);
     return response.data;
   },
 
   /**
-   * Fetches all bookings requested by a specific customer.
-   * @param {string} customerId
+   * Fetches all bookings requested by the currently logged-in customer.
+   * @param {string} customerId - Ignored (backend resolves via JWT)
    * @returns {Promise<Array>}
    */
   getBookingsByCustomer: async (customerId) => {
-    const response = await axiosInstance.get(`/bookings?customerId=${customerId}`);
+    const response = await axiosInstance.get('/api/bookings/customer');
     return response.data;
   },
 
   /**
-   * Fetches all bookings assigned to a specific worker.
-   * @param {string} workerId
+   * Fetches all bookings assigned to the currently logged-in worker.
+   * @param {string} workerId - Ignored (backend resolves via JWT)
    * @returns {Promise<Array>}
    */
   getBookingsByWorker: async (workerId) => {
-    const response = await axiosInstance.get(`/bookings?workerId=${workerId}`);
+    const response = await axiosInstance.get('/api/bookings/worker');
     return response.data;
   },
 
@@ -52,7 +46,7 @@ export const bookingApi = {
    * @returns {Promise<Array>}
    */
   getAllBookings: async () => {
-    const response = await axiosInstance.get('/bookings');
+    const response = await axiosInstance.get('/api/bookings');
     return response.data;
   },
 
@@ -60,10 +54,11 @@ export const bookingApi = {
    * Updates the status of a booking.
    * @param {string} id
    * @param {string} status - REQUESTED, ACCEPTED, ON_THE_WAY, WORK_STARTED, WORK_COMPLETED, PAID, CANCELLED
+   * @param {Object} extraData - Optional extra payload data
    * @returns {Promise<Object>}
    */
   updateBookingStatus: async (id, status, extraData = {}) => {
-    const response = await axiosInstance.patch(`/bookings/${id}`, { status, ...extraData });
+    const response = await axiosInstance.put(`/api/bookings/${id}/status`, { status, ...extraData });
     return response.data;
   },
 
@@ -74,10 +69,28 @@ export const bookingApi = {
    * @returns {Promise<Object>}
    */
   assignWorker: async (bookingId, workerId) => {
-    const response = await axiosInstance.patch(`/bookings/${bookingId}`, {
-      workerId,
-      status: 'ACCEPTED'
-    });
+    const response = await axiosInstance.put(`/api/bookings/${bookingId}/assign-worker/${workerId}`);
+    return response.data;
+  },
+
+  /**
+   * Worker rejects a booking request (releasing assignment).
+   * @param {string} bookingId
+   * @returns {Promise<Object>}
+   */
+  rejectBooking: async (bookingId) => {
+    const response = await axiosInstance.put(`/api/bookings/${bookingId}/reject`);
+    return response.data;
+  },
+
+  /**
+   * Fetches all available (unassigned) bookings matching a skill in a city.
+   * @param {string} skill
+   * @param {string} city
+   * @returns {Promise<Array>}
+   */
+  getAvailableBookings: async (skill, city) => {
+    const response = await axiosInstance.get(`/api/bookings/available?skill=${encodeURIComponent(skill)}&city=${encodeURIComponent(city)}`);
     return response.data;
   }
 };

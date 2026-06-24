@@ -57,6 +57,14 @@ public class BookingController {
         return ResponseEntity.ok(hasActive);
     }
 
+    @GetMapping("/available")
+    public ResponseEntity<List<BookingResponse>> getAvailableBookings(
+            @RequestParam("skill") String skill,
+            @RequestParam("city") String city) {
+        List<BookingResponse> responses = bookingService.getAvailableBookings(skill, city);
+        return ResponseEntity.ok(responses);
+    }
+
     @PutMapping("/{id}/status")
     public ResponseEntity<BookingResponse> updateBookingStatus(
             @PathVariable Long id,
@@ -73,5 +81,11 @@ public class BookingController {
             @PathVariable Long workerId) {
         BookingResponse response = bookingService.assignWorker(id, workerId);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<BookingResponse>> getAllBookings() {
+        List<BookingResponse> responses = bookingService.getAllBookings();
+        return ResponseEntity.ok(responses);
     }
 }

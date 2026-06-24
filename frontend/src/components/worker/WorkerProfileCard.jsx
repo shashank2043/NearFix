@@ -21,7 +21,7 @@ const WorkerProfileCard = ({ user, profile }) => {
 
   const fullName = user.fullName || 'Worker Profile';
   const skill = profile?.skill || 'Emergency Agent';
-  const rating = profile?.rating || 5.0;
+  const rating = (profile?.rating !== undefined && profile?.rating !== null) ? profile.rating : 0.0;
   const experience = profile?.experience || 0;
   const verified = profile?.verified || false;
 
@@ -112,9 +112,9 @@ const WorkerProfileCard = ({ user, profile }) => {
         </Box>
 
         {/* Additional Ratings Breakdown */}
-        {profile?.rating && (
+        {profile?.rating !== undefined && profile?.rating !== null && (
           <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
-            <RatingStars rating={rating} size="small" />
+            <RatingStars value={rating} size="small" />
           </Box>
         )}
       </CardContent>

@@ -32,6 +32,7 @@ public class BookingService {
     private final AuthClient authClient;
     private final WorkerClient workerClient;
     private final NotificationClient notificationClient;
+    private final BookingKafkaProducer bookingKafkaProducer;
 
     private static final List<BookingStatus> ACTIVE_STATUSES = List.of(
             BookingStatus.REQUESTED,
@@ -73,6 +74,7 @@ public class BookingService {
                 .serviceType(request.getServiceType())
                 .issueDescription(request.getIssueDescription())
                 .address(request.getAddress())
+                .city(request.getCity())
                 .status(BookingStatus.REQUESTED)
                 .build();
 
@@ -81,6 +83,9 @@ public class BookingService {
         // Send Notification
         sendNotificationSafely(customerId, "Booking Created",
                 "Your request for " + request.getServiceType() + " service has been submitted successfully.");
+
+        // Publish to Kafka for Swiggy-like broadcast queue
+        bookingKafkaProducer.sendWorkRequest(saved);
 
         return mapToResponse(saved);
     }
@@ -206,6 +211,16 @@ public class BookingService {
         // State transitions workflow validation
         switch (currentStatus) {
             case REQUESTED:
+                if (newStatus == BookingStatus.REQUESTED) {
+                    if (!"WORKER".equalsIgnoreCase(userRole)) {
+                        throw new UnauthorizedException("Only workers can reject job requests");
+                    }
+                    if (booking.getWorkerId() != null && !userId.equals(booking.getWorkerId())) {
+                        throw new UnauthorizedException("You are not the worker assigned to this booking");
+                    }
+                    booking.setWorkerId(null);
+                    break;
+                }
                 if (newStatus != BookingStatus.ACCEPTED) {
                     throw new ConflictException("Invalid transition from REQUESTED to " + newStatus);
                 }
@@ -213,18 +228,20 @@ public class BookingService {
                 if (!"WORKER".equalsIgnoreCase(userRole)) {
                     throw new UnauthorizedException("Only workers can accept booking");
                 }
-                if (!userId.equals(booking.getWorkerId())) {
-                    throw new UnauthorizedException("You are not the worker assigned to this booking");
+                // Duplicate acceptance conflict check (First-to-accept wins)
+                if (booking.getWorkerId() != null && !userId.equals(booking.getWorkerId())) {
+                    throw new ConflictException("This emergency dispatch has already been accepted by another responder.");
                 }
                 
                 // Change status of worker to BUSY in Worker service
                 try {
-                    workerClient.updateWorkerStatus(booking.getWorkerId(), "BUSY");
+                    workerClient.updateWorkerStatus(userId, "BUSY");
                 } catch (Exception e) {
                     log.error("Failed to update worker status to BUSY", e);
                     throw new BadRequestException("Could not update worker status. Transition aborted.");
                 }
                 
+                booking.setWorkerId(userId);
                 booking.setStatus(BookingStatus.ACCEPTED);
                 
                 // Notify Customer
@@ -364,12 +381,37 @@ public class BookingService {
         }
     }
 
+    @Transactional(readOnly = true)
+    public List<BookingResponse> getAllBookings() {
+        log.info("Fetching all bookings in the system");
+        return bookingRepository.findAll()
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
     private BookingResponse mapToResponse(Booking booking) {
         return new BookingResponse(
                 booking.getId(),
+                booking.getId(),
                 booking.getCustomerId(),
                 booking.getWorkerId(),
-                booking.getStatus()
+                booking.getServiceType(),
+                booking.getIssueDescription(),
+                booking.getAddress(),
+                booking.getCity(),
+                booking.getStatus(),
+                booking.getCreatedAt()
         );
+    }
+
+    @Transactional(readOnly = true)
+    public List<BookingResponse> getAvailableBookings(String skill, String city) {
+        log.info("Fetching available requests for skill: {} and city: {}", skill, city);
+        return bookingRepository.findByStatusAndWorkerIdIsNullAndServiceTypeAndCity(
+                BookingStatus.REQUESTED, skill, city)
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
     }
 }

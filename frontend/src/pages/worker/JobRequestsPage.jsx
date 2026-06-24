@@ -10,6 +10,8 @@ import { ArrowLeft, ClipboardList } from 'lucide-react';
 
 import { useAuth } from '../../hooks/useAuth';
 import { useWorkers } from '../../hooks/useWorkers';
+import { workerApi } from '../../api/workerApi';
+import { bookingApi } from '../../api/bookingApi';
 import JobRequestCard from '../../components/worker/JobRequestCard';
 import Loader from '../../components/common/Loader';
 import EmptyState from '../../components/common/EmptyState';
@@ -35,10 +37,30 @@ const JobRequestsPage = () => {
     if (!user?.id) return;
     try {
       setError('');
-      const bookingsList = await fetchWorkerBookings(user.id);
-      // Filter only REQUESTED bookings assigned to this worker
-      const requestedJobs = bookingsList.filter((b) => b.status === 'REQUESTED');
-      setRequests(requestedJobs);
+      
+      // 1. Fetch worker profile details
+      const profile = await workerApi.getProfileById(user.id);
+      
+      if (profile && profile.verified && profile.status === 'AVAILABLE') {
+        // 2. Fetch unassigned requests matching skill & city
+        const available = await bookingApi.getAvailableBookings(profile.skill, profile.city);
+        
+        // 3. Fetch pre-assigned requested bookings (if any)
+        const bookingsList = await fetchWorkerBookings(user.id);
+        const assignedRequested = bookingsList.filter((b) => b.status === 'REQUESTED');
+        
+        // 4. Merge lists ensuring no duplicates
+        const merged = [...assignedRequested];
+        available.forEach((b) => {
+          if (!merged.some((m) => m.id === b.id)) {
+            merged.push(b);
+          }
+        });
+        
+        setRequests(merged);
+      } else {
+        setRequests([]);
+      }
     } catch (err) {
       console.error(err);
       setError('Could not retrieve job requests.');
@@ -56,7 +78,7 @@ const JobRequestsPage = () => {
     setError('');
     setSuccess('');
     try {
-      // 1. Advance booking status to ACCEPTED
+      // 1. Advance booking status to ACCEPTED (atomic backend assignment)
       await updateBookingStatus(bookingId, 'ACCEPTED');
 
       // 2. Mark worker availability status as BUSY
@@ -74,7 +96,7 @@ const JobRequestsPage = () => {
       }, 1000);
     } catch (err) {
       console.error(err);
-      setError('Failed to accept job request.');
+      setError(err.response?.data?.message || err.message || 'Failed to accept job request.');
       setActionLoading(false);
     }
   };

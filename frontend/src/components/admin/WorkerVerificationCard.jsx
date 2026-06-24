@@ -22,13 +22,13 @@ import { useTheme } from '@mui/material/styles';
 const WorkerVerificationCard = ({ worker, workerUser = {}, onApprove, onReject }) => {
   const theme = useTheme();
   
-  const { id, skill, experience, city, verificationStatus } = worker;
+  const { id, skill, experience, city, verificationStatus, aadhaarNumber } = worker;
   const fullName = workerUser.fullName || 'Unregistered Worker';
   const email = workerUser.email || 'N/A';
   const phone = workerUser.phone || 'N/A';
 
   // Fallbacks for Aadhaar and License if not present in worker object
-  const aadhaarNumber = worker.aadhaar || `5432-8765-${4000 + parseInt(id || 0)}`;
+  const displayAadhaar = aadhaarNumber || worker.aadhaar || 'Not Provided';
   const licenseNumber = worker.license || `LIC-${(skill || 'SK').substring(0, 2).toUpperCase()}-${90000 + parseInt(id || 0)}`;
 
   // Determine status badge
@@ -146,7 +146,7 @@ const WorkerVerificationCard = ({ worker, workerUser = {}, onApprove, onReject }
                 Aadhaar Number
               </Typography>
               <Typography variant="body2" fontWeight="600" sx={{ fontFamily: 'monospace', letterSpacing: '0.05em' }}>
-                {aadhaarNumber}
+                {displayAadhaar}
               </Typography>
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>

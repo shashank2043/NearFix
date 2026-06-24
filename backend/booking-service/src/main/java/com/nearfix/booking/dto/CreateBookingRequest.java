@@ -20,4 +20,7 @@ public class CreateBookingRequest {
 
     @NotNull(message = "Address is required")
     private String address;
+
+    @NotNull(message = "City is required")
+    private String city;
 }

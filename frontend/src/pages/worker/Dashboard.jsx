@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
@@ -48,11 +50,51 @@ const Dashboard = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // Profile Edit State
-  const [skill, setSkill] = useState('Electrician');
-  const [experience, setExperience] = useState(1);
-  const [city, setCity] = useState('');
-  const [updatingProfile, setUpdatingProfile] = useState(false);
+  // Profile Formik Form
+  const profileFormik = useFormik({
+    enableReinitialize: true,
+    initialValues: {
+      skill: workerProfile?.skill || 'Electrician',
+      experience: workerProfile?.experience ?? 1,
+      city: workerProfile?.city || '',
+    },
+    validationSchema: Yup.object().shape({
+      skill: Yup.string().required('Skill is required'),
+      experience: Yup.number()
+        .required('Experience is required')
+        .min(0, 'Experience must be greater than or equal to 0'),
+      city: Yup.string().required('Operating city is required'),
+    }),
+    onSubmit: async (values, { setSubmitting }) => {
+      setError('');
+      setSuccess('');
+      try {
+        let data;
+        if (workerProfile) {
+          data = await workerApi.updateProfile(user.id, {
+            skill: values.skill,
+            experience: Number(values.experience),
+            city: values.city,
+          });
+          setSuccess('Profile updated successfully!');
+        } else {
+          data = await workerApi.createProfile({
+            id: user.id,
+            skill: values.skill,
+            experience: Number(values.experience),
+            city: values.city,
+          });
+          setSuccess('Profile initialized successfully! Awaiting verification by Admin.');
+        }
+        setWorkerProfile(data);
+        loadDashboardData();
+      } catch (err) {
+        setError(workerProfile ? 'Failed to save profile modifications.' : 'Failed to configure profile.');
+      } finally {
+        setSubmitting(false);
+      }
+    },
+  });
 
   // Fetch all dashboard data
   const loadDashboardData = async () => {
@@ -65,9 +107,6 @@ const Dashboard = () => {
       try {
         profile = await workerApi.getProfileById(user.id);
         setWorkerProfile(profile);
-        setSkill(profile.skill || 'Electrician');
-        setExperience(profile.experience || 1);
-        setCity(profile.city || '');
       } catch (err) {
         // Profile might not exist yet, we will prompt worker to create profile
         console.warn('Worker profile not found. Need creation.');
@@ -95,7 +134,7 @@ const Dashboard = () => {
         const completedBookingIds = allBookings
           .filter((b) => b.workerId === user.id && ['WORK_COMPLETED', 'PAID'].includes(b.status))
           .map((b) => b.id);
-        const workerPayments = payments.filter((p) => completedBookingIds.includes(p.bookingId) && p.status === 'COMPLETED');
+        const workerPayments = payments.filter((p) => completedBookingIds.includes(p.bookingId) && (p.status === 'COMPLETED' || p.status === 'SUCCESS'));
         const totalEarnings = workerPayments.reduce((sum, current) => sum + current.amount, 0);
         setEarnings(totalEarnings);
       }
@@ -113,58 +152,7 @@ const Dashboard = () => {
     }
   }, [user?.id]);
 
-  const handleCreateProfile = async (e) => {
-    e.preventDefault();
-    if (!city) {
-      setError('Please provide your city location.');
-      return;
-    }
-    setUpdatingProfile(true);
-    setError('');
-    setSuccess('');
 
-    try {
-      const data = await workerApi.createProfile({
-        id: user.id,
-        skill,
-        experience: Number(experience),
-        city,
-      });
-      setWorkerProfile(data);
-      setSuccess('Profile initialized successfully! Awaiting verification by Admin.');
-      loadDashboardData();
-    } catch (err) {
-      setError('Failed to configure profile.');
-    } finally {
-      setUpdatingProfile(false);
-    }
-  };
-
-  const handleUpdateProfile = async (e) => {
-    e.preventDefault();
-    if (!city) {
-      setError('Please provide your city location.');
-      return;
-    }
-    setUpdatingProfile(true);
-    setError('');
-    setSuccess('');
-
-    try {
-      const data = await workerApi.updateProfile(user.id, {
-        skill,
-        experience: Number(experience),
-        city,
-      });
-      setWorkerProfile(data);
-      setSuccess('Profile updated successfully!');
-      loadDashboardData();
-    } catch (err) {
-      setError('Failed to save profile modifications.');
-    } finally {
-      setUpdatingProfile(false);
-    }
-  };
 
   const handleAvailabilityToggle = async () => {
     if (!workerProfile) return;
@@ -499,7 +487,7 @@ const Dashboard = () => {
               <Avatar sx={{ bgcolor: 'primary.main', width: 64, height: 64, fontSize: '1.8rem' }}>
                 {user.fullName.charAt(0).toUpperCase()}
               </Avatar>
-              <Box textAlign="center">
+              <Box sx={{ textAlign: 'center' }}>
                 <Typography variant="h5" fontWeight="700">
                   {user.fullName}
                 </Typography>
@@ -529,13 +517,17 @@ const Dashboard = () => {
 
             <Divider sx={{ mb: 4 }} />
 
-            <form onSubmit={workerProfile ? handleUpdateProfile : handleCreateProfile}>
+            <form onSubmit={profileFormik.handleSubmit}>
               <Box display="flex" flexDirection="column" sx={{ gap: 3 }}>
                 <TextField
                   select
+                  name="skill"
                   label="Select Skill"
-                  value={skill}
-                  onChange={(e) => setSkill(e.target.value)}
+                  value={profileFormik.values.skill}
+                  onChange={profileFormik.handleChange}
+                  onBlur={profileFormik.handleBlur}
+                  error={profileFormik.touched.skill && Boolean(profileFormik.errors.skill)}
+                  helperText={profileFormik.touched.skill && profileFormik.errors.skill}
                   fullWidth
                 >
                   {SERVICE_TYPES.map((type) => (
@@ -546,22 +538,27 @@ const Dashboard = () => {
                 </TextField>
 
                 <TextField
+                  name="experience"
                   label="Experience (in Years)"
                   type="number"
-                  inputProps={{ min: 0 }}
-                  value={experience}
-                  onChange={(e) => setExperience(e.target.value)}
+                  value={profileFormik.values.experience}
+                  onChange={profileFormik.handleChange}
+                  onBlur={profileFormik.handleBlur}
+                  error={profileFormik.touched.experience && Boolean(profileFormik.errors.experience)}
+                  helperText={profileFormik.touched.experience && profileFormik.errors.experience}
                   fullWidth
-                  required
                 />
 
                 <TextField
+                  name="city"
                   label="Operating City"
                   placeholder="Enter city you operate in"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
+                  value={profileFormik.values.city}
+                  onChange={profileFormik.handleChange}
+                  onBlur={profileFormik.handleBlur}
+                  error={profileFormik.touched.city && Boolean(profileFormik.errors.city)}
+                  helperText={profileFormik.touched.city && profileFormik.errors.city}
                   fullWidth
-                  required
                 />
 
                 <Button
@@ -570,10 +567,10 @@ const Dashboard = () => {
                   color="secondary"
                   fullWidth
                   size="large"
-                  disabled={updatingProfile}
+                  disabled={profileFormik.isSubmitting}
                   sx={{ py: 1.2 }}
                 >
-                  {updatingProfile
+                  {profileFormik.isSubmitting
                     ? 'Saving changes...'
                     : workerProfile
                     ? 'Save Profile modifications'

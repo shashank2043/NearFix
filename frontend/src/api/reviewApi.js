@@ -7,7 +7,7 @@ export const reviewApi = {
    * @returns {Promise<Object>}
    */
   createReview: async (reviewData) => {
-    const response = await axiosInstance.post('/reviews', reviewData);
+    const response = await axiosInstance.post('/api/reviews', reviewData);
     return response.data;
   },
 
@@ -17,7 +17,7 @@ export const reviewApi = {
    * @returns {Promise<Array>}
    */
   getReviewsByWorker: async (workerId) => {
-    const response = await axiosInstance.get(`/reviews?workerId=${workerId}`);
+    const response = await axiosInstance.get(`/api/reviews?workerId=${workerId}`);
     return response.data;
   },
 
@@ -27,7 +27,7 @@ export const reviewApi = {
    * @returns {Promise<Array>}
    */
   getReviewByBooking: async (bookingId) => {
-    const response = await axiosInstance.get(`/reviews?bookingId=${bookingId}`);
+    const response = await axiosInstance.get(`/api/reviews?bookingId=${bookingId}`);
     return response.data;
   },
 
@@ -36,7 +36,7 @@ export const reviewApi = {
    * @returns {Promise<Array>}
    */
   getAllReviews: async () => {
-    const response = await axiosInstance.get('/reviews');
+    const response = await axiosInstance.get('/api/reviews');
     return response.data;
   }
 };

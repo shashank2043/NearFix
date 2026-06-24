@@ -10,6 +10,7 @@ import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Grid from '@mui/material/Grid';
+import Chip from '@mui/material/Chip';
 import { MapPin, Phone, User, CheckCircle2, Navigation, ShieldCheck, AlertCircle, Play } from 'lucide-react';
 import { authApi } from '../../api/authApi';
 
@@ -107,11 +108,9 @@ const ActiveJobPanel = ({ booking, onUpdateStatus, actionLoading = false }) => {
           {STEPS.map((step) => (
             <Step key={step.label}>
               <StepLabel
-                StepIconProps={{
-                  sx: {
-                    '&.Mui-active': { color: 'primary.main' },
-                    '&.Mui-completed': { color: 'success.main' },
-                  }
+                sx={{
+                  '& .MuiStepIcon-root.Mui-active': { color: 'primary.main' },
+                  '& .MuiStepIcon-root.Mui-completed': { color: 'success.main' },
                 }}
               >
                 <Typography variant="caption" fontWeight="bold">
@@ -132,7 +131,7 @@ const ActiveJobPanel = ({ booking, onUpdateStatus, actionLoading = false }) => {
               <Typography variant="h5" fontWeight="800" gutterBottom>
                 {serviceType} Fix Dispatch
               </Typography>
-              <Typography variant="body2" color="text.secondary" paragraph>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                 <strong>Incident:</strong> {issueDescription}
               </Typography>
             </Box>
@@ -143,7 +142,7 @@ const ActiveJobPanel = ({ booking, onUpdateStatus, actionLoading = false }) => {
             <Typography variant="subtitle2" fontWeight="800" sx={{ mb: 2, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary' }}>
               Customer Details
             </Typography>
-            <Box display="flex" alignItems="center" sx={{ gap: 2, mb: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
               <Avatar sx={{ width: 48, height: 48, bgcolor: 'secondary.main', color: 'secondary.contrastText', fontWeight: 'bold' }}>
                 {customerName.charAt(0).toUpperCase()}
               </Avatar>
@@ -157,7 +156,7 @@ const ActiveJobPanel = ({ booking, onUpdateStatus, actionLoading = false }) => {
               </Box>
             </Box>
 
-            <Box display="flex" alignItems="center" sx={{ gap: 2, mb: 3, p: 2, borderRadius: 2, border: '1px solid', borderColor: 'divider', bgcolor: 'background.default' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3, p: 2, borderRadius: 2, border: '1px solid', borderColor: 'divider', bgcolor: 'background.default' }}>
               <Phone size={18} className="text-secondary" />
               <Box>
                 <Typography variant="caption" color="text.secondary" fontWeight="700" display="block">
@@ -169,7 +168,7 @@ const ActiveJobPanel = ({ booking, onUpdateStatus, actionLoading = false }) => {
               </Box>
             </Box>
 
-            <Box display="flex" alignItems="flex-start" sx={{ gap: 2, mb: 4 }}>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 4 }}>
               <MapPin size={18} className="text-secondary" style={{ marginTop: 2 }} />
               <Box>
                 <Typography variant="caption" color="text.secondary" fontWeight="700" display="block">
@@ -331,7 +330,7 @@ const ActiveJobPanel = ({ booking, onUpdateStatus, actionLoading = false }) => {
                   alignItems: 'center',
                 }}
               >
-                <Box display="flex" alignItems="center" sx={{ gap: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Navigation size={14} color="#00F5D4" />
                   <Typography variant="caption" fontWeight="bold" color="#00F5D4">
                     GPS TRACKING ACTIVE

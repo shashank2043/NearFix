@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
@@ -18,6 +20,7 @@ import { ClipboardList, Wallet, AlertTriangle, ArrowRight, Play, CheckCircle2, S
 import { useAuth } from '../../hooks/useAuth';
 import { useWorkers } from '../../hooks/useWorkers';
 import { workerApi } from '../../api/workerApi';
+import { bookingApi } from '../../api/bookingApi';
 import { SERVICE_TYPES } from '../../utils/constants';
 
 import WorkerProfileCard from '../../components/worker/WorkerProfileCard';
@@ -36,16 +39,56 @@ const WorkerDashboard = () => {
 
   const [profile, setProfile] = useState(null);
   const [bookings, setBookings] = useState([]);
+  const [availableRequests, setAvailableRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
   // Profile setup states for new/unconfigured workers
   const [showSetup, setShowSetup] = useState(false);
-  const [skill, setSkill] = useState('Electrician');
-  const [experience, setExperience] = useState(1);
-  const [city, setCity] = useState('');
-  const [submittingProfile, setSubmittingProfile] = useState(false);
+
+  // Profile Setup Formik Form
+  const profileFormik = useFormik({
+    enableReinitialize: true,
+    initialValues: {
+      skill: profile?.skill || 'Electrician',
+      experience: profile?.experience ?? 1,
+      city: profile?.city || '',
+      aadhaarNumber: profile?.aadhaarNumber || '',
+    },
+    validationSchema: Yup.object().shape({
+      skill: Yup.string().required('Skill is required'),
+      experience: Yup.number()
+        .required('Experience is required')
+        .min(0, 'Experience must be greater than or equal to 0'),
+      city: Yup.string().required('Operating city is required'),
+      aadhaarNumber: Yup.string()
+        .required('Aadhaar number is required')
+        .matches(/^\d{12}$/, 'Aadhaar number must be exactly 12 digits'),
+    }),
+    onSubmit: async (values, { setSubmitting }) => {
+      setError('');
+      try {
+        const data = await workerApi.createProfile({
+          id: user.id,
+          skill: values.skill,
+          experience: Number(values.experience),
+          city: values.city,
+          aadhaarNumber: values.aadhaarNumber,
+        });
+        setProfile(data);
+        setShowSetup(false);
+        setSuccess('Profile configured successfully! Waiting for Admin verification.');
+        // Refresh
+        const bookingsList = await fetchWorkerBookings(user.id);
+        setBookings(bookingsList);
+      } catch (err) {
+        setError('Failed to configure profile.');
+      } finally {
+        setSubmitting(false);
+      }
+    },
+  });
 
   const loadData = async () => {
     if (!user?.id) return;
@@ -56,9 +99,6 @@ const WorkerDashboard = () => {
       try {
         workerProfile = await fetchWorkerById(user.id);
         setProfile(workerProfile);
-        setSkill(workerProfile.skill || 'Electrician');
-        setExperience(workerProfile.experience || 1);
-        setCity(workerProfile.city || '');
       } catch (err) {
         // Profile not created yet
         setShowSetup(true);
@@ -68,6 +108,17 @@ const WorkerDashboard = () => {
         // Fetch bookings assigned to this worker
         const bookingsList = await fetchWorkerBookings(user.id);
         setBookings(bookingsList);
+
+        // Fetch nearby available dispatches
+        if (workerProfile.verified && workerProfile.status === 'AVAILABLE') {
+          const availableList = await bookingApi.getAvailableBookings(
+            workerProfile.skill,
+            workerProfile.city
+          );
+          setAvailableRequests(availableList);
+        } else {
+          setAvailableRequests([]);
+        }
       }
     } catch (err) {
       console.error(err);
@@ -94,40 +145,20 @@ const WorkerDashboard = () => {
     }
   };
 
-  const handleCreateProfile = async (e) => {
-    e.preventDefault();
-    if (!city) {
-      setError('Please specify your city.');
-      return;
-    }
-    setSubmittingProfile(true);
-    setError('');
-    try {
-      const data = await workerApi.createProfile({
-        id: user.id,
-        skill,
-        experience: Number(experience),
-        city,
-      });
-      setProfile(data);
-      setShowSetup(false);
-      setSuccess('Profile configured successfully! Waiting for Admin verification.');
-      // Refresh
-      const bookingsList = await fetchWorkerBookings(user.id);
-      setBookings(bookingsList);
-    } catch (err) {
-      setError('Failed to configure profile.');
-    } finally {
-      setSubmittingProfile(false);
-    }
-  };
+
 
   if (loading) {
     return <Loader message="Accessing dispatcher feed..." />;
   }
 
   // Filter lists based on status
-  const pendingRequests = bookings.filter((b) => b.status === 'REQUESTED');
+  const assignedRequested = bookings.filter((b) => b.status === 'REQUESTED');
+  const pendingRequests = [...assignedRequested];
+  availableRequests.forEach((b) => {
+    if (!pendingRequests.some((p) => p.id === b.id)) {
+      pendingRequests.push(b);
+    }
+  });
   const activeJob = bookings.find((b) => ['ACCEPTED', 'ON_THE_WAY', 'WORK_STARTED'].includes(b.status));
   const completedJobsCount = bookings.filter((b) => ['WORK_COMPLETED', 'PAID'].includes(b.status)).length;
 
@@ -149,7 +180,7 @@ const WorkerDashboard = () => {
         /* Setup Form for unconfigured workers */
         <Card sx={{ maxWidth: 550, mx: 'auto', mt: 4, border: '1px solid', borderColor: 'divider' }}>
           <CardContent sx={{ p: 4 }}>
-            <Box textAlign="center" sx={{ mb: 3 }}>
+            <Box sx={{ textAlign: 'center', mb: 3 }}>
               <Typography variant="h5" fontWeight="800" color="primary.main" gutterBottom>
                 Complete Worker Profile
               </Typography>
@@ -157,13 +188,17 @@ const WorkerDashboard = () => {
                 To start receiving local emergency calls, please fill in your trade details.
               </Typography>
             </Box>
-            <form onSubmit={handleCreateProfile}>
+            <form onSubmit={profileFormik.handleSubmit}>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <TextField
                   select
+                  name="skill"
                   label="Select Skill"
-                  value={skill}
-                  onChange={(e) => setSkill(e.target.value)}
+                  value={profileFormik.values.skill}
+                  onChange={profileFormik.handleChange}
+                  onBlur={profileFormik.handleBlur}
+                  error={profileFormik.touched.skill && Boolean(profileFormik.errors.skill)}
+                  helperText={profileFormik.touched.skill && profileFormik.errors.skill}
                   fullWidth
                 >
                   {SERVICE_TYPES.map((type) => (
@@ -174,22 +209,39 @@ const WorkerDashboard = () => {
                 </TextField>
 
                 <TextField
+                  name="experience"
                   label="Years of Experience"
                   type="number"
-                  inputProps={{ min: 0 }}
-                  value={experience}
-                  onChange={(e) => setExperience(e.target.value)}
+                  value={profileFormik.values.experience}
+                  onChange={profileFormik.handleChange}
+                  onBlur={profileFormik.handleBlur}
+                  error={profileFormik.touched.experience && Boolean(profileFormik.errors.experience)}
+                  helperText={profileFormik.touched.experience && profileFormik.errors.experience}
                   fullWidth
-                  required
                 />
 
                 <TextField
+                  name="city"
                   label="Operating City"
                   placeholder="Enter city you serve (e.g. Bangalore)"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
+                  value={profileFormik.values.city}
+                  onChange={profileFormik.handleChange}
+                  onBlur={profileFormik.handleBlur}
+                  error={profileFormik.touched.city && Boolean(profileFormik.errors.city)}
+                  helperText={profileFormik.touched.city && profileFormik.errors.city}
                   fullWidth
-                  required
+                />
+
+                <TextField
+                  name="aadhaarNumber"
+                  label="Aadhaar Card Number"
+                  placeholder="Enter 12-digit Aadhaar number"
+                  value={profileFormik.values.aadhaarNumber}
+                  onChange={profileFormik.handleChange}
+                  onBlur={profileFormik.handleBlur}
+                  error={profileFormik.touched.aadhaarNumber && Boolean(profileFormik.errors.aadhaarNumber)}
+                  helperText={profileFormik.touched.aadhaarNumber && profileFormik.errors.aadhaarNumber}
+                  fullWidth
                 />
 
                 <Button
@@ -198,11 +250,11 @@ const WorkerDashboard = () => {
                   color="secondary"
                   fullWidth
                   size="large"
-                  disabled={submittingProfile}
+                  disabled={profileFormik.isSubmitting}
                   startIcon={<Plus size={18} />}
                   sx={{ py: 1.2, fontWeight: 'bold' }}
                 >
-                  {submittingProfile ? 'Setting up...' : 'Setup Worker Account'}
+                  {profileFormik.isSubmitting ? 'Setting up...' : 'Setup Worker Account'}
                 </Button>
               </Box>
             </form>

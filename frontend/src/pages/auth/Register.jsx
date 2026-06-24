@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -14,52 +16,60 @@ import MenuItem from '@mui/material/MenuItem';
 import { Eye, EyeOff, Mail, Lock, User, Phone, Briefcase, ShieldAlert } from 'lucide-react';
 import { authApi } from '../../api/authApi';
 
+// Form validation schema matching backend constraints
+const registerSchema = Yup.object().shape({
+  fullName: Yup.string()
+    .required('Full name is required')
+    .min(3, 'Full name must be at least 3 characters'),
+  email: Yup.string()
+    .required('Email is required')
+    .email('Email should be valid'),
+  phone: Yup.string()
+    .required('Phone is required')
+    .matches(/^\d{10,15}$/, 'Phone number must be between 10 and 15 digits'),
+  password: Yup.string()
+    .required('Password is required')
+    .min(8, 'Password must be at least 8 characters'),
+  role: Yup.string()
+    .required('Role is required')
+    .oneOf(['CUSTOMER', 'WORKER'])
+});
+
 /**
  * Account Registration Page.
  * Allows users to register as either a CUSTOMER or a WORKER.
  */
 const Register = () => {
   const navigate = useNavigate();
-
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
-  const [role, setRole] = useState('CUSTOMER'); // Default role
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!fullName || !email || !phone || !password || !role) {
-      setError('Please fill in all required fields');
-      return;
-    }
-
-    setError('');
-    setSuccess('');
-    setIsSubmitting(true);
-
-    try {
-      await authApi.register({
-        fullName,
-        email,
-        phone,
-        password,
-        role,
-      });
-
-      setSuccess('Account created successfully! Redirecting to login page...');
-      setTimeout(() => {
-        navigate('/login');
-      }, 2000);
-    } catch (err) {
-      setError(err.message || 'Registration failed. Please try again.');
-      setIsSubmitting(false);
-    }
-  };
+  const formik = useFormik({
+    initialValues: {
+      fullName: '',
+      email: '',
+      phone: '',
+      password: '',
+      role: 'CUSTOMER',
+    },
+    validationSchema: registerSchema,
+    onSubmit: async (values, { setSubmitting }) => {
+      setError('');
+      setSuccess('');
+      try {
+        await authApi.register(values);
+        setSuccess('Account created successfully! Redirecting to login page...');
+        setTimeout(() => {
+          navigate('/login');
+        }, 2000);
+      } catch (err) {
+        setError(err.response?.data?.message || err.message || 'Registration failed. Please try again.');
+      } finally {
+        setSubmitting(false);
+      }
+    },
+  });
 
   return (
     <Container maxWidth="xs" sx={{ mt: 6, mb: 6 }}>
@@ -101,17 +111,20 @@ const Register = () => {
               </Alert>
             )}
 
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={formik.handleSubmit}>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.2 }}>
                 {/* Full Name Input */}
                 <TextField
+                  name="fullName"
                   label="Full Name"
                   type="text"
                   fullWidth
-                  required
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  disabled={isSubmitting}
+                  value={formik.values.fullName}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={formik.touched.fullName && Boolean(formik.errors.fullName)}
+                  helperText={formik.touched.fullName && formik.errors.fullName}
+                  disabled={formik.isSubmitting}
                   slotProps={{
                     input: {
                       startAdornment: (
@@ -125,13 +138,16 @@ const Register = () => {
 
                 {/* Email Input */}
                 <TextField
+                  name="email"
                   label="Email Address"
                   type="email"
                   fullWidth
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={isSubmitting}
+                  value={formik.values.email}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={formik.touched.email && Boolean(formik.errors.email)}
+                  helperText={formik.touched.email && formik.errors.email}
+                  disabled={formik.isSubmitting}
                   slotProps={{
                     input: {
                       startAdornment: (
@@ -145,13 +161,16 @@ const Register = () => {
 
                 {/* Phone Input */}
                 <TextField
+                  name="phone"
                   label="Mobile Number"
                   type="tel"
                   fullWidth
-                  required
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  disabled={isSubmitting}
+                  value={formik.values.phone}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={formik.touched.phone && Boolean(formik.errors.phone)}
+                  helperText={formik.touched.phone && formik.errors.phone}
+                  disabled={formik.isSubmitting}
                   slotProps={{
                     input: {
                       startAdornment: (
@@ -165,13 +184,16 @@ const Register = () => {
 
                 {/* Password Input */}
                 <TextField
+                  name="password"
                   label="Password"
                   type={showPassword ? 'text' : 'password'}
                   fullWidth
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={isSubmitting}
+                  value={formik.values.password}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={formik.touched.password && Boolean(formik.errors.password)}
+                  helperText={formik.touched.password && formik.errors.password}
+                  disabled={formik.isSubmitting}
                   slotProps={{
                     input: {
                       startAdornment: (
@@ -197,10 +219,14 @@ const Register = () => {
                 {/* Role Selector */}
                 <TextField
                   select
+                  name="role"
                   label="I want to join as a"
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                  disabled={isSubmitting}
+                  value={formik.values.role}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={formik.touched.role && Boolean(formik.errors.role)}
+                  helperText={formik.touched.role && formik.errors.role}
+                  disabled={formik.isSubmitting}
                   fullWidth
                   slotProps={{
                     input: {
@@ -223,10 +249,10 @@ const Register = () => {
                   color="secondary"
                   fullWidth
                   size="large"
-                  disabled={isSubmitting}
+                  disabled={formik.isSubmitting}
                   sx={{ py: 1.2, mt: 1 }}
                 >
-                  {isSubmitting ? 'Registering...' : 'Register'}
+                  {formik.isSubmitting ? 'Registering...' : 'Register'}
                 </Button>
               </Box>
             </form>

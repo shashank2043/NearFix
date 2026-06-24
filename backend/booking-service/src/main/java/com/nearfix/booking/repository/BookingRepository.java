@@ -12,4 +12,5 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findByCustomerIdOrderByCreatedAtDesc(Long customerId);
     List<Booking> findByWorkerIdOrderByCreatedAtDesc(Long workerId);
     boolean existsByCustomerIdAndServiceTypeAndStatusIn(Long customerId, String serviceType, List<BookingStatus> statuses);
+    List<Booking> findByStatusAndWorkerIdIsNullAndServiceTypeAndCity(BookingStatus status, String serviceType, String city);
 }

@@ -50,7 +50,7 @@ const ServiceSelection = () => {
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 6 }}>
       {/* Header Navigation */}
-      <Box display="flex" alignItems="center" sx={{ gap: 1, mb: 3 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
         <Button
           variant="text"
           color="inherit"
@@ -73,9 +73,9 @@ const ServiceSelection = () => {
       </Box>
 
       {/* Services Grid */}
-      <Grid container spacing={3} justifyContent="center">
+      <Grid container spacing={3} sx={{ justifyContent: 'center' }}>
         {services.map((service) => (
-          <Grid item xs={12} sm={6} md={4} key={service.name}>
+          <Grid xs={12} sm={6} md={4} key={service.name}>
             <ServiceCard
               icon={service.icon}
               name={service.name}

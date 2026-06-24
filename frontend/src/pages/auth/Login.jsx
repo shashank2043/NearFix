@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -13,47 +15,55 @@ import Container from '@mui/material/Container';
 import { Eye, EyeOff, Mail, Lock, ShieldAlert } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
+// Login validation schema
+const loginSchema = Yup.object().shape({
+  email: Yup.string()
+    .required('Email is required')
+    .email('Email should be valid'),
+  password: Yup.string()
+    .required('Password is required')
+});
+
 /**
  * Unified Login Page for CUSTOMER, WORKER, and ADMIN roles.
  */
 const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
-  
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!email || !password) {
-      setError('Please fill in all fields');
-      return;
-    }
-
-    setError('');
-    setIsSubmitting(true);
-
-    try {
-      const user = await login(email, password);
-      // Redirect based on user role
-      if (user.role === 'CUSTOMER') {
-        navigate('/customer/dashboard');
-      } else if (user.role === 'WORKER') {
-        navigate('/worker/dashboard');
-      } else if (user.role === 'ADMIN') {
-        navigate('/admin/dashboard');
-      } else {
-        setError('Unknown role. Please contact support.');
+  const formik = useFormik({
+    initialValues: {
+      email: '',
+      password: '',
+    },
+    validationSchema: loginSchema,
+    onSubmit: async (values, { setSubmitting }) => {
+      setError('');
+      try {
+        const user = await login(values.email, values.password);
+        if (!user || !user.role) {
+          setError('Login failed: User role is missing.');
+          return;
+        }
+        // Redirect based on user role
+        if (user.role === 'CUSTOMER') {
+          navigate('/customer/dashboard');
+        } else if (user.role === 'WORKER') {
+          navigate('/worker/dashboard');
+        } else if (user.role === 'ADMIN') {
+          navigate('/admin/dashboard');
+        } else {
+          setError('Unknown role. Please contact support.');
+        }
+      } catch (err) {
+        setError(err.response?.data?.message || err.message || 'Login failed. Please check your credentials.');
+      } finally {
+        setSubmitting(false);
       }
-    } catch (err) {
-      setError(err.message || 'Login failed. Please check your credentials.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    },
+  });
 
   return (
     <Container maxWidth="xs" sx={{ mt: 10, mb: 4 }}>
@@ -89,17 +99,20 @@ const Login = () => {
               </Alert>
             )}
 
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={formik.handleSubmit}>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
                 {/* Email Input */}
                 <TextField
+                  name="email"
                   label="Email Address"
                   type="email"
                   fullWidth
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={isSubmitting}
+                  value={formik.values.email}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={formik.touched.email && Boolean(formik.errors.email)}
+                  helperText={formik.touched.email && formik.errors.email}
+                  disabled={formik.isSubmitting}
                   slotProps={{
                     input: {
                       startAdornment: (
@@ -113,13 +126,16 @@ const Login = () => {
 
                 {/* Password Input */}
                 <TextField
+                  name="password"
                   label="Password"
                   type={showPassword ? 'text' : 'password'}
                   fullWidth
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={isSubmitting}
+                  value={formik.values.password}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={formik.touched.password && Boolean(formik.errors.password)}
+                  helperText={formik.touched.password && formik.errors.password}
+                  disabled={formik.isSubmitting}
                   slotProps={{
                     input: {
                       startAdornment: (
@@ -149,10 +165,10 @@ const Login = () => {
                   color="primary"
                   fullWidth
                   size="large"
-                  disabled={isSubmitting}
+                  disabled={formik.isSubmitting}
                   sx={{ py: 1.2, mt: 1 }}
                 >
-                  {isSubmitting ? 'Logging in...' : 'Login'}
+                  {formik.isSubmitting ? 'Logging in...' : 'Login'}
                 </Button>
               </Box>
             </form>
