@@ -92,6 +92,22 @@ const PriceEstimator = ({ serviceType, timeOfDay }) => {
             </Typography>
           </Box>
 
+          {/* Detailed Pricing and Negotiation Notice */}
+          <Box sx={{ borderTop: '1px solid', borderColor: 'divider', pt: 2, mt: 1 }}>
+            <Typography variant="body2" fontWeight="700" color="text.primary" gutterBottom>
+              SOS Billing & Negotiation Terms
+            </Typography>
+            <Typography variant="caption" display="block" color="text.secondary" sx={{ mb: 1, lineHeight: 1.4 }}>
+              • The final amount is decided by the worker and may vary based on the actual service complexity and issue description.
+            </Typography>
+            <Typography variant="caption" display="block" color="text.secondary" sx={{ mb: 1, lineHeight: 1.4 }}>
+              • A <strong>minimum charge of ₹300</strong> applies for any emergency callout, which may increase depending on the work performed.
+            </Typography>
+            <Typography variant="caption" display="block" color="text.secondary" sx={{ lineHeight: 1.4 }}>
+              • You can <strong>negotiate the final amount in-person</strong>. The worker will enter the agreed amount upon completing the work, which will then be charged for payment.
+            </Typography>
+          </Box>
+
         </Box>
       </CardContent>
     </Card>

@@ -168,12 +168,12 @@ const ActiveJobPage = () => {
     return () => clearInterval(locInterval);
   }, [activeJob?.id, activeJob?.status]);
 
-  const handleUpdateStatus = async (bookingId, nextStatus) => {
+  const handleUpdateStatus = async (bookingId, nextStatus, extraData = {}) => {
     setActionLoading(true);
     setError('');
     setSuccess('');
     try {
-      await updateBookingStatus(bookingId, nextStatus);
+      await updateBookingStatus(bookingId, nextStatus, extraData);
 
       if (nextStatus === 'WORK_COMPLETED') {
         // Free up the worker status back to AVAILABLE
