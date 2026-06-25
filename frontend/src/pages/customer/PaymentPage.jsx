@@ -136,8 +136,6 @@ const PaymentPage = () => {
               razorpaySignature: response.razorpay_signature,
             })).unwrap();
 
-            
-            await dispatch(updateBookingStatusThunk({ id: booking.id, status: 'PAID' })).unwrap();
             navigate(`/customer/review/${booking.id}`);
           } catch (err) {
             console.error('Failed to verify payment or sync booking status:', err);

@@ -49,10 +49,11 @@ public class WorkerProfileController {
 
     @PutMapping("/status")
     public ResponseEntity<WorkerProfileResponse> updateStatus(
+            @RequestHeader(value = "X-User-Id", required = false) Long headerUserId,
             @RequestBody(required = false) UpdateWorkerStatusRequest bodyRequest,
             @RequestParam(value = "status", required = false) WorkerStatus queryStatus
     ) {
-        Long userId = getAuthenticatedUserId();
+        Long userId = (headerUserId != null) ? headerUserId : getAuthenticatedUserId();
         WorkerStatus statusToUpdate = null;
 
         if (bodyRequest != null && bodyRequest.status() != null) {

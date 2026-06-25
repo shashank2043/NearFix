@@ -1,8 +1,9 @@
 package com.nearfix.booking.service;
 
 import com.nearfix.booking.client.AuthClient;
-import com.nearfix.booking.client.NotificationClient;
 import com.nearfix.booking.client.WorkerClient;
+import org.springframework.kafka.core.KafkaTemplate;
+import com.nearfix.booking.client.dto.NotificationRequest;
 import com.nearfix.booking.client.dto.UserDto;
 import com.nearfix.booking.client.dto.WorkerProfileResponse;
 import com.nearfix.booking.dto.BookingResponse;
@@ -45,7 +46,7 @@ public class BookingServiceTest {
     private WorkerClient workerClient;
 
     @Mock
-    private NotificationClient notificationClient;
+    private KafkaTemplate<String, NotificationRequest> kafkaTemplate;
 
     @Mock
     private BookingMapper bookingMapper;
@@ -89,7 +90,7 @@ public class BookingServiceTest {
         assertNotNull(result);
         assertEquals(BookingStatus.REQUESTED, result.status());
         verify(bookingRepository, times(1)).save(any(Booking.class));
-        verify(notificationClient, times(1)).sendNotification(any());
+        verify(kafkaTemplate, times(1)).send(eq("notification-topic"), any(NotificationRequest.class));
     }
 
     @Test

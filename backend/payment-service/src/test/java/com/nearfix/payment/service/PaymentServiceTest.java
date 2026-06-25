@@ -2,8 +2,9 @@ package com.nearfix.payment.service;
 
 import com.nearfix.payment.client.AuthClient;
 import com.nearfix.payment.client.BookingClient;
-import com.nearfix.payment.client.NotificationClient;
 import com.nearfix.payment.client.dto.BookingResponse;
+import org.springframework.kafka.core.KafkaTemplate;
+import com.nearfix.payment.client.dto.NotificationRequest;
 import com.nearfix.payment.client.dto.UserDto;
 import com.nearfix.payment.dto.CreatePaymentRequest;
 import com.nearfix.payment.dto.PaymentResponse;
@@ -42,7 +43,7 @@ public class PaymentServiceTest {
     private BookingClient bookingClient;
 
     @Mock
-    private NotificationClient notificationClient;
+    private KafkaTemplate<String, NotificationRequest> kafkaTemplate;
 
     @Mock
     private AuthClient authClient;
@@ -112,7 +113,7 @@ public class PaymentServiceTest {
 
         assertNotNull(result);
         assertEquals(PaymentStatus.FAILED, result.status());
-        verify(notificationClient, times(1)).sendNotification(any());
+        verify(kafkaTemplate, times(1)).send(eq("notification-topic"), any(NotificationRequest.class));
     }
 
     @Test
