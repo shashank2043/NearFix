@@ -23,22 +23,25 @@ import { formatDate } from '../../utils/helpers';
 const CustomerDashboard = () => {
   const { user } = useAuth();
   const { fetchMyBookings, loading, error } = useBooking();
-  const [recentBookings, setRecentBookings] = useState([]);
+  const [bookings, setBookings] = useState([]);
+  const [showAll, setShowAll] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const loadRecentBookings = async () => {
+    const loadBookings = async () => {
       try {
         const list = await fetchMyBookings();
-        setRecentBookings(list.slice(0, 3));
+        setBookings(list || []);
       } catch (err) {
-        console.error('Failed loading recent bookings list:', err);
+        console.error('Failed loading bookings list:', err);
       }
     };
     if (user?.id) {
-      loadRecentBookings();
+      loadBookings();
     }
   }, [user?.id, fetchMyBookings]);
+
+  const displayedBookings = showAll ? bookings : bookings.slice(0, 3);
 
   const quickServices = [
     { name: 'Electrician', icon: Zap },
@@ -175,15 +178,26 @@ const CustomerDashboard = () => {
 
       
       <Box>
-        <Typography variant="h6" fontWeight="700" sx={{ mb: 2.5 }} color="text.primary">
-          Recent SOS Bookings
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2.5 }}>
+          <Typography variant="h6" fontWeight="700" color="text.primary">
+            {showAll ? 'All SOS Bookings' : 'Recent SOS Bookings'}
+          </Typography>
+          {bookings.length > 3 && (
+            <Button
+              size="small"
+              onClick={() => setShowAll(!showAll)}
+              sx={{ fontWeight: '700' }}
+            >
+              {showAll ? 'Show Recent Only' : `View All (${bookings.length})`}
+            </Button>
+          )}
+        </Box>
 
         {loading ? (
           <Loader />
         ) : error ? (
           <Alert severity="error" sx={{ borderRadius: 2 }}>{error}</Alert>
-        ) : recentBookings.length === 0 ? (
+        ) : bookings.length === 0 ? (
           <EmptyState
             title="No Bookings Found"
             description="You don't have any recent service bookings. Tap DISPATCH NOW or choose a category to request emergency fixes."
@@ -193,7 +207,7 @@ const CustomerDashboard = () => {
           <Card>
             <CardContent sx={{ p: 0 }}>
               <List sx={{ p: 0 }}>
-                {recentBookings.map((booking, idx) => (
+                {displayedBookings.map((booking, idx) => (
                   <React.Fragment key={booking.id}>
                     <Box 
                       sx={{ 
@@ -240,7 +254,7 @@ const CustomerDashboard = () => {
                         Track Call
                       </Button>
                     </Box>
-                    {idx < recentBookings.length - 1 && <Divider />}
+                    {idx < displayedBookings.length - 1 && <Divider />}
                   </React.Fragment>
                 ))}
               </List>

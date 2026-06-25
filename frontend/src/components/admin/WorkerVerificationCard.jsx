@@ -14,25 +14,32 @@ import { useTheme } from '@mui/material/styles';
 
 const WorkerVerificationCard = ({ worker, workerUser = {}, onApprove, onReject }) => {
   const theme = useTheme();
+  const [isEditing, setIsEditing] = React.useState(false);
   
   const { id, skill, experience, city, verificationStatus, aadhaarNumber } = worker;
   const fullName = workerUser.fullName || 'Unregistered Worker';
   const email = workerUser.email || 'N/A';
   const phone = workerUser.phone || 'N/A';
 
-  
+  const isApproved = verificationStatus === 'APPROVED' || worker.verified === true;
+  const isRejected = verificationStatus === 'REJECTED';
+  const isPending = !isApproved && !isRejected;
+
+  React.useEffect(() => {
+    setIsEditing(false);
+  }, [verificationStatus, worker.verified]);
+
   const displayAadhaar = aadhaarNumber || worker.aadhaar || 'Not Provided';
 
-  
   let badgeColor = 'warning';
   let badgeLabel = 'Pending';
   let badgeIcon = <PendingIcon size={14} />;
 
-  if (verificationStatus === 'APPROVED' || worker.verified === true) {
+  if (isApproved) {
     badgeColor = 'success';
     badgeLabel = 'Approved';
     badgeIcon = <ShieldCheck size={14} />;
-  } else if (verificationStatus === 'REJECTED') {
+  } else if (isRejected) {
     badgeColor = 'error';
     badgeLabel = 'Rejected';
     badgeIcon = <ShieldAlert size={14} />;
@@ -149,29 +156,60 @@ const WorkerVerificationCard = ({ worker, workerUser = {}, onApprove, onReject }
         </Box>
 
         
-        {(!verificationStatus || verificationStatus === 'PENDING' || (!worker.verified && verificationStatus !== 'REJECTED')) && (
-          <Box display="flex" sx={{ gap: 2 }}>
-            <Button
-              variant="outlined"
-              color="error"
-              fullWidth
-              startIcon={<X size={18} />}
-              onClick={() => onReject(id)}
-              sx={{ py: 1 }}
-            >
-              Reject
-            </Button>
-            <Button
-              variant="contained"
-              color="success"
-              fullWidth
-              startIcon={<Check size={18} />}
-              onClick={() => onApprove(id)}
-              sx={{ py: 1, color: '#FFFFFF' }}
-            >
-              Approve
-            </Button>
+        {isPending || isEditing ? (
+          <Box display="flex" flexDirection="column" sx={{ gap: 1.5 }}>
+            <Box display="flex" sx={{ gap: 2 }}>
+              <Button
+                variant="outlined"
+                color="error"
+                fullWidth
+                startIcon={<X size={18} />}
+                onClick={() => {
+                  onReject(id);
+                  setIsEditing(false);
+                }}
+                disabled={isRejected && isEditing}
+                sx={{ py: 1 }}
+              >
+                Reject
+              </Button>
+              <Button
+                variant="contained"
+                color="success"
+                fullWidth
+                startIcon={<Check size={18} />}
+                onClick={() => {
+                  onApprove(id);
+                  setIsEditing(false);
+                }}
+                disabled={isApproved && isEditing}
+                sx={{ py: 1, color: '#FFFFFF' }}
+              >
+                Approve
+              </Button>
+            </Box>
+            {isEditing && (
+              <Button
+                variant="text"
+                color="inherit"
+                fullWidth
+                onClick={() => setIsEditing(false)}
+                sx={{ py: 0.5, fontSize: '0.8rem' }}
+              >
+                Cancel
+              </Button>
+            )}
           </Box>
+        ) : (
+          <Button
+            variant="outlined"
+            color="primary"
+            fullWidth
+            onClick={() => setIsEditing(true)}
+            sx={{ py: 1, fontWeight: '700' }}
+          >
+            Edit Status
+          </Button>
         )}
       </CardContent>
     </Card>
