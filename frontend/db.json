@@ -109,7 +109,7 @@
       "city": "Bangalore",
       "rating": 4.8,
       "verified": false,
-      "status": "UNAVAILABLE",
+      "status": "OFFLINE",
       "verificationStatus": "REJECTED"
     },
     {
@@ -128,7 +128,7 @@
       "city": "Delhi",
       "rating": 4.2,
       "verified": false,
-      "status": "UNAVAILABLE"
+      "status": "OFFLINE"
     }
   ],
   "bookings": [

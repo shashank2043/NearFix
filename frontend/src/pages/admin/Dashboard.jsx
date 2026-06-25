@@ -111,7 +111,7 @@ const Dashboard = () => {
     try {
       
       await workerApi.verifyWorker(workerId, false);
-      await workerApi.updateStatus(workerId, 'UNAVAILABLE');
+      await workerApi.updateStatus(workerId, 'OFFLINE');
       
       setSuccess('Worker verification rejected.');
       loadData();

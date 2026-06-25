@@ -165,7 +165,7 @@ const Dashboard = () => {
 
   const handleAvailabilityToggle = async () => {
     if (!workerProfile) return;
-    const newStatus = workerProfile.status === 'AVAILABLE' ? 'UNAVAILABLE' : 'AVAILABLE';
+    const newStatus = workerProfile.status === 'AVAILABLE' ? 'OFFLINE' : 'AVAILABLE';
     try {
       const updated = await workerApi.updateStatus(user.id, newStatus);
       setWorkerProfile(updated);
@@ -456,6 +456,7 @@ const Dashboard = () => {
                               sx={{ px: 0, py: 2 }}
                             >
                               <ListItemText
+                                disableTypography
                                 primary={
                                   <Typography variant="subtitle1" fontWeight="700">
                                     Emergency Callout #{req.id}

@@ -15,6 +15,7 @@ import AlertTitle from '@mui/material/AlertTitle';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 import Divider from '@mui/material/Divider';
+import { useTheme } from '@mui/material/styles';
 import { ClipboardList, Wallet, AlertTriangle, ArrowRight, Play, CheckCircle2, ShieldCheck, Plus } from 'lucide-react';
 
 import { useAuth } from '../../hooks/useAuth';
@@ -29,6 +30,7 @@ import Loader from '../../components/common/Loader';
 
 
 const WorkerDashboard = () => {
+  const theme = useTheme();
   const { user } = useAuth();
   const { fetchWorkerById, updateAvailability, fetchWorkerBookings, loading: hookLoading, error: hookError } = useWorkers();
   const navigate = useNavigate();
@@ -428,12 +430,19 @@ const WorkerDashboard = () => {
 
                 
                 <Grid size={12}>
-                  <Card sx={{ p: 1, border: '1px solid', borderColor: 'divider', background: 'linear-gradient(135deg, #0F1A30 0%, #16243F 100%)' }}>
+                  <Card sx={{
+                    p: 1,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    background: theme.palette.mode === 'light'
+                      ? 'linear-gradient(135deg, #FFFFFF 0%, #F1F5F9 100%)'
+                      : 'linear-gradient(135deg, #0F1A30 0%, #16243F 100%)'
+                  }}>
                     <CardContent sx={{ p: 2 }}>
                       <Typography variant="subtitle1" fontWeight="800" color="primary.main" sx={{ mb: 2 }}>
                         Live Command Quick Links
                       </Typography>
-                      <Divider sx={{ mb: 2, borderColor: 'rgba(255,255,255,0.05)' }} />
+                      <Divider sx={{ mb: 2, borderColor: theme.palette.mode === 'light' ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)' }} />
                       <Grid container spacing={2}>
                         <Grid size={{ xs: 12, sm: 6 }}>
                           <Button
@@ -445,12 +454,12 @@ const WorkerDashboard = () => {
                               justifyContent: 'space-between',
                               p: 2,
                               borderRadius: 3,
-                              bgcolor: 'rgba(0, 245, 212, 0.04)',
+                              bgcolor: theme.palette.mode === 'light' ? 'rgba(11, 25, 44, 0.04)' : 'rgba(0, 245, 212, 0.04)',
                               color: 'text.primary',
                               textAlign: 'left',
-                              border: '1px solid rgba(0, 245, 212, 0.1)',
+                              border: `1px solid ${theme.palette.mode === 'light' ? 'rgba(11, 25, 44, 0.1)' : 'rgba(0, 245, 212, 0.1)'}`,
                               '&:hover': {
-                                bgcolor: 'rgba(0, 245, 212, 0.08)'
+                                bgcolor: theme.palette.mode === 'light' ? 'rgba(11, 25, 44, 0.08)' : 'rgba(0, 245, 212, 0.08)'
                               }
                             }}
                           >

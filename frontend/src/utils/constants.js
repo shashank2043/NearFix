@@ -35,13 +35,13 @@ export const STATUS_LABELS = {
 export const WORKER_STATUS = {
   AVAILABLE: 'AVAILABLE',
   BUSY: 'BUSY',
-  UNAVAILABLE: 'UNAVAILABLE'
+  OFFLINE: 'OFFLINE'
 };
 
 export const WORKER_STATUS_LABELS = {
   [WORKER_STATUS.AVAILABLE]: 'Available',
   [WORKER_STATUS.BUSY]: 'Busy',
-  [WORKER_STATUS.UNAVAILABLE]: 'Unavailable'
+  [WORKER_STATUS.OFFLINE]: 'Unavailable'
 };
 
 export const PAYMENT_STATUS = {

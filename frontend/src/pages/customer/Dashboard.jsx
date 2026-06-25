@@ -428,6 +428,7 @@ const Dashboard = () => {
                         sx={{ px: 1, py: 1.8 }}
                       >
                         <ListItemText
+                          disableTypography
                           primary={
                             <Box display="flex" alignItems="center" sx={{ gap: 1.5, mb: 0.5 }}>
                               <Typography variant="subtitle1" fontWeight="700">
