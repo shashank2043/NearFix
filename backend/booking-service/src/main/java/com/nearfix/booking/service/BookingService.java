@@ -1,9 +1,9 @@
 package com.nearfix.booking.service;
 
 import com.nearfix.booking.client.AuthClient;
-import com.nearfix.booking.client.NotificationClient;
 import com.nearfix.booking.client.WorkerClient;
 import com.nearfix.booking.client.dto.NotificationRequest;
+import org.springframework.kafka.core.KafkaTemplate;
 import com.nearfix.booking.client.dto.UserDto;
 import com.nearfix.booking.client.dto.WorkerProfileResponse;
 import com.nearfix.booking.dto.BookingResponse;
@@ -32,7 +32,7 @@ public class BookingService {
     private final BookingRepository bookingRepository;
     private final AuthClient authClient;
     private final WorkerClient workerClient;
-    private final NotificationClient notificationClient;
+    private final KafkaTemplate<String, NotificationRequest> kafkaTemplate;
     private final BookingMapper bookingMapper;
 
     private static final List<BookingStatus> ACTIVE_STATUSES = List.of(
@@ -508,7 +508,7 @@ public class BookingService {
         try {
             UserDto user = authClient.getUserById(userId);
             if (user != null && user.email() != null) {
-                notificationClient.sendNotification(new NotificationRequest(user.email(), subject, message));
+                kafkaTemplate.send("notification-topic", new NotificationRequest(user.email(), subject, message));
             } else {
                 log.warn("Could not send notification to user {}: User or email not found", userId);
             }

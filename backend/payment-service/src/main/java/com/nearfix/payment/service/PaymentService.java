@@ -2,7 +2,7 @@ package com.nearfix.payment.service;
 
 import com.nearfix.payment.client.AuthClient;
 import com.nearfix.payment.client.BookingClient;
-import com.nearfix.payment.client.NotificationClient;
+import org.springframework.kafka.core.KafkaTemplate;
 import com.nearfix.payment.client.dto.BookingResponse;
 import com.nearfix.payment.client.dto.NotificationRequest;
 import com.nearfix.payment.client.dto.UpdateBookingStatusRequest;
@@ -38,7 +38,7 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final BookingClient bookingClient;
-    private final NotificationClient notificationClient;
+    private final KafkaTemplate<String, NotificationRequest> kafkaTemplate;
     private final AuthClient authClient;
     private final PaymentMapper paymentMapper;
 
@@ -291,7 +291,7 @@ public class PaymentService {
         try {
             UserDto user = authClient.getUserById(userId);
             if (user != null && user.email() != null) {
-                notificationClient.sendNotification(new NotificationRequest(user.email(), subject, message));
+                kafkaTemplate.send("notification-topic", new NotificationRequest(user.email(), subject, message));
             } else {
                 log.warn("Could not send notification to user {}: User or email not found", userId);
             }
