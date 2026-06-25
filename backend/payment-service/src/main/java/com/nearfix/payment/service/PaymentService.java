@@ -142,9 +142,25 @@ public class PaymentService {
         Payment savedPayment = paymentRepository.save(payment);
 
         if (status == PaymentStatus.FAILED) {
+            String customerFailName = "Customer";
+            try {
+                UserDto customerUser = authClient.getUserById(booking.customerId());
+                if (customerUser != null && customerUser.fullName() != null) {
+                    customerFailName = customerUser.fullName();
+                }
+            } catch (Exception e) {
+                log.warn("Could not fetch customer details for payment fail notification", e);
+            }
 
-            sendNotificationSafely(booking.customerId(), "Payment Failed",
-                    "Payment of ₹" + amount + " failed. Transaction ID: " + transactionId + ". Please retry.");
+            String failSubject = "NearFix: Payment Failed for Booking [#" + request.bookingId() + "]";
+            String failMessage = "Hi " + customerFailName + ",\n\n" +
+                    "This email is to notify you that the payment attempt of **₹" + amount + "** for Booking #" + request.bookingId() + " has failed.\n\n" +
+                    "* **Transaction ID:** " + transactionId + "\n" +
+                    "* **Payment Status:** FAILED\n\n" +
+                    "Please log into your dashboard to retry the payment.\n\n" +
+                    "Best regards,\n" +
+                    "The NearFix Payments Team";
+            sendNotificationSafely(booking.customerId(), failSubject, failMessage);
         }
 
         return paymentMapper.toResponse(savedPayment, razorpayKeyId);
@@ -198,12 +214,49 @@ public class PaymentService {
                 throw new ConflictException("Payment succeeded but failed to update booking status: " + e.getMessage());
             }
 
-            sendNotificationSafely(booking.customerId(), "Payment Successful",
-                    "Payment of ₹" + payment.getAmount() + " was successful. Transaction ID: " + payment.getTransactionId());
+            String customerName = "Customer";
+            String workerName = "Worker";
+            try {
+                UserDto customerUser = authClient.getUserById(booking.customerId());
+                if (customerUser != null && customerUser.fullName() != null) {
+                    customerName = customerUser.fullName();
+                }
+                if (booking.workerId() != null) {
+                    UserDto workerUser = authClient.getUserById(booking.workerId());
+                    if (workerUser != null && workerUser.fullName() != null) {
+                        workerName = workerUser.fullName();
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Could not fetch user details for payment confirm notification", e);
+            }
 
+            String timestamp = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+
+            // Customer Email
+            String customerSubject = "NearFix: Payment Verified for Booking [#" + request.bookingId() + "]";
+            String customerMessage = "Hi " + customerName + ",\n\n" +
+                    "This email confirms that the payment of **₹" + payment.getAmount() + "** for Booking #" + request.bookingId() + " has been successfully processed.\n\n" +
+                    "* **Transaction ID:** " + payment.getTransactionId() + "\n" +
+                    "* **Payment Status:** SUCCESS\n" +
+                    "* **Date:** " + timestamp + "\n\n" +
+                    "Thank you for choosing NearFix.\n\n" +
+                    "Best regards,\n" +
+                    "The NearFix Payments Team";
+            sendNotificationSafely(booking.customerId(), customerSubject, customerMessage);
+
+            // Worker Email
             if (booking.workerId() != null) {
-                sendNotificationSafely(booking.workerId(), "Payment Settled",
-                        "Payment of ₹" + payment.getAmount() + " for booking #" + request.bookingId() + " has been settled.");
+                String workerSubject = "NearFix: Payment Verified for Booking [#" + request.bookingId() + "]";
+                String workerMessage = "Hi " + workerName + ",\n\n" +
+                        "This email confirms that the payment of **₹" + payment.getAmount() + "** for Booking #" + request.bookingId() + " has been successfully processed.\n\n" +
+                        "* **Transaction ID:** " + payment.getTransactionId() + "\n" +
+                        "* **Payment Status:** SUCCESS\n" +
+                        "* **Date:** " + timestamp + "\n\n" +
+                        "Thank you for choosing NearFix.\n\n" +
+                        "Best regards,\n" +
+                        "The NearFix Payments Team";
+                sendNotificationSafely(booking.workerId(), workerSubject, workerMessage);
             }
 
             return paymentMapper.toResponse(savedPayment, razorpayKeyId);

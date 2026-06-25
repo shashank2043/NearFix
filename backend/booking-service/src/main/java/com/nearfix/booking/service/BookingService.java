@@ -52,8 +52,9 @@ public class BookingService {
             throw new UnauthorizedException("Only customers are authorized to create bookings");
         }
 
+        UserDto user = null;
         try {
-            UserDto user = authClient.getUserById(customerId);
+            user = authClient.getUserById(customerId);
             if (user == null || !Boolean.TRUE.equals(user.active())) {
                 throw new BadRequestException("Customer is inactive or not found");
             }
@@ -79,8 +80,17 @@ public class BookingService {
 
         Booking saved = bookingRepository.save(booking);
 
-        sendNotificationSafely(customerId, "Booking Created",
-                "Your request for " + request.serviceType() + " service has been submitted successfully.");
+        String customerName = user != null && user.fullName() != null ? user.fullName() : "Customer";
+        String subject = "NearFix: Emergency Request Submitted [#" + saved.getId() + "]";
+        String message = "Hi " + customerName + ",\n\n" +
+                "We have received your emergency service request for a **" + request.serviceType() + "**. A nearby certified responder will be assigned shortly.\n\n" +
+                "* **Issue Description:** " + request.issueDescription() + "\n" +
+                "* **Location:** " + request.address() + "\n" +
+                "* **Status:** REQUESTED\n\n" +
+                "You can track your request details live on your dashboard.\n\n" +
+                "Best regards,\n" +
+                "The NearFix Team";
+        sendNotificationSafely(customerId, subject, message);
 
         return bookingMapper.toResponse(saved);
     }
@@ -176,8 +186,26 @@ public class BookingService {
         Booking saved = bookingRepository.save(booking);
 
 
-        sendNotificationSafely(workerId, "New Job Assignment",
-                "You have been assigned to booking #" + bookingId + ". Please accept or reject.");
+        String workerName = "Worker";
+        try {
+            UserDto workerUser = authClient.getUserById(workerId);
+            if (workerUser != null && workerUser.fullName() != null) {
+                workerName = workerUser.fullName();
+            }
+        } catch (Exception e) {
+            log.warn("Could not fetch worker user details for name placeholder", e);
+        }
+
+        String subject = "NearFix: New Emergency Dispatch [#" + bookingId + "]";
+        String message = "Hi " + workerName + ",\n\n" +
+                "You have been assigned to a new emergency dispatch request in **" + booking.getCity() + "**. Please review the details and accept or decline the job as soon as possible.\n\n" +
+                "* **Service Type:** " + booking.getServiceType() + "\n" +
+                "* **Distance:** " + (booking.getDistance() != null ? booking.getDistance() : "N/A") + " km\n" +
+                "* **Description:** " + booking.getIssueDescription() + "\n\n" +
+                "Please open your responder dashboard to accept the request.\n\n" +
+                "Best regards,\n" +
+                "The NearFix Dispatcher";
+        sendNotificationSafely(workerId, subject, message);
 
         return bookingMapper.toResponse(saved);
     }
@@ -249,8 +277,30 @@ public class BookingService {
                     booking.setDistance(request.distance());
                 }
                 
-                sendNotificationSafely(booking.getCustomerId(), "Booking Accepted", 
-                        "Your service request has been accepted by the worker.");
+                String customerAcceptName = "Customer";
+                String workerAcceptName = "Responder";
+                try {
+                    UserDto customerUser = authClient.getUserById(booking.getCustomerId());
+                    if (customerUser != null && customerUser.fullName() != null) {
+                        customerAcceptName = customerUser.fullName();
+                    }
+                    UserDto workerUser = authClient.getUserById(userId);
+                    if (workerUser != null && workerUser.fullName() != null) {
+                        workerAcceptName = workerUser.fullName();
+                    }
+                } catch (Exception e) {
+                    log.warn("Could not fetch user details for ACCEPTED notification", e);
+                }
+
+                String acceptSubject = "NearFix: Emergency Request Accepted [#" + id + "]";
+                String acceptMessage = "Hi " + customerAcceptName + ",\n\n" +
+                        "Your emergency request has been accepted by our responder " + workerAcceptName + ". They are on the way.\n\n" +
+                        "* **Responder Name:** " + workerAcceptName + "\n" +
+                        "* **Status:** ACCEPTED\n\n" +
+                        "You can track the responder's live location on your dashboard.\n\n" +
+                        "Best regards,\n" +
+                        "The NearFix Team";
+                sendNotificationSafely(booking.getCustomerId(), acceptSubject, acceptMessage);
                 break;
 
             case ACCEPTED:
@@ -285,8 +335,31 @@ public class BookingService {
                 booking.setStatus(BookingStatus.WORK_COMPLETED);
                 
 
-                sendNotificationSafely(booking.getCustomerId(), "Work Completed", 
-                        "The worker has completed the service. Total amount to be paid: ₹" + request.amount() + ". Please make payment.");
+                String customerCompName = "Customer";
+                String workerCompName = "Responder";
+                try {
+                    UserDto customerUser = authClient.getUserById(booking.getCustomerId());
+                    if (customerUser != null && customerUser.fullName() != null) {
+                        customerCompName = customerUser.fullName();
+                    }
+                    UserDto workerUser = authClient.getUserById(booking.getWorkerId());
+                    if (workerUser != null && workerUser.fullName() != null) {
+                        workerCompName = workerUser.fullName();
+                    }
+                } catch (Exception e) {
+                    log.warn("Could not fetch user details for WORK_COMPLETED notification", e);
+                }
+
+                String compSubject = "NearFix: Work Completed - Invoice for Booking [#" + id + "]";
+                String compMessage = "Hi " + customerCompName + ",\n\n" +
+                        "The worker **" + workerCompName + "** has completed the emergency repair service.\n\n" +
+                        "* **Service Type:** " + booking.getServiceType() + "\n" +
+                        "* **Assigned Technician:** " + workerCompName + "\n" +
+                        "* **Total Charge:** ₹" + request.amount() + "\n\n" +
+                        "Please log into the app to verify the work and complete your payment.\n\n" +
+                        "Best regards,\n" +
+                        "The NearFix Billing Team";
+                sendNotificationSafely(booking.getCustomerId(), compSubject, compMessage);
                 break;
 
             case WORK_COMPLETED:
@@ -304,10 +377,44 @@ public class BookingService {
                 }
                 
 
-                sendNotificationSafely(booking.getCustomerId(), "Payment Successful", 
-                        "Payment verified. Booking #" + booking.getId() + " is now completed.");
-                sendNotificationSafely(booking.getWorkerId(), "Payment Received", 
-                        "Payment for booking #" + booking.getId() + " has been settled. You are now AVAILABLE.");
+                String custPaidName = "Customer";
+                String workPaidName = "Worker";
+                try {
+                    UserDto customerUser = authClient.getUserById(booking.getCustomerId());
+                    if (customerUser != null && customerUser.fullName() != null) {
+                        custPaidName = customerUser.fullName();
+                    }
+                    UserDto workerUser = authClient.getUserById(booking.getWorkerId());
+                    if (workerUser != null && workerUser.fullName() != null) {
+                        workPaidName = workerUser.fullName();
+                    }
+                } catch (Exception e) {
+                    log.warn("Could not fetch user details for PAID notification", e);
+                }
+
+                String timestampStr = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+
+                String custPaidSubject = "NearFix: Payment Verified for Booking [#" + booking.getId() + "]";
+                String custPaidMessage = "Hi " + custPaidName + ",\n\n" +
+                        "This email confirms that the payment of **₹" + (booking.getAmount() != null ? booking.getAmount() : "0.0") + "** for Booking #" + booking.getId() + " has been successfully processed.\n\n" +
+                        "* **Transaction ID:** Simulated/Settled\n" +
+                        "* **Payment Status:** SUCCESS\n" +
+                        "* **Date:** " + timestampStr + "\n\n" +
+                        "Thank you for choosing NearFix.\n\n" +
+                        "Best regards,\n" +
+                        "The NearFix Payments Team";
+                sendNotificationSafely(booking.getCustomerId(), custPaidSubject, custPaidMessage);
+
+                String workPaidSubject = "NearFix: Payment Verified for Booking [#" + booking.getId() + "]";
+                String workPaidMessage = "Hi " + workPaidName + ",\n\n" +
+                        "This email confirms that the payment of **₹" + (booking.getAmount() != null ? booking.getAmount() : "0.0") + "** for Booking #" + booking.getId() + " has been successfully processed.\n\n" +
+                        "* **Transaction ID:** Simulated/Settled\n" +
+                        "* **Payment Status:** SUCCESS\n" +
+                        "* **Date:** " + timestampStr + "\n\n" +
+                        "Thank you for choosing NearFix.\n\n" +
+                        "Best regards,\n" +
+                        "The NearFix Payments Team";
+                sendNotificationSafely(booking.getWorkerId(), workPaidSubject, workPaidMessage);
                 break;
 
             default:
@@ -351,11 +458,38 @@ public class BookingService {
         booking.setStatus(BookingStatus.CANCELLED);
         Booking saved = bookingRepository.save(booking);
 
-        sendNotificationSafely(booking.getCustomerId(), "Booking Cancelled", 
-                "Booking #" + booking.getId() + " has been cancelled.");
+        String custCancelName = "Customer";
+        String workCancelName = "Worker";
+        try {
+            UserDto customerUser = authClient.getUserById(booking.getCustomerId());
+            if (customerUser != null && customerUser.fullName() != null) {
+                custCancelName = customerUser.fullName();
+            }
+            if (booking.getWorkerId() != null) {
+                UserDto workerUser = authClient.getUserById(booking.getWorkerId());
+                if (workerUser != null && workerUser.fullName() != null) {
+                    workCancelName = workerUser.fullName();
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Could not fetch user details for CANCELLED notification", e);
+        }
+
+        String cancelSubject = "NearFix: Booking Cancelled [#" + booking.getId() + "]";
+        String custCancelMessage = "Hi " + custCancelName + ",\n\n" +
+                "This email confirms that your Booking #" + booking.getId() + " has been cancelled.\n\n" +
+                "If you did not request this cancellation or have questions, please contact support.\n\n" +
+                "Best regards,\n" +
+                "The NearFix Team";
+        sendNotificationSafely(booking.getCustomerId(), cancelSubject, custCancelMessage);
+
         if (booking.getWorkerId() != null) {
-            sendNotificationSafely(booking.getWorkerId(), "Booking Cancelled", 
-                    "Booking #" + booking.getId() + " has been cancelled.");
+            String workCancelMessage = "Hi " + workCancelName + ",\n\n" +
+                    "This email confirms that Booking #" + booking.getId() + " has been cancelled.\n\n" +
+                    "Your status has been set back to AVAILABLE.\n\n" +
+                    "Best regards,\n" +
+                    "The NearFix Dispatcher";
+            sendNotificationSafely(booking.getWorkerId(), cancelSubject, workCancelMessage);
         }
 
         return bookingMapper.toResponse(saved);
