@@ -3,8 +3,10 @@ export const SERVICE_TYPES = [
   'Plumber',
   'Carpenter',
   'Mechanic',
-  'AC Technician'
+  'AC Technician',
+  'Other'
 ];
+
 
 export const ROLES = {
   CUSTOMER: 'CUSTOMER',

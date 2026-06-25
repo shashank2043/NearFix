@@ -16,6 +16,11 @@ import { getCitiesThunk } from '../../store/slices/workerSlice';
 const bookingSchema = Yup.object().shape({
   serviceType: Yup.string()
     .required('Service type is required'),
+  customService: Yup.string().when('serviceType', {
+    is: 'Other',
+    then: (schema) => schema.required('Please specify the custom service name').min(3, 'Custom service name must be at least 3 characters'),
+    otherwise: (schema) => schema.notRequired()
+  }),
   issueDescription: Yup.string()
     .required('Issue description is required')
     .min(10, 'Issue description must be at least 10 characters'),
@@ -36,16 +41,27 @@ const EmergencyRequestForm = ({ initialService = 'Electrician', onSubmit, loadin
     dispatch(getCitiesThunk());
   }, [dispatch]);
 
+  const PREDEFINED_TYPES = ['Electrician', 'Plumber', 'Carpenter', 'Mechanic', 'AC Technician'];
+  const isPredefined = PREDEFINED_TYPES.includes(initialService);
+  const initialServiceType = isPredefined ? initialService : 'Other';
+  const initialCustomService = isPredefined ? '' : initialService;
+
   const formik = useFormik({
     initialValues: {
-      serviceType: initialService,
+      serviceType: initialServiceType,
+      customService: initialCustomService,
       issueDescription: '',
       address: '',
       city: '',
     },
     validationSchema: bookingSchema,
     onSubmit: (values) => {
-      onSubmit(values);
+      const payload = {
+        ...values,
+        serviceType: values.serviceType === 'Other' ? values.customService : values.serviceType
+      };
+      delete payload.customService;
+      onSubmit(payload);
     },
   });
 
@@ -97,7 +113,12 @@ const EmergencyRequestForm = ({ initialService = 'Electrician', onSubmit, loadin
           name="serviceType"
           label="Emergency Service Type"
           value={formik.values.serviceType}
-          onChange={formik.handleChange}
+          onChange={(e) => {
+            formik.handleChange(e);
+            if (e.target.value !== 'Other') {
+              formik.setFieldValue('customService', '');
+            }
+          }}
           onBlur={formik.handleBlur}
           error={formik.touched.serviceType && Boolean(formik.errors.serviceType)}
           helperText={formik.touched.serviceType && formik.errors.serviceType}
@@ -118,6 +139,20 @@ const EmergencyRequestForm = ({ initialService = 'Electrician', onSubmit, loadin
             </MenuItem>
           ))}
         </TextField>
+
+        {formik.values.serviceType === 'Other' && (
+          <TextField
+            name="customService"
+            label="Specify Service Type"
+            placeholder="e.g. Painter, Gardener, Locksmith, Appliance Repair"
+            value={formik.values.customService}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.touched.customService && Boolean(formik.errors.customService)}
+            helperText={formik.touched.customService && formik.errors.customService}
+            fullWidth
+          />
+        )}
 
         <TextField
           name="issueDescription"

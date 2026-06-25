@@ -16,7 +16,7 @@ import Divider from '@mui/material/Divider';
 import Avatar from '@mui/material/Avatar';
 import Paper from '@mui/material/Paper';
 import Rating from '@mui/material/Rating';
-import { Search, MapPin, Zap, Wrench, Hammer, ShieldCheck, Clock, Award, ArrowRight, Star } from 'lucide-react';
+import { Search, MapPin, Zap, Wrench, Hammer, ShieldCheck, Clock, Award, ArrowRight, Star, Car, Wind, HelpCircle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useDispatch, useSelector } from 'react-redux';
 import { getCitiesThunk } from '../store/slices/workerSlice';
@@ -26,6 +26,9 @@ const SERVICES = [
   { name: 'Electrician', desc: 'Short circuits, wiring repairs, socket fixes', icon: <Zap size={24} />, color: '#00F5D4' },
   { name: 'Plumber', desc: 'Leakages, pipe bursts, tap installations', icon: <Wrench size={24} />, color: '#00B4D8' },
   { name: 'Carpenter', desc: 'Lock repairs, door alignment, furniture fixes', icon: <Hammer size={24} />, color: '#ffb703' },
+  { name: 'Mechanic', desc: 'Engine issues, brake failure, flat tires', icon: <Car size={24} />, color: '#ff5722' },
+  { name: 'AC Technician', desc: 'Cooling issues, leakages, gas refills', icon: <Wind size={24} />, color: '#4caf50' },
+  { name: 'Other', desc: 'Need custom urgent services? Select this to specify', icon: <HelpCircle size={24} />, color: '#9c27b0' },
 ];
 
 
