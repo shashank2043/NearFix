@@ -102,6 +102,12 @@ const EmergencyRequestForm = ({ initialService = 'Electrician', onSubmit, loadin
   return (
     <form onSubmit={formik.handleSubmit}>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        {cities.length === 0 && (
+          <Alert severity="error" sx={{ borderRadius: 2, fontWeight: 'bold' }}>
+            Operations Halted: We are currently not accepting requests as there are no active operating cities.
+          </Alert>
+        )}
+
         {locError && (
           <Alert severity="warning" onClose={() => setLocError('')} sx={{ borderRadius: 2 }}>
             {locError}
@@ -215,15 +221,17 @@ const EmergencyRequestForm = ({ initialService = 'Electrician', onSubmit, loadin
           helperText={formik.touched.city && formik.errors.city}
           fullWidth
         >
-          {(cities.length > 0 ? cities : [
-            { id: 'blr', name: 'Bangalore' },
-            { id: 'del', name: 'Delhi' },
-            { id: 'mum', name: 'Mumbai' }
-          ]).map((cityObj) => (
-            <MenuItem key={cityObj.id} value={cityObj.name}>
-              {cityObj.name}
+          {cities.length > 0 ? (
+            cities.map((cityObj) => (
+              <MenuItem key={cityObj.id} value={cityObj.name}>
+                {cityObj.name}
+              </MenuItem>
+            ))
+          ) : (
+            <MenuItem disabled value="">
+              <em>Operations Halted</em>
             </MenuItem>
-          ))}
+          )}
         </TextField>
 
         <Button
@@ -232,7 +240,7 @@ const EmergencyRequestForm = ({ initialService = 'Electrician', onSubmit, loadin
           color="secondary"
           fullWidth
           size="large"
-          disabled={loading || formik.isSubmitting}
+          disabled={loading || formik.isSubmitting || cities.length === 0}
           sx={{ py: 1.2, mt: 1 }}
         >
           {loading ? 'Dispatching Emergency Request...' : 'Confirm SOS Dispatch'}

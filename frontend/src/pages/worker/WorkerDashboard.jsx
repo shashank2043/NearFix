@@ -252,6 +252,13 @@ const WorkerDashboard = () => {
                   fullWidth
                 />
 
+                {cities.length === 0 && (
+                  <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>
+                    <AlertTitle>Operations Halted</AlertTitle>
+                    We are currently not operating in any cities. Profile registration is temporarily unavailable.
+                  </Alert>
+                )}
+
                 <TextField
                   select
                   name="city"
@@ -263,15 +270,17 @@ const WorkerDashboard = () => {
                   helperText={profileFormik.touched.city && profileFormik.errors.city}
                   fullWidth
                 >
-                  {(cities.length > 0 ? cities : [
-                    { id: 'blr', name: 'Bangalore' },
-                    { id: 'mum', name: 'Mumbai' },
-                    { id: 'del', name: 'Delhi' }
-                  ]).map((cityObj) => (
-                    <MenuItem key={cityObj.id} value={cityObj.name}>
-                      {cityObj.name}
+                  {cities.length > 0 ? (
+                    cities.map((cityObj) => (
+                      <MenuItem key={cityObj.id} value={cityObj.name}>
+                        {cityObj.name}
+                      </MenuItem>
+                    ))
+                  ) : (
+                    <MenuItem disabled value="">
+                      <em>Operations Halted</em>
                     </MenuItem>
-                  ))}
+                  )}
                 </TextField>
 
                 <TextField
@@ -292,7 +301,7 @@ const WorkerDashboard = () => {
                   color="secondary"
                   fullWidth
                   size="large"
-                  disabled={profileFormik.isSubmitting}
+                  disabled={profileFormik.isSubmitting || cities.length === 0}
                   startIcon={<Plus size={18} />}
                   sx={{ py: 1.2, fontWeight: 'bold' }}
                 >

@@ -7,7 +7,7 @@ export const useAuth = () => {
     throw new Error('useAuth must be used within an AuthContextProvider');
   }
 
-  const isAuthenticated = !!context.token;
+  const isAuthenticated = !!context.accessToken;
   const isCustomer = () => context.role === 'CUSTOMER';
   const isWorker = () => context.role === 'WORKER';
   const isAdmin = () => context.role === 'ADMIN';

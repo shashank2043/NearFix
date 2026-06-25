@@ -23,7 +23,7 @@ import { useTheme } from '../../hooks/useTheme';
 
 
 const Navbar = () => {
-  const { user, token, logout, role, isAuthenticated } = useAuth();
+  const { user, accessToken, logout, role, isAuthenticated } = useAuth();
   const { mode, toggleTheme } = useTheme();
   const navigate = useNavigate();
   
@@ -145,7 +145,7 @@ const Navbar = () => {
             variant="h6"
             noWrap
             component={Link}
-            to={token ? getDashboardPath() : '/'}
+            to={accessToken ? getDashboardPath() : '/'}
             sx={{
               mr: 2,
               display: 'flex',

@@ -4,9 +4,10 @@ import { loginThunk, getProfileThunk, logout as logoutAction, setUser as setUser
 
 export const AuthContext = createContext({
   user: null,
-  token: null,
+  accessToken: null,
   role: null,
   loading: true,
+  isAuthenticated: false,
   login: async () => {},
   logout: () => {},
   setUser: () => {}
@@ -14,27 +15,11 @@ export const AuthContext = createContext({
 
 export const AuthContextProvider = ({ children }) => {
   const dispatch = useDispatch();
-  const { user, token, role, loading } = useSelector((state) => state.auth);
+  const { user, accessToken, role, loading, isAuthenticated } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    const initializeAuth = async () => {
-      const storedToken = localStorage.getItem('token');
-      const storedRole = localStorage.getItem('role');
-      
-      if (storedToken && storedRole) {
-        try {
-          await dispatch(getProfileThunk()).unwrap();
-        } catch (error) {
-          console.error('Failed to initialize session:', error);
-          dispatch(logoutAction());
-        }
-      } else {
-        // Set loading false using redux action since we don't fetch profile
-        dispatch(setLoadingAction(false));
-      }
-    };
-
-    initializeAuth();
+    // Set loading false since we don't fetch profile from local storage on refresh
+    dispatch(setLoadingAction(false));
   }, [dispatch]);
 
   
@@ -58,7 +43,7 @@ export const AuthContextProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, role, loading, login, logout, setUser }}>
+    <AuthContext.Provider value={{ user, accessToken, role, loading, isAuthenticated, login, logout, setUser }}>
       {children}
     </AuthContext.Provider>
   );

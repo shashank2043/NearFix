@@ -8,11 +8,17 @@ const axiosInstance = axios.create({
 });
 
 
+let store;
+
+export const injectStore = (_store) => {
+  store = _store;
+};
+
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    const accessToken = store?.getState()?.auth?.accessToken;
+    if (accessToken && !config.headers.Authorization) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
     }
     return config;
   },

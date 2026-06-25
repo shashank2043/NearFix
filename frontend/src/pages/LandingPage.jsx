@@ -16,6 +16,7 @@ import Divider from '@mui/material/Divider';
 import Avatar from '@mui/material/Avatar';
 import Paper from '@mui/material/Paper';
 import Rating from '@mui/material/Rating';
+import Alert from '@mui/material/Alert';
 import { Search, MapPin, Zap, Wrench, Hammer, ShieldCheck, Clock, Award, ArrowRight, Star, Car, Wind, HelpCircle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useDispatch, useSelector } from 'react-redux';
@@ -47,12 +48,12 @@ const TESTIMONIALS = [
 
 
 const LandingPage = () => {
-  const { token, role, isAuthenticated } = useAuth();
+  const { role, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const cities = useSelector((state) => state.worker.cities);
-  const [city, setCity] = useState('Bangalore');
+  const [city, setCity] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
@@ -62,6 +63,8 @@ const LandingPage = () => {
   useEffect(() => {
     if (cities && cities.length > 0) {
       setCity(cities[0].name);
+    } else {
+      setCity('');
     }
   }, [cities]);
 
@@ -169,6 +172,7 @@ const LandingPage = () => {
               <Select
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
+                displayEmpty
                 disableUnderline
                 startAdornment={
                   <InputAdornment position="start" sx={{ pl: 2, color: 'text.secondary' }}>
@@ -179,15 +183,17 @@ const LandingPage = () => {
                   '& .MuiSelect-select': { py: 1.5, pl: 1, textAlign: 'left', fontWeight: 'bold' }
                 }}
               >
-                {(cities.length > 0 ? cities : [
-                  { id: 'blr', name: 'Bangalore' },
-                  { id: 'mum', name: 'Mumbai' },
-                  { id: 'del', name: 'Delhi' }
-                ]).map((cityObj) => (
-                  <MenuItem key={cityObj.id} value={cityObj.name}>
-                    {cityObj.name}
+                {cities.length > 0 ? (
+                  cities.map((cityObj) => (
+                    <MenuItem key={cityObj.id} value={cityObj.name}>
+                      {cityObj.name}
+                    </MenuItem>
+                  ))
+                ) : (
+                  <MenuItem disabled value="">
+                    <em>Operations Halted</em>
                   </MenuItem>
-                ))}
+                )}
               </Select>
             </FormControl>
 
@@ -233,6 +239,7 @@ const LandingPage = () => {
               type="submit"
               variant="contained"
               color="primary"
+              disabled={cities.length === 0}
               sx={{
                 px: 4,
                 py: 1.5,
@@ -244,6 +251,25 @@ const LandingPage = () => {
               Search
             </Button>
           </Paper>
+
+          {cities.length === 0 && (
+            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
+              <Alert 
+                severity="warning" 
+                variant="outlined" 
+                sx={{ 
+                  maxWidth: 600, 
+                  borderRadius: 2.5, 
+                  fontWeight: 'bold', 
+                  bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255, 183, 77, 0.05)' : 'rgba(255, 183, 77, 0.02)',
+                  borderColor: 'warning.main',
+                  color: 'warning.main'
+                }}
+              >
+                Operations are currently halted: No active operating cities are available at this moment.
+              </Alert>
+            </Box>
+          )}
 
           
           {isAuthenticated && (

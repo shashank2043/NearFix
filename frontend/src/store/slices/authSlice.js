@@ -6,19 +6,17 @@ export const loginThunk = createAsyncThunk(
   async ({ email, password }, { rejectWithValue }) => {
     try {
       const data = await authApi.login(email, password);
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('role', data.role);
       
       let profile = null;
       if (data && data.id) {
         try {
-          profile = await authApi.getUserById(data.id);
+          profile = await authApi.getUserById(data.id, data.token);
         } catch (profileErr) {
           console.warn('Failed to fetch full user profile during login:', profileErr);
         }
       }
       return {
-        token: data.token,
+        accessToken: data.token,
         role: data.role,
         user: profile || { id: data.id, role: data.role }
       };
@@ -66,8 +64,9 @@ export const getUserByIdThunk = createAsyncThunk(
 
 const initialState = {
   user: null,
-  token: localStorage.getItem('token') || null,
-  role: localStorage.getItem('role') || null,
+  accessToken: null,
+  role: null,
+  isAuthenticated: false,
   loading: false,
   error: null,
   usersCached: {}, // cache for getUserById results
@@ -82,15 +81,26 @@ const authSlice = createSlice({
       localStorage.removeItem('token');
       localStorage.removeItem('role');
       state.user = null;
-      state.token = null;
+      state.accessToken = null;
       state.role = null;
+      state.isAuthenticated = false;
       state.error = null;
     },
     setUser: (state, action) => {
       state.user = action.payload;
+      if (action.payload) {
+        state.isAuthenticated = true;
+        if (action.payload.role) {
+          state.role = action.payload.role;
+        }
+      } else {
+        state.isAuthenticated = false;
+        state.role = null;
+      }
     },
     setToken: (state, action) => {
-      state.token = action.payload;
+      state.accessToken = action.payload;
+      state.isAuthenticated = !!action.payload;
     },
     setRole: (state, action) => {
       state.role = action.payload;
@@ -108,9 +118,10 @@ const authSlice = createSlice({
       })
       .addCase(loginThunk.fulfilled, (state, action) => {
         state.loading = false;
-        state.token = action.payload.token;
+        state.accessToken = action.payload.accessToken;
         state.role = action.payload.role;
         state.user = action.payload.user;
+        state.isAuthenticated = true;
       })
       .addCase(loginThunk.rejected, (state, action) => {
         state.loading = false;
@@ -137,13 +148,15 @@ const authSlice = createSlice({
         state.loading = false;
         state.user = action.payload;
         state.role = action.payload.role;
+        state.isAuthenticated = true;
       })
       .addCase(getProfileThunk.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
         state.user = null;
-        state.token = null;
+        state.accessToken = null;
         state.role = null;
+        state.isAuthenticated = false;
         localStorage.removeItem('token');
         localStorage.removeItem('role');
       })

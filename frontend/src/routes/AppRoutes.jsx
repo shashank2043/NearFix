@@ -23,9 +23,9 @@ import { useAuth } from '../hooks/useAuth';
 
 
 const HomeRedirect = () => {
-  const { token, role } = useAuth();
+  const { isAuthenticated, role } = useAuth();
 
-  if (!token) {
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
@@ -38,9 +38,9 @@ const HomeRedirect = () => {
 
 
 const AuthRoute = ({ children }) => {
-  const { token, role } = useAuth();
+  const { isAuthenticated, role } = useAuth();
   
-  if (token) {
+  if (isAuthenticated) {
     if (role === 'CUSTOMER') return <Navigate to="/customer/dashboard" replace />;
     if (role === 'WORKER') return <Navigate to="/worker/dashboard" replace />;
     if (role === 'ADMIN') return <Navigate to="/admin/dashboard" replace />;

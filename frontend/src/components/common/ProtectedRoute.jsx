@@ -5,13 +5,13 @@ import Loader from './Loader';
 
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
-  const { token, role, loading } = useAuth();
+  const { accessToken, role, loading, isAuthenticated } = useAuth();
 
   if (loading) {
     return <Loader fullPage />;
   }
 
-  if (!token) {
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 

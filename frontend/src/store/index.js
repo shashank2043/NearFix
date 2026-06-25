@@ -4,6 +4,7 @@ import bookingReducer from './slices/bookingSlice';
 import workerReducer from './slices/workerSlice';
 import paymentReducer from './slices/paymentSlice';
 import reviewReducer from './slices/reviewSlice';
+import { injectStore } from '../api/axiosInstance';
 
 export const store = configureStore({
   reducer: {
@@ -18,3 +19,5 @@ export const store = configureStore({
       serializableCheck: false, // Turn off since Axios errors or responses might have non-serializable details
     }),
 });
+
+injectStore(store);

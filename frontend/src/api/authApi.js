@@ -14,13 +14,17 @@ export const authApi = {
   },
 
   
-  getUserById: async (id) => {
+  getUserById: async (id, token = null) => {
     // console.log('Fetching user by ID:', id);
+    const config = {};
+    if (token) {
+      config.headers = { Authorization: `Bearer ${token}` };
+    }
     if (!id) {
-      const response = await axiosInstance.get('/api/auth/users');
+      const response = await axiosInstance.get('/api/auth/users', config);
       return response.data;
     }
-    const response = await axiosInstance.get(`/api/auth/users/${id}`);
+    const response = await axiosInstance.get(`/api/auth/users/${id}`, config);
     return response.data;
   },
 
