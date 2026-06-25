@@ -5,7 +5,7 @@ import com.nearfix.payment.client.dto.UpdateBookingStatusRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
-@FeignClient(name = "booking-service", path = "/api/bookings")
+@FeignClient(name = "booking-service", path = "/api/bookings", fallback = BookingClientFallback.class)
 public interface BookingClient {
 
     @GetMapping("/{id}")
