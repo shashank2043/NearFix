@@ -220,7 +220,7 @@ const CustomerDashboard = () => {
                       }}
                     >
                       <Box>
-                        <Box display="flex" alignItems="center" sx={{ gap: 1.5, mb: 0.5 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
                           <Typography variant="subtitle1" fontWeight="700" color="text.primary">
                             {booking.serviceType} Callout
                           </Typography>

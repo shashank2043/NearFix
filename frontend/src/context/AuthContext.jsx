@@ -46,7 +46,7 @@ export const AuthContextProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const data = await authApi.login(email, password);
-      console.log('Login API Response:', data);
+      // console.log('Login API Response:', data);
       
       localStorage.setItem('token', data.token);
       localStorage.setItem('role', data.role);
@@ -56,7 +56,7 @@ export const AuthContextProvider = ({ children }) => {
       if (data && data.id) {
         try {
           profile = await authApi.getUserById(data.id);
-          console.log('Fetched Profile Details:', profile);
+          // console.log('Fetched Profile Details:', profile);
         } catch (profileErr) {
           console.warn('Failed to fetch full user profile during login:', profileErr);
         }

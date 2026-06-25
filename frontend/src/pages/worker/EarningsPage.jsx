@@ -236,14 +236,14 @@ const EarningsPage = () => {
             <Grid size={{ xs: 12, sm: 6 }}>
               <Card sx={{ border: '1px solid', borderColor: 'divider' }}>
                 <CardContent sx={{ p: 3, display: 'flex', alignItems: 'center', gap: 2.5 }}>
-                  <Box sx={{ p: 2, borderRadius: 3, bgcolor: 'rgba(0, 245, 212, 0.1)', color: '#00F5D4' }}>
+                  <Box sx={{ p: 2, borderRadius: 3, bgcolor: 'rgba(0, 245, 212, 0.1)', color: '#00F5D4', flexShrink: 0 }}>
                     <Wallet size={32} />
                   </Box>
-                  <Box>
-                    <Typography variant="caption" color="text.secondary" fontWeight="700" display="block" sx={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <Box sx={{ minWidth: 0, flexGrow: 1 }}>
+                    <Typography variant="caption" color="text.secondary" fontWeight="700" display="block" sx={{ textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       Period Earnings
                     </Typography>
-                    <Typography variant="h4" fontWeight="900" color="text.primary">
+                    <Typography fontWeight="900" color="text.primary" sx={{ fontSize: { xs: '1.75rem', sm: '1.4rem', md: '1.75rem', lg: '2.125rem' }, lineHeight: 1.2 }}>
                       {formatCurrency(summaryAmount)}
                     </Typography>
                   </Box>
@@ -255,14 +255,14 @@ const EarningsPage = () => {
             <Grid size={{ xs: 12, sm: 6 }}>
               <Card sx={{ border: '1px solid', borderColor: 'divider' }}>
                 <CardContent sx={{ p: 3, display: 'flex', alignItems: 'center', gap: 2.5 }}>
-                  <Box sx={{ p: 2, borderRadius: 3, bgcolor: 'rgba(0, 180, 216, 0.1)', color: '#00B4D8' }}>
+                  <Box sx={{ p: 2, borderRadius: 3, bgcolor: 'rgba(0, 180, 216, 0.1)', color: '#00B4D8', flexShrink: 0 }}>
                     <ClipboardCheck size={32} />
                   </Box>
-                  <Box>
-                    <Typography variant="caption" color="text.secondary" fontWeight="700" display="block" sx={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <Box sx={{ minWidth: 0, flexGrow: 1 }}>
+                    <Typography variant="caption" color="text.secondary" fontWeight="700" display="block" sx={{ textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       Jobs Completed
                     </Typography>
-                    <Typography variant="h4" fontWeight="900" color="text.primary">
+                    <Typography fontWeight="900" color="text.primary" sx={{ fontSize: { xs: '1.75rem', sm: '1.4rem', md: '1.75rem', lg: '2.125rem' }, lineHeight: 1.2 }}>
                       {filteredBookings.length}
                     </Typography>
                   </Box>
@@ -307,6 +307,7 @@ const EarningsPage = () => {
                     <React.Fragment key={job.id}>
                       <ListItem sx={{ px: 0, py: 2 }}>
                         <ListItemText
+                          disableTypography
                           primary={
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                               <Typography variant="body2" fontWeight="800" color="text.primary">

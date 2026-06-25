@@ -95,7 +95,7 @@ const AvailabilityToggle = ({ status, onChange, disabled = false }) => {
         </ToggleButton>
 
         <ToggleButton
-          value="UNAVAILABLE"
+          value="OFFLINE"
           sx={{
             py: 1,
             color: 'text.secondary',

@@ -15,7 +15,7 @@ export const authApi = {
 
   
   getUserById: async (id) => {
-    console.log('Fetching user by ID:', id);
+    // console.log('Fetching user by ID:', id);
     if (!id) {
       const response = await axiosInstance.get('/api/auth/users');
       return response.data;

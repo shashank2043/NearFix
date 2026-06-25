@@ -165,7 +165,7 @@ const Dashboard = () => {
 
   const handleAvailabilityToggle = async () => {
     if (!workerProfile) return;
-    const newStatus = workerProfile.status === 'AVAILABLE' ? 'UNAVAILABLE' : 'AVAILABLE';
+    const newStatus = workerProfile.status === 'AVAILABLE' ? 'OFFLINE' : 'AVAILABLE';
     try {
       const updated = await workerApi.updateStatus(user.id, newStatus);
       setWorkerProfile(updated);
@@ -377,7 +377,7 @@ const Dashboard = () => {
                                 <MapPin size={16} /> <strong>Address:</strong> {job.address}
                               </Typography>
                               
-                              <Box display="flex" sx={{ gap: 2 }}>
+                              <Box sx={{ display: 'flex', gap: 2 }}>
                                 {job.status === 'ACCEPTED' && (
                                   <Button
                                     variant="contained"
@@ -456,6 +456,7 @@ const Dashboard = () => {
                               sx={{ px: 0, py: 2 }}
                             >
                               <ListItemText
+                                disableTypography
                                 primary={
                                   <Typography variant="subtitle1" fontWeight="700">
                                     Emergency Callout #{req.id}
@@ -527,7 +528,7 @@ const Dashboard = () => {
             <Divider sx={{ mb: 4 }} />
 
             <form onSubmit={profileFormik.handleSubmit}>
-              <Box display="flex" flexDirection="column" sx={{ gap: 3 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <TextField
                   select
                   name="skill"
