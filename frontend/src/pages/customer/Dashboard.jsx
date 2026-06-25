@@ -84,11 +84,17 @@ const Dashboard = () => {
   const bookingFormik = useFormik({
     initialValues: {
       serviceType: 'Electrician',
+      customService: '',
       issueDescription: '',
       address: '',
     },
     validationSchema: Yup.object().shape({
       serviceType: Yup.string().required('Service type is required'),
+      customService: Yup.string().when('serviceType', {
+        is: 'Other',
+        then: (schema) => schema.required('Please specify the custom service name').min(3, 'Custom service name must be at least 3 characters'),
+        otherwise: (schema) => schema.notRequired()
+      }),
       issueDescription: Yup.string()
         .required('Issue description is required')
         .min(10, 'Issue description must be at least 10 characters'),
@@ -100,7 +106,7 @@ const Dashboard = () => {
       try {
         await dispatch(createBookingThunk({
           customerId: user.id,
-          serviceType: values.serviceType,
+          serviceType: values.serviceType === 'Other' ? values.customService : values.serviceType,
           issueDescription: values.issueDescription,
           address: values.address,
         })).unwrap();
@@ -357,7 +363,12 @@ const Dashboard = () => {
                     name="serviceType"
                     label="Service Type"
                     value={bookingFormik.values.serviceType}
-                    onChange={bookingFormik.handleChange}
+                    onChange={(e) => {
+                      bookingFormik.handleChange(e);
+                      if (e.target.value !== 'Other') {
+                        bookingFormik.setFieldValue('customService', '');
+                      }
+                    }}
                     onBlur={bookingFormik.handleBlur}
                     error={bookingFormik.touched.serviceType && Boolean(bookingFormik.errors.serviceType)}
                     helperText={bookingFormik.touched.serviceType && bookingFormik.errors.serviceType}
@@ -378,6 +389,20 @@ const Dashboard = () => {
                       </MenuItem>
                     ))}
                   </TextField>
+
+                  {bookingFormik.values.serviceType === 'Other' && (
+                    <TextField
+                      name="customService"
+                      label="Specify Service Type"
+                      placeholder="e.g. Locksmith, Painter, Appliance Repair"
+                      value={bookingFormik.values.customService}
+                      onChange={bookingFormik.handleChange}
+                      onBlur={bookingFormik.handleBlur}
+                      error={bookingFormik.touched.customService && Boolean(bookingFormik.errors.customService)}
+                      helperText={bookingFormik.touched.customService && bookingFormik.errors.customService}
+                      fullWidth
+                    />
+                  )}
 
                   <TextField
                     name="issueDescription"

@@ -5,7 +5,7 @@ import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import { Zap, Wrench, Hammer, Car, Wind, ArrowLeft } from 'lucide-react';
+import { Zap, Wrench, Hammer, Car, Wind, ArrowLeft, HelpCircle } from 'lucide-react';
 import ServiceCard from '../../components/customer/ServiceCard';
 
 
@@ -37,6 +37,11 @@ const ServiceSelection = () => {
       name: 'AC Technician',
       icon: Wind,
       description: 'Emergency fixes for cooling failures, compressor overheating, and toxic refrigerant leakage issues.',
+    },
+    {
+      name: 'Other',
+      icon: HelpCircle,
+      description: 'Need a custom emergency repair? Select this to manually describe and request a nearby specialist.',
     },
   ];
 

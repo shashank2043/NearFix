@@ -57,16 +57,26 @@ const WorkerDashboard = () => {
   const [showSetup, setShowSetup] = useState(false);
 
   
+  const isPredefined = SERVICE_TYPES.filter(t => t !== 'Other').includes(profile?.skill);
+  const initialSkill = profile?.skill ? (isPredefined ? profile.skill : 'Other') : 'Electrician';
+  const initialCustomSkill = profile?.skill && !isPredefined ? profile.skill : '';
+
   const profileFormik = useFormik({
     enableReinitialize: true,
     initialValues: {
-      skill: profile?.skill || 'Electrician',
+      skill: initialSkill,
+      customSkill: initialCustomSkill,
       experience: profile?.experience ?? 1,
       city: profile?.city || '',
       aadhaarNumber: profile?.aadhaarNumber || '',
     },
     validationSchema: Yup.object().shape({
       skill: Yup.string().required('Skill is required'),
+      customSkill: Yup.string().when('skill', {
+        is: 'Other',
+        then: (schema) => schema.required('Please specify your custom skill/trade').min(3, 'Skill name must be at least 3 characters'),
+        otherwise: (schema) => schema.notRequired()
+      }),
       experience: Yup.number()
         .required('Experience is required')
         .min(0, 'Experience must be greater than or equal to 0'),
@@ -80,7 +90,7 @@ const WorkerDashboard = () => {
       try {
         await dispatch(createWorkerProfileThunk({
           id: user.id,
-          skill: values.skill,
+          skill: values.skill === 'Other' ? values.customSkill : values.skill,
           experience: Number(values.experience),
           city: values.city,
           aadhaarNumber: values.aadhaarNumber,
@@ -193,12 +203,17 @@ const WorkerDashboard = () => {
             </Box>
             <form onSubmit={profileFormik.handleSubmit}>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                <TextField
+                 <TextField
                   select
                   name="skill"
                   label="Select Skill"
                   value={profileFormik.values.skill}
-                  onChange={profileFormik.handleChange}
+                  onChange={(e) => {
+                    profileFormik.handleChange(e);
+                    if (e.target.value !== 'Other') {
+                      profileFormik.setFieldValue('customSkill', '');
+                    }
+                  }}
                   onBlur={profileFormik.handleBlur}
                   error={profileFormik.touched.skill && Boolean(profileFormik.errors.skill)}
                   helperText={profileFormik.touched.skill && profileFormik.errors.skill}
@@ -210,6 +225,20 @@ const WorkerDashboard = () => {
                     </MenuItem>
                   ))}
                 </TextField>
+
+                {profileFormik.values.skill === 'Other' && (
+                  <TextField
+                    name="customSkill"
+                    label="Specify Custom Skill / Trade"
+                    placeholder="e.g. Locksmith, Painter, Appliance Repair"
+                    value={profileFormik.values.customSkill}
+                    onChange={profileFormik.handleChange}
+                    onBlur={profileFormik.handleBlur}
+                    error={profileFormik.touched.customSkill && Boolean(profileFormik.errors.customSkill)}
+                    helperText={profileFormik.touched.customSkill && profileFormik.errors.customSkill}
+                    fullWidth
+                  />
+                )}
 
                 <TextField
                   name="experience"

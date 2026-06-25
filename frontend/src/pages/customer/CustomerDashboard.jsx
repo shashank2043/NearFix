@@ -10,7 +10,7 @@ import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import List from '@mui/material/List';
 import Divider from '@mui/material/Divider';
-import { AlertOctagon, Wrench, Zap, Eye, Flame, ShieldAlert, Pipette, Hammer, Car, Cpu } from 'lucide-react';
+import { AlertOctagon, Wrench, Zap, Eye, Flame, ShieldAlert, Pipette, Hammer, Car, Cpu, ArrowRight } from 'lucide-react';
 
 import { useAuth } from '../../hooks/useAuth';
 import { useBooking } from '../../hooks/useBooking';
@@ -133,9 +133,20 @@ const CustomerDashboard = () => {
 
       
       <Box sx={{ mb: 5 }}>
-        <Typography variant="h6" fontWeight="700" sx={{ mb: 2.5 }} color="text.primary">
-          Quick Select Categories
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2.5 }}>
+          <Typography variant="h6" fontWeight="700" color="text.primary">
+            Quick Select Categories
+          </Typography>
+          <Button 
+            variant="text" 
+            color="secondary" 
+            onClick={() => navigate('/customer/services')}
+            endIcon={<ArrowRight size={16} />}
+            sx={{ fontWeight: '700', textTransform: 'none' }}
+          >
+            Explore More Services
+          </Button>
+        </Box>
         <Grid container spacing={2}>
           {quickServices.map((service) => {
             const Icon = service.icon;
