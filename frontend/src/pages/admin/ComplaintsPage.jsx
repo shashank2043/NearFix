@@ -12,11 +12,11 @@ import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import { AlertOctagon, ShieldAlert, Filter } from 'lucide-react';
 
-import axiosInstance from '../../api/axiosInstance';
-import { bookingApi } from '../../api/bookingApi';
-import { reviewApi } from '../../api/reviewApi';
-import { workerApi } from '../../api/workerApi';
-import { authApi } from '../../api/authApi';
+import { useDispatch, useSelector } from 'react-redux';
+import { getUserByIdThunk } from '../../store/slices/authSlice';
+import { getAllWorkersThunk, verifyWorkerThunk } from '../../store/slices/workerSlice';
+import { getAllBookingsThunk } from '../../store/slices/bookingSlice';
+import { getAllReviewsThunk } from '../../store/slices/reviewSlice';
 import AdminHeader from '../../components/admin/AdminHeader';
 import ComplaintTable from '../../components/admin/ComplaintTable';
 import Loader from '../../components/common/Loader';
@@ -25,18 +25,17 @@ import { useTheme } from '@mui/material/styles';
 
 const ComplaintsPage = () => {
   const theme = useTheme();
+  const dispatch = useDispatch();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  
-  const [bookings, setBookings] = useState([]);
-  const [reviews, setReviews] = useState([]);
-  const [workers, setWorkers] = useState([]);
-  const [users, setUsers] = useState([]);
+  const bookings = useSelector((state) => state.booking.bookings);
+  const reviews = useSelector((state) => state.review.reviews);
+  const workers = useSelector((state) => state.worker.workers);
+  const users = useSelector((state) => state.auth.usersList);
 
-  
   const [selectedService, setSelectedService] = useState('All');
 
   const loadData = async () => {
@@ -44,17 +43,10 @@ const ComplaintsPage = () => {
       setLoading(true);
       setError('');
 
-      const allBookings = await bookingApi.getAllBookings();
-      setBookings(allBookings);
-
-      const allReviews = await reviewApi.getAllReviews();
-      setReviews(allReviews);
-
-      const allWorkers = await workerApi.getAllWorkers();
-      setWorkers(allWorkers);
-
-      const allUsers = await authApi.getUserById('');
-      setUsers(Array.isArray(allUsers) ? allUsers : [allUsers]);
+      await dispatch(getAllBookingsThunk()).unwrap();
+      await dispatch(getAllReviewsThunk()).unwrap();
+      await dispatch(getAllWorkersThunk()).unwrap();
+      await dispatch(getUserByIdThunk('')).unwrap();
     } catch (err) {
       console.error(err);
       setError('Could not compile system reviews and complaints databases.');
@@ -105,8 +97,7 @@ const ComplaintsPage = () => {
       setError('');
       setSuccess('');
 
-      
-      await workerApi.verifyWorker(workerId, false);
+      await dispatch(verifyWorkerThunk({ id: workerId, verified: false })).unwrap();
 
       setSuccess(`Worker ID ${workerId} has been flagged for low quality reports.`);
       await loadData();

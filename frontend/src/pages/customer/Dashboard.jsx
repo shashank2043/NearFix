@@ -24,13 +24,29 @@ import StepLabel from '@mui/material/StepLabel';
 import Divider from '@mui/material/Divider';
 import Avatar from '@mui/material/Avatar';
 import { ShieldAlert, PlusCircle, Wrench, Clock, FileText, CheckCircle2, DollarSign, Star, User } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { useAuth } from '../../hooks/useAuth';
-import { bookingApi } from '../../api/bookingApi';
-import { paymentApi } from '../../api/paymentApi';
-import { reviewApi } from '../../api/reviewApi';
-import { workerApi } from '../../api/workerApi';
-import { authApi } from '../../api/authApi';
+import { 
+  createBookingThunk, 
+  getBookingsByCustomerThunk, 
+  updateBookingStatusThunk 
+} from '../../store/slices/bookingSlice';
+import { 
+  createPaymentThunk 
+} from '../../store/slices/paymentSlice';
+import { 
+  createReviewThunk, 
+  getReviewsByWorkerThunk, 
+  getReviewByBookingThunk 
+} from '../../store/slices/reviewSlice';
+import { 
+  getWorkerProfileByIdThunk, 
+  updateWorkerProfileThunk 
+} from '../../store/slices/workerSlice';
+import { 
+  getUserByIdThunk 
+} from '../../store/slices/authSlice';
 import { SERVICE_TYPES } from '../../utils/constants';
 import { formatCurrency, formatDate } from '../../utils/helpers';
 import StatusBadge from '../../components/common/StatusBadge';
@@ -40,10 +56,12 @@ import EmptyState from '../../components/common/EmptyState';
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const dispatch = useDispatch();
 
-  
-  const [bookings, setBookings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const rawBookings = useSelector((state) => state.booking.bookings);
+  const loading = useSelector((state) => state.booking.loading);
+  const apiError = useSelector((state) => state.booking.error);
+
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -58,6 +76,9 @@ const Dashboard = () => {
 
   
   const [hasReviewed, setHasReviewed] = useState(false);
+
+  
+  const bookings = [...rawBookings].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   
   const bookingFormik = useFormik({
@@ -77,18 +98,18 @@ const Dashboard = () => {
       setError('');
       setSuccess('');
       try {
-        await bookingApi.createBooking({
+        await dispatch(createBookingThunk({
           customerId: user.id,
           serviceType: values.serviceType,
           issueDescription: values.issueDescription,
           address: values.address,
-        });
+        })).unwrap();
 
         setSuccess('Emergency request submitted! Finding nearby helpers...');
         resetForm();
         fetchBookings();
       } catch (err) {
-        setError('Failed to log booking request. Please try again.');
+        setError(err.message || 'Failed to log booking request. Please try again.');
         console.error(err);
       } finally {
         setSubmitting(false);
@@ -116,18 +137,21 @@ const Dashboard = () => {
       setError('');
       setSuccess('');
       try {
-        await reviewApi.createReview({
+        await dispatch(createReviewThunk({
           bookingId: selectedBooking.id,
           customerId: user.id,
           workerId: assignedWorker.id,
           rating: values.rating,
           comment: values.comment,
-        });
+        })).unwrap();
 
         
-        const reviews = await reviewApi.getReviewsByWorker(assignedWorker.id);
+        const reviews = await dispatch(getReviewsByWorkerThunk(assignedWorker.id)).unwrap();
         const avgRating = reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length;
-        await workerApi.updateProfile(assignedWorker.id, { rating: Number(avgRating.toFixed(1)) });
+        await dispatch(updateWorkerProfileThunk({
+          id: assignedWorker.id,
+          workerData: { rating: Number(avgRating.toFixed(1)) }
+        })).unwrap();
 
         setHasReviewed(true);
         setSuccess('Thank you for your feedback!');
@@ -135,7 +159,7 @@ const Dashboard = () => {
         fetchBookings();
       } catch (err) {
         console.error('Submit review failed:', err);
-        setError('Failed to submit review.');
+        setError(err.message || 'Failed to submit review.');
       } finally {
         setSubmitting(false);
       }
@@ -143,16 +167,13 @@ const Dashboard = () => {
   });
 
   const fetchBookings = async () => {
+    if (!user?.id) return;
     try {
-      setLoading(true);
-      const data = await bookingApi.getBookingsByCustomer(user.id);
-      
-      setBookings(data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+      setError('');
+      await dispatch(getBookingsByCustomerThunk(user.id)).unwrap();
     } catch (err) {
-      setError('Failed to fetch bookings history');
+      setError(err.message || 'Failed to fetch bookings history');
       console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -162,7 +183,11 @@ const Dashboard = () => {
     }
   }, [user?.id]);
 
-
+  useEffect(() => {
+    if (apiError) {
+      setError(apiError);
+    }
+  }, [apiError]);
 
   
   const getStepIndex = (status) => {
@@ -190,16 +215,16 @@ const Dashboard = () => {
     if (booking.workerId) {
       try {
         
-        const workerProfile = await workerApi.getProfileById(booking.workerId);
+        const workerProfile = await dispatch(getWorkerProfileByIdThunk(booking.workerId)).unwrap();
         setAssignedWorker(workerProfile);
         
         
-        const workerUser = await authApi.getUserById(booking.workerId);
-        setAssignedWorkerUser(workerUser);
+        const workerUserResult = await dispatch(getUserByIdThunk(booking.workerId)).unwrap();
+        setAssignedWorkerUser(workerUserResult.data);
 
         
-        const reviews = await reviewApi.getReviewByBooking(booking.id);
-        if (reviews && reviews.length > 0) {
+        const reviews = await dispatch(getReviewByBookingThunk(booking.id)).unwrap();
+        if (reviews && (Array.isArray(reviews) ? reviews.length > 0 : !!reviews)) {
           setHasReviewed(true);
         }
       } catch (err) {
@@ -213,13 +238,16 @@ const Dashboard = () => {
     setPaymentLoading(true);
     try {
       
-      await paymentApi.createPayment({
+      await dispatch(createPaymentThunk({
         bookingId: selectedBooking.id,
         amount: 500, 
-      });
+      })).unwrap();
 
       
-      const updatedBooking = await bookingApi.updateBookingStatus(selectedBooking.id, 'PAID');
+      const updatedBooking = await dispatch(updateBookingStatusThunk({
+        id: selectedBooking.id,
+        status: 'PAID'
+      })).unwrap();
       
       
       setSelectedBooking(updatedBooking);
@@ -227,7 +255,7 @@ const Dashboard = () => {
       fetchBookings();
     } catch (err) {
       console.error('Payment failed:', err);
-      setError('Payment transaction failed. Please retry.');
+      setError(err.message || 'Payment transaction failed. Please retry.');
     } finally {
       setPaymentLoading(false);
     }

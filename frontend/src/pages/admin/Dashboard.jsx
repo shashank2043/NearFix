@@ -16,26 +16,28 @@ import Tabs from '@mui/material/Tabs';
 import Avatar from '@mui/material/Avatar';
 import Chip from '@mui/material/Chip';
 import { Users, ShieldCheck, ClipboardList, TrendingUp, AlertTriangle, ShieldAlert, Award, FileText, CheckCircle } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
+import { getUserByIdThunk } from '../../store/slices/authSlice';
+import { getAllWorkersThunk, verifyWorkerThunk, updateWorkerStatusThunk } from '../../store/slices/workerSlice';
+import { getAllBookingsThunk } from '../../store/slices/bookingSlice';
+import { getAllPaymentsThunk } from '../../store/slices/paymentSlice';
 
-import { authApi } from '../../api/authApi';
-import { workerApi } from '../../api/workerApi';
-import { bookingApi } from '../../api/bookingApi';
-import { paymentApi } from '../../api/paymentApi';
 import { formatCurrency } from '../../utils/helpers';
 import StatusBadge from '../../components/common/StatusBadge';
 import Loader from '../../components/common/Loader';
 import EmptyState from '../../components/common/EmptyState';
 
 const Dashboard = () => {
+  const dispatch = useDispatch();
   
   const [tabValue, setTabValue] = useState(0);
 
   
   const [loading, setLoading] = useState(true);
-  const [users, setUsers] = useState([]);
-  const [workers, setWorkers] = useState([]);
-  const [bookings, setBookings] = useState([]);
-  const [payments, setPayments] = useState([]);
+  const users = useSelector((state) => state.auth.usersList);
+  const workers = useSelector((state) => state.worker.workers);
+  const bookings = useSelector((state) => state.booking.bookings);
+  const payments = useSelector((state) => state.payment.payments);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -62,24 +64,10 @@ const Dashboard = () => {
       setLoading(true);
       setError('');
 
-      
-      const allBookings = await bookingApi.getAllBookings();
-      setBookings(allBookings);
-
-      const allWorkers = await workerApi.getAllWorkers();
-      setWorkers(allWorkers);
-
-      const allPayments = await paymentApi.getAllPayments();
-      setPayments(allPayments);
-
-      
-      
-      const usersCheck = await authApi.getUserById(''); 
-      
-      
-      
-      const responseUsers = await authApi.getUserById('');
-      setUsers(Array.isArray(responseUsers) ? responseUsers : [responseUsers]);
+      await dispatch(getAllBookingsThunk()).unwrap();
+      await dispatch(getAllWorkersThunk()).unwrap();
+      await dispatch(getAllPaymentsThunk()).unwrap();
+      await dispatch(getUserByIdThunk('')).unwrap();
     } catch (err) {
       setError('Failed to fetch administrative metrics from system services.');
       console.error(err);
@@ -95,10 +83,10 @@ const Dashboard = () => {
   const handleApproveWorker = async (workerId) => {
     try {
       
-      await workerApi.verifyWorker(workerId, true);
+      await dispatch(verifyWorkerThunk({ id: workerId, verified: true })).unwrap();
       
       
-      await workerApi.updateStatus(workerId, 'AVAILABLE');
+      await dispatch(updateWorkerStatusThunk({ id: workerId, status: 'AVAILABLE' })).unwrap();
 
       setSuccess('Worker verified and activated successfully!');
       loadData();
@@ -110,8 +98,8 @@ const Dashboard = () => {
   const handleRejectWorker = async (workerId) => {
     try {
       
-      await workerApi.verifyWorker(workerId, false);
-      await workerApi.updateStatus(workerId, 'OFFLINE');
+      await dispatch(verifyWorkerThunk({ id: workerId, verified: false })).unwrap();
+      await dispatch(updateWorkerStatusThunk({ id: workerId, status: 'OFFLINE' })).unwrap();
       
       setSuccess('Worker verification rejected.');
       loadData();

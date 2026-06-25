@@ -9,7 +9,8 @@ import InputAdornment from '@mui/material/InputAdornment';
 import Alert from '@mui/material/Alert';
 import { MapPin, Wrench, Navigation, Loader2 } from 'lucide-react';
 import { SERVICE_TYPES } from '../../utils/constants';
-import { workerApi } from '../../api/workerApi';
+import { useDispatch, useSelector } from 'react-redux';
+import { getCitiesThunk } from '../../store/slices/workerSlice';
 
 
 const bookingSchema = Yup.object().shape({
@@ -26,21 +27,14 @@ const bookingSchema = Yup.object().shape({
 
 
 const EmergencyRequestForm = ({ initialService = 'Electrician', onSubmit, loading }) => {
+  const dispatch = useDispatch();
   const [detecting, setDetecting] = useState(false);
   const [locError, setLocError] = useState('');
-  const [cities, setCities] = useState([]);
+  const cities = useSelector((state) => state.worker.cities);
 
   useEffect(() => {
-    const fetchCities = async () => {
-      try {
-        const list = await workerApi.getCities();
-        setCities(list);
-      } catch (err) {
-        console.warn('Could not load operating cities list:', err);
-      }
-    };
-    fetchCities();
-  }, []);
+    dispatch(getCitiesThunk());
+  }, [dispatch]);
 
   const formik = useFormik({
     initialValues: {

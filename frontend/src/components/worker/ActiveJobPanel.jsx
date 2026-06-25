@@ -18,7 +18,8 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
 import { MapPin, Phone, User, CheckCircle2, Navigation, ShieldCheck, AlertCircle, Play, RefreshCw } from 'lucide-react';
-import { authApi } from '../../api/authApi';
+import { useDispatch, useSelector } from 'react-redux';
+import { getUserByIdThunk } from '../../store/slices/authSlice';
 
 const parseCoordinates = (addressStr) => {
   if (!addressStr) return null;
@@ -59,15 +60,27 @@ const getActiveStep = (status) => {
 
 const ActiveJobPanel = ({ booking, onUpdateStatus, actionLoading = false, onRefreshLocation, refreshingLocation = false }) => {
   const { id, customerId, serviceType, issueDescription, address, status, workerLatitude, workerLongitude, distance } = booking;
+  
+  const dispatch = useDispatch();
+  const cachedUser = useSelector((state) => state.auth.usersCached[customerId]);
+
   const [customerName, setCustomerName] = useState('Loading Customer...');
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
 
   useEffect(() => {
+    if (cachedUser) {
+      setCustomerName(cachedUser.fullName || 'Anonymous Customer');
+      setCustomerPhone(cachedUser.phone || 'No phone provided');
+      setCustomerEmail(cachedUser.email || '');
+      return;
+    }
+
     let isMounted = true;
     const fetchCustomerInfo = async () => {
       try {
-        const user = await authApi.getUserById(customerId);
+        const result = await dispatch(getUserByIdThunk(customerId)).unwrap();
+        const user = result.data;
         if (isMounted) {
           setCustomerName(user.fullName || 'Anonymous Customer');
           setCustomerPhone(user.phone || 'No phone provided');
@@ -86,7 +99,7 @@ const ActiveJobPanel = ({ booking, onUpdateStatus, actionLoading = false, onRefr
     return () => {
       isMounted = false;
     };
-  }, [customerId]);
+  }, [customerId, cachedUser, dispatch]);
 
   const [openDialog, setOpenDialog] = useState(false);
   const [amount, setAmount] = useState('300');

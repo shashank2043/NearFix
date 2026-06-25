@@ -18,10 +18,15 @@ import Divider from '@mui/material/Divider';
 import { useTheme } from '@mui/material/styles';
 import { ClipboardList, Wallet, AlertTriangle, ArrowRight, Play, CheckCircle2, ShieldCheck, Plus } from 'lucide-react';
 
+import { useDispatch, useSelector } from 'react-redux';
 import { useAuth } from '../../hooks/useAuth';
-import { useWorkers } from '../../hooks/useWorkers';
-import { workerApi } from '../../api/workerApi';
-import { bookingApi } from '../../api/bookingApi';
+import { 
+  getCitiesThunk, 
+  getWorkerProfileByIdThunk, 
+  createWorkerProfileThunk, 
+  updateWorkerStatusThunk 
+} from '../../store/slices/workerSlice';
+import { getBookingsByWorkerThunk, getAvailableBookingsThunk } from '../../store/slices/bookingSlice';
 import { SERVICE_TYPES } from '../../utils/constants';
 
 import WorkerProfileCard from '../../components/worker/WorkerProfileCard';
@@ -32,14 +37,19 @@ import Loader from '../../components/common/Loader';
 const WorkerDashboard = () => {
   const theme = useTheme();
   const { user } = useAuth();
-  const { fetchWorkerById, updateAvailability, fetchWorkerBookings, loading: hookLoading, error: hookError } = useWorkers();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const [profile, setProfile] = useState(null);
-  const [bookings, setBookings] = useState([]);
-  const [cities, setCities] = useState([]);
-  const [availableRequests, setAvailableRequests] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const profile = useSelector((state) => state.worker.currentWorker);
+  const bookings = useSelector((state) => state.booking.bookings);
+  const cities = useSelector((state) => state.worker.cities);
+  const availableRequests = useSelector((state) => state.booking.availableBookings);
+
+  const { loading: workerLoading, error: workerError } = useSelector((state) => state.worker);
+  const { loading: bookingLoading, error: bookingError } = useSelector((state) => state.booking);
+
+  const loading = workerLoading || bookingLoading;
+
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -68,21 +78,19 @@ const WorkerDashboard = () => {
     onSubmit: async (values, { setSubmitting }) => {
       setError('');
       try {
-        const data = await workerApi.createProfile({
+        await dispatch(createWorkerProfileThunk({
           id: user.id,
           skill: values.skill,
           experience: Number(values.experience),
           city: values.city,
           aadhaarNumber: values.aadhaarNumber,
-        });
-        setProfile(data);
+        })).unwrap();
         setShowSetup(false);
         setSuccess('Profile configured successfully! Waiting for Admin verification.');
         
-        const bookingsList = await fetchWorkerBookings(user.id);
-        setBookings(bookingsList);
+        await dispatch(getBookingsByWorkerThunk(user.id)).unwrap();
       } catch (err) {
-        setError('Failed to configure profile.');
+        setError(err.message || 'Failed to configure profile.');
       } finally {
         setSubmitting(false);
       }
@@ -94,10 +102,8 @@ const WorkerDashboard = () => {
     try {
       setError('');
       
-      
       try {
-        const list = await workerApi.getCities();
-        setCities(list);
+        await dispatch(getCitiesThunk()).unwrap();
       } catch (err) {
         console.warn('Could not load operating cities list:', err);
       }
@@ -105,34 +111,24 @@ const WorkerDashboard = () => {
       
       let workerProfile = null;
       try {
-        workerProfile = await fetchWorkerById(user.id);
-        setProfile(workerProfile);
+        workerProfile = await dispatch(getWorkerProfileByIdThunk(user.id)).unwrap();
       } catch (err) {
-        
         setShowSetup(true);
       }
 
       if (workerProfile) {
-        
-        const bookingsList = await fetchWorkerBookings(user.id);
-        setBookings(bookingsList);
+        await dispatch(getBookingsByWorkerThunk(user.id)).unwrap();
 
-        
         if (workerProfile.verified && workerProfile.status === 'AVAILABLE') {
-          const availableList = await bookingApi.getAvailableBookings(
-            workerProfile.skill,
-            workerProfile.city
-          );
-          setAvailableRequests(availableList);
-        } else {
-          setAvailableRequests([]);
+          await dispatch(getAvailableBookingsThunk({
+            skill: workerProfile.skill,
+            city: workerProfile.city
+          })).unwrap();
         }
       }
     } catch (err) {
       console.error(err);
       setError('Failed to fetch dashboard metrics.');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -145,9 +141,9 @@ const WorkerDashboard = () => {
     try {
       setError('');
       setSuccess('');
-      const updatedProfile = await updateAvailability(user.id, newStatus);
-      setProfile(updatedProfile);
+      await dispatch(updateWorkerStatusThunk({ id: user.id, status: newStatus })).unwrap();
       setSuccess(`Status updated to ${newStatus}`);
+      loadData();
     } catch (err) {
       setError('Could not update status. Please try again.');
     }
@@ -178,9 +174,9 @@ const WorkerDashboard = () => {
           {success}
         </Alert>
       )}
-      {(error || hookError) && (
+      {(error || workerError || bookingError) && (
         <Alert severity="error" onClose={() => setError('')} sx={{ mb: 3, borderRadius: 3 }}>
-          {error || hookError}
+          {error || workerError || bookingError}
         </Alert>
       )}
 

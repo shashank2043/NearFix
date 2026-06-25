@@ -8,10 +8,11 @@ import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import { ArrowLeft, ClipboardList } from 'lucide-react';
 
+import { useDispatch, useSelector } from 'react-redux';
 import { useAuth } from '../../hooks/useAuth';
 import { useWorkers } from '../../hooks/useWorkers';
-import { workerApi } from '../../api/workerApi';
-import { bookingApi } from '../../api/bookingApi';
+import { getWorkerProfileByIdThunk } from '../../store/slices/workerSlice';
+import { getAvailableBookingsThunk } from '../../store/slices/bookingSlice';
 import JobRequestCard from '../../components/worker/JobRequestCard';
 import Loader from '../../components/common/Loader';
 import EmptyState from '../../components/common/EmptyState';
@@ -46,6 +47,7 @@ const calculateHaversineDistance = (lat1, lon1, lat2, lon2) => {
 
 const JobRequestsPage = () => {
   const { user } = useAuth();
+  const dispatch = useDispatch();
   const { fetchWorkerBookings, updateBookingStatus, updateAvailability, loading: hookLoading } = useWorkers();
   const navigate = useNavigate();
 
@@ -60,17 +62,16 @@ const JobRequestsPage = () => {
     try {
       setError('');
       
-      
-      const profile = await workerApi.getProfileById(user.id);
+      const profile = await dispatch(getWorkerProfileByIdThunk(user.id)).unwrap();
       
       if (profile && profile.verified && profile.status === 'AVAILABLE') {
-        
-        const available = await bookingApi.getAvailableBookings(profile.skill, profile.city);
-        
+        const available = await dispatch(getAvailableBookingsThunk({
+          skill: profile.skill,
+          city: profile.city
+        })).unwrap();
         
         const bookingsList = await fetchWorkerBookings(user.id);
         const assignedRequested = bookingsList.filter((b) => b.status === 'REQUESTED');
-        
         
         const merged = [...assignedRequested];
         available.forEach((b) => {

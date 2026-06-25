@@ -7,12 +7,13 @@ import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import { ArrowLeft, Play } from 'lucide-react';
 
+import { useDispatch } from 'react-redux';
 import { useAuth } from '../../hooks/useAuth';
 import { useWorkers } from '../../hooks/useWorkers';
 import ActiveJobPanel from '../../components/worker/ActiveJobPanel';
 import Loader from '../../components/common/Loader';
 import EmptyState from '../../components/common/EmptyState';
-import { bookingApi } from '../../api/bookingApi';
+import { updateWorkerLocationThunk } from '../../store/slices/bookingSlice';
 
 const parseCoordinates = (addressStr) => {
   if (!addressStr) return null;
@@ -44,6 +45,7 @@ const calculateHaversineDistance = (lat1, lon1, lat2, lon2) => {
 
 const ActiveJobPage = () => {
   const { user } = useAuth();
+  const dispatch = useDispatch();
   const { fetchWorkerBookings, updateBookingStatus, updateAvailability, loading: hookLoading } = useWorkers();
   const navigate = useNavigate();
 
@@ -81,7 +83,7 @@ const ActiveJobPage = () => {
         }
 
         try {
-          await bookingApi.updateWorkerLocation(activeJob.id, workerLat, workerLng);
+          await dispatch(updateWorkerLocationThunk({ bookingId: activeJob.id, lat: workerLat, lng: workerLng })).unwrap();
           setSuccess('Your GPS coordinates updated successfully!');
           await loadActiveJob();
         } catch (err) {
@@ -146,7 +148,7 @@ const ActiveJobPage = () => {
             }
 
             try {
-              await bookingApi.updateWorkerLocation(activeJob.id, workerLat, workerLng);
+              await dispatch(updateWorkerLocationThunk({ bookingId: activeJob.id, lat: workerLat, lng: workerLng })).unwrap();
             } catch (err) {
               console.warn('Failed to update live location to backend:', err);
             }

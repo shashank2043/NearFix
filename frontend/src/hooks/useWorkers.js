@@ -1,85 +1,76 @@
-import { useState, useCallback } from 'react';
-import { workerApi } from '../api/workerApi';
-import { bookingApi } from '../api/bookingApi';
+import { useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { 
+  getWorkerProfileByIdThunk, 
+  updateWorkerStatusThunk 
+} from '../store/slices/workerSlice';
+import { 
+  getBookingsByWorkerThunk, 
+  updateBookingStatusThunk 
+} from '../store/slices/bookingSlice';
 import { useToast } from './useToast';
 
-
 export const useWorkers = () => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const dispatch = useDispatch();
+  const { workers, currentWorker, loading: workerLoading, error: workerError } = useSelector((state) => state.worker);
+  const { loading: bookingLoading, error: bookingError } = useSelector((state) => state.booking);
   const { showToast } = useToast();
+
+  const loading = workerLoading || bookingLoading;
+  const error = workerError || bookingError;
 
   
   const fetchWorkerById = useCallback(async (id) => {
-    setLoading(true);
-    setError(null);
     try {
-      const data = await workerApi.getProfileById(id);
+      const data = await dispatch(getWorkerProfileByIdThunk(id)).unwrap();
       return data;
     } catch (err) {
       const errMsg = err.response?.data?.message || err.message || 'Failed to fetch worker profile.';
-      setError(errMsg);
       showToast(errMsg, 'error');
       throw err;
-    } finally {
-      setLoading(false);
     }
-  }, [showToast]);
+  }, [dispatch, showToast]);
 
   
   const updateAvailability = useCallback(async (id, status) => {
-    setLoading(true);
-    setError(null);
     try {
-      const data = await workerApi.updateStatus(id, status);
+      const data = await dispatch(updateWorkerStatusThunk({ id, status })).unwrap();
       showToast(`Duty status advanced to ${status}`, 'success');
       return data;
     } catch (err) {
       const errMsg = err.response?.data?.message || err.message || 'Failed to update availability status.';
-      setError(errMsg);
       showToast(errMsg, 'error');
       throw err;
-    } finally {
-      setLoading(false);
     }
-  }, [showToast]);
+  }, [dispatch, showToast]);
 
   
   const fetchWorkerBookings = useCallback(async (workerId) => {
-    setLoading(true);
-    setError(null);
     try {
-      const data = await bookingApi.getBookingsByWorker(workerId);
-      
-      return data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      const data = await dispatch(getBookingsByWorkerThunk(workerId)).unwrap();
+      return [...data].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     } catch (err) {
       const errMsg = err.response?.data?.message || err.message || 'Failed to fetch worker bookings.';
-      setError(errMsg);
       showToast(errMsg, 'error');
       throw err;
-    } finally {
-      setLoading(false);
     }
-  }, [showToast]);
+  }, [dispatch, showToast]);
 
   
   const updateBookingStatus = useCallback(async (id, status, extraData = {}) => {
-    setLoading(true);
-    setError(null);
     try {
-      const data = await bookingApi.updateBookingStatus(id, status, extraData);
+      const data = await dispatch(updateBookingStatusThunk({ id, status, extraData })).unwrap();
       return data;
     } catch (err) {
       const errMsg = err.response?.data?.message || err.message || 'Failed to update booking status.';
-      setError(errMsg);
       showToast(errMsg, 'error');
       throw err;
-    } finally {
-      setLoading(false);
     }
-  }, [showToast]);
+  }, [dispatch, showToast]);
 
   return {
+    workers,
+    currentWorker,
     loading,
     error,
     fetchWorkerById,

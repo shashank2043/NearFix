@@ -18,10 +18,11 @@ import Alert from '@mui/material/Alert';
 import TextField from '@mui/material/TextField';
 import { Users, ShieldCheck, HardDrive, IndianRupee, ArrowRight, UserPlus, Plus, Trash2, MapPin } from 'lucide-react';
 
-import { authApi } from '../../api/authApi';
-import { workerApi } from '../../api/workerApi';
-import { bookingApi } from '../../api/bookingApi';
-import { paymentApi } from '../../api/paymentApi';
+import { useDispatch, useSelector } from 'react-redux';
+import { getUserByIdThunk } from '../../store/slices/authSlice';
+import { getAllWorkersThunk, getCitiesThunk, createCityThunk, deleteCityThunk } from '../../store/slices/workerSlice';
+import { getAllBookingsThunk } from '../../store/slices/bookingSlice';
+import { getAllPaymentsThunk } from '../../store/slices/paymentSlice';
 import { formatCurrency } from '../../utils/helpers';
 import AdminHeader from '../../components/admin/AdminHeader';
 import StatsCard from '../../components/admin/StatsCard';
@@ -34,18 +35,17 @@ import { useTheme } from '@mui/material/styles';
 const AdminDashboard = () => {
   const theme = useTheme();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
-  
-  const [users, setUsers] = useState([]);
-  const [workers, setWorkers] = useState([]);
-  const [bookings, setBookings] = useState([]);
-  const [payments, setPayments] = useState([]);
+  const users = useSelector((state) => state.auth.usersList);
+  const workers = useSelector((state) => state.worker.workers);
+  const bookings = useSelector((state) => state.booking.bookings);
+  const payments = useSelector((state) => state.payment.payments);
+  const cities = useSelector((state) => state.worker.cities);
 
-  
-  const [cities, setCities] = useState([]);
   const [newCityName, setNewCityName] = useState('');
   const [cityActionLoading, setCityActionLoading] = useState(false);
   const [cityError, setCityError] = useState('');
@@ -56,22 +56,13 @@ const AdminDashboard = () => {
       setLoading(true);
       setError('');
 
-      const allBookings = await bookingApi.getAllBookings();
-      setBookings(allBookings);
-
-      const allWorkers = await workerApi.getAllWorkers();
-      setWorkers(allWorkers);
-
-      const allPayments = await paymentApi.getAllPayments();
-      setPayments(allPayments);
-
-      const allUsers = await authApi.getUserById('');
-      setUsers(Array.isArray(allUsers) ? allUsers : [allUsers]);
-
+      await dispatch(getAllBookingsThunk()).unwrap();
+      await dispatch(getAllWorkersThunk()).unwrap();
+      await dispatch(getAllPaymentsThunk()).unwrap();
+      await dispatch(getUserByIdThunk('')).unwrap();
       
       try {
-        const allCities = await workerApi.getCities();
-        setCities(allCities);
+        await dispatch(getCitiesThunk()).unwrap();
       } catch (err) {
         console.error('Failed to load cities:', err);
       }
@@ -90,13 +81,12 @@ const AdminDashboard = () => {
     setCityError('');
     setCitySuccess('');
     try {
-      const created = await workerApi.createCity(newCityName.trim());
-      setCities((prev) => [...prev, created]);
+      const created = await dispatch(createCityThunk(newCityName.trim())).unwrap();
       setNewCityName('');
       setCitySuccess(`City "${created.name}" added successfully.`);
     } catch (err) {
       console.error(err);
-      setCityError(err.response?.data?.message || 'Failed to add operating city. Ensure city is unique.');
+      setCityError(err.message || 'Failed to add operating city. Ensure city is unique.');
     } finally {
       setCityActionLoading(false);
     }
@@ -110,12 +100,11 @@ const AdminDashboard = () => {
     setCityError('');
     setCitySuccess('');
     try {
-      await workerApi.deleteCity(cityId);
-      setCities((prev) => prev.filter((c) => c.id !== cityId));
+      await dispatch(deleteCityThunk(cityId)).unwrap();
       setCitySuccess(`City "${cityName}" removed successfully.`);
     } catch (err) {
       console.error(err);
-      setCityError(err.response?.data?.message || 'Failed to remove operating city.');
+      setCityError(err.message || 'Failed to remove operating city.');
     } finally {
       setCityActionLoading(false);
     }

@@ -16,10 +16,12 @@ import ListItemText from '@mui/material/ListItemText';
 import Alert from '@mui/material/Alert';
 import { ArrowLeft, Wallet, ClipboardCheck, Calendar, User, TrendingUp } from 'lucide-react';
 
+import { useDispatch, useSelector } from 'react-redux';
 import { useAuth } from '../../hooks/useAuth';
 import { useWorkers } from '../../hooks/useWorkers';
-import { paymentApi } from '../../api/paymentApi';
-import axiosInstance from '../../api/axiosInstance';
+import { getAllPaymentsThunk } from '../../store/slices/paymentSlice';
+import { getUserByIdThunk } from '../../store/slices/authSlice';
+import { getBookingsByWorkerThunk } from '../../store/slices/bookingSlice';
 import { formatCurrency, formatDate } from '../../utils/helpers';
 import EarningsChart from '../../components/worker/EarningsChart';
 import Loader from '../../components/common/Loader';
@@ -28,7 +30,7 @@ import EmptyState from '../../components/common/EmptyState';
 
 const EarningsPage = () => {
   const { user } = useAuth();
-  const { fetchWorkerBookings, loading: hookLoading } = useWorkers();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   
@@ -38,7 +40,12 @@ const EarningsPage = () => {
   const [error, setError] = useState('');
   const [allPayments, setAllPayments] = useState([]);
   const [allBookings, setAllBookings] = useState([]);
-  const [usersMap, setUsersMap] = useState({});
+  
+  const usersList = useSelector((state) => state.auth.usersList);
+  const usersMap = {};
+  usersList.forEach((u) => {
+    usersMap[u.id] = u.fullName;
+  });
 
   
   const [summaryAmount, setSummaryAmount] = useState(0);
@@ -52,14 +59,14 @@ const EarningsPage = () => {
       setError('');
 
       
-      const bookingsList = await fetchWorkerBookings(user.id);
+      const bookingsList = await dispatch(getBookingsByWorkerThunk(user.id)).unwrap();
       const completedBookings = bookingsList.filter((b) =>
         ['WORK_COMPLETED', 'PAID'].includes(b.status)
       );
       setAllBookings(completedBookings);
 
       
-      const paymentsList = await paymentApi.getAllPayments();
+      const paymentsList = await dispatch(getAllPaymentsThunk()).unwrap();
       
       const completedIds = completedBookings.map((b) => b.id);
       const workerPayments = paymentsList.filter(
@@ -69,12 +76,7 @@ const EarningsPage = () => {
 
       
       try {
-        const usersResponse = await axiosInstance.get('/api/auth/users');
-        const map = {};
-        usersResponse.data.forEach((u) => {
-          map[u.id] = u.fullName;
-        });
-        setUsersMap(map);
+        await dispatch(getUserByIdThunk('')).unwrap();
       } catch (err) {
         console.warn('Failed to fetch users mapping. Displaying IDs instead.', err);
       }

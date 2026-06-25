@@ -1,5 +1,6 @@
-import React, { createContext, useState, useEffect } from 'react';
-import { authApi } from '../api/authApi';
+import React, { createContext, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { loginThunk, getProfileThunk, logout as logoutAction, setUser as setUserAction, setLoading as setLoadingAction } from '../store/slices/authSlice';
 
 export const AuthContext = createContext({
   user: null,
@@ -12,10 +13,8 @@ export const AuthContext = createContext({
 });
 
 export const AuthContextProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
-  const [role, setRole] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
+  const { user, token, role, loading } = useSelector((state) => state.auth);
 
   useEffect(() => {
     const initializeAuth = async () => {
@@ -24,49 +23,25 @@ export const AuthContextProvider = ({ children }) => {
       
       if (storedToken && storedRole) {
         try {
-          
-          const profile = await authApi.getProfile();
-          setUser(profile);
-          setToken(storedToken);
-          setRole(storedRole);
+          await dispatch(getProfileThunk()).unwrap();
         } catch (error) {
           console.error('Failed to initialize session:', error);
-          
-          localStorage.removeItem('token');
-          localStorage.removeItem('role');
+          dispatch(logoutAction());
         }
+      } else {
+        // Set loading false using redux action since we don't fetch profile
+        dispatch(setLoadingAction(false));
       }
-      setLoading(false);
     };
 
     initializeAuth();
-  }, []);
+  }, [dispatch]);
 
   
   const login = async (email, password) => {
     try {
-      const data = await authApi.login(email, password);
-      // console.log('Login API Response:', data);
-      
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('role', data.role);
-      
-      
-      let profile = null;
-      if (data && data.id) {
-        try {
-          profile = await authApi.getUserById(data.id);
-          // console.log('Fetched Profile Details:', profile);
-        } catch (profileErr) {
-          console.warn('Failed to fetch full user profile during login:', profileErr);
-        }
-      }
-      
-      const resolvedUser = profile || { id: data.id, role: data.role };
-      setUser(resolvedUser);
-      setToken(data.token);
-      setRole(data.role);
-      return resolvedUser;
+      const result = await dispatch(loginThunk({ email, password })).unwrap();
+      return result.user;
     } catch (error) {
       console.error('Login process error:', error);
       throw error;
@@ -75,11 +50,11 @@ export const AuthContextProvider = ({ children }) => {
 
   
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
-    setUser(null);
-    setToken(null);
-    setRole(null);
+    dispatch(logoutAction());
+  };
+
+  const setUser = (userVal) => {
+    dispatch(setUserAction(userVal));
   };
 
   return (
