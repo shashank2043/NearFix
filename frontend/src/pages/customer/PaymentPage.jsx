@@ -11,10 +11,10 @@ import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import { ShieldCheck, CreditCard, Smartphone, Award } from 'lucide-react';
-
-import { useBooking } from '../../hooks/useBooking';
-import { paymentApi } from '../../api/paymentApi';
-import { authApi } from '../../api/authApi';
+import { useDispatch, useSelector } from 'react-redux';
+import { getBookingByIdThunk, updateBookingStatusThunk } from '../../store/slices/bookingSlice';
+import { createPaymentThunk, verifyPaymentThunk } from '../../store/slices/paymentSlice';
+import { getUserByIdThunk, getProfileThunk } from '../../store/slices/authSlice';
 import Loader from '../../components/common/Loader';
 import { formatCurrency } from '../../utils/helpers';
 
@@ -38,9 +38,12 @@ const loadRazorpayScript = () => {
 const PaymentPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { fetchBookingById, updateBookingStatus } = useBooking();
+  const dispatch = useDispatch();
 
-  const [booking, setBooking] = useState(null);
+  const booking = useSelector((state) => state.booking.currentBooking);
+  const authUser = useSelector((state) => state.auth.user);
+  const usersCached = useSelector((state) => state.auth.usersCached);
+
   const [workerUser, setWorkerUser] = useState(null);
   const [customerUser, setCustomerUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -55,8 +58,7 @@ const PaymentPage = () => {
   useEffect(() => {
     const loadBookingData = async () => {
       try {
-        const details = await fetchBookingById(id);
-        setBooking(details);
+        const details = await dispatch(getBookingByIdThunk(id)).unwrap();
 
         
         if (details.status === 'PAID') {
@@ -65,16 +67,25 @@ const PaymentPage = () => {
         }
 
         if (details.workerId) {
-          const userObj = await authApi.getUserById(details.workerId);
-          setWorkerUser(userObj);
+          const cached = usersCached[details.workerId];
+          if (cached) {
+            setWorkerUser(cached);
+          } else {
+            const userObjResult = await dispatch(getUserByIdThunk(details.workerId)).unwrap();
+            setWorkerUser(userObjResult.data);
+          }
         }
 
         
-        try {
-          const profile = await authApi.getProfile();
-          setCustomerUser(profile);
-        } catch (e) {
-          console.warn('Could not fetch customer profile for checkout prefill, using defaults.', e);
+        if (authUser) {
+          setCustomerUser(authUser);
+        } else {
+          try {
+            const profile = await dispatch(getProfileThunk()).unwrap();
+            setCustomerUser(profile);
+          } catch (e) {
+            console.warn('Could not fetch customer profile for checkout prefill, using defaults.', e);
+          }
         }
       } catch (err) {
         setError('Failed to fetch invoice details.');
@@ -84,7 +95,7 @@ const PaymentPage = () => {
       }
     };
     loadBookingData();
-  }, [id, fetchBookingById, navigate]);
+  }, [id, dispatch, navigate, authUser, usersCached]);
 
   const handlePaymentSubmit = async () => {
     if (!booking) return;
@@ -99,10 +110,10 @@ const PaymentPage = () => {
       }
 
       
-      const paymentResponse = await paymentApi.createPayment({
+      const paymentResponse = await dispatch(createPaymentThunk({
         bookingId: booking.id,
         amount: booking.amount, 
-      });
+      })).unwrap();
 
       const razorpayKey = paymentResponse.keyId || 'rzp_test_5g6h7i8j9k0l1m';
       const orderId = paymentResponse.transactionId;
@@ -118,15 +129,15 @@ const PaymentPage = () => {
         handler: async function (response) {
           try {
             
-            await paymentApi.verifyPayment({
+            await dispatch(verifyPaymentThunk({
               bookingId: booking.id,
               transactionId: orderId,
               razorpayPaymentId: response.razorpay_payment_id,
               razorpaySignature: response.razorpay_signature,
-            });
+            })).unwrap();
 
             
-            await updateBookingStatus(booking.id, 'PAID');
+            await dispatch(updateBookingStatusThunk({ id: booking.id, status: 'PAID' })).unwrap();
             navigate(`/customer/review/${booking.id}`);
           } catch (err) {
             console.error('Failed to verify payment or sync booking status:', err);

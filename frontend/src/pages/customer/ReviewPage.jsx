@@ -10,10 +10,11 @@ import Avatar from '@mui/material/Avatar';
 import Divider from '@mui/material/Divider';
 import { Award } from 'lucide-react';
 
-import { useBooking } from '../../hooks/useBooking';
-import { reviewApi } from '../../api/reviewApi';
-import { workerApi } from '../../api/workerApi';
-import { authApi } from '../../api/authApi';
+import { useDispatch, useSelector } from 'react-redux';
+import { getBookingByIdThunk } from '../../store/slices/bookingSlice';
+import { createReviewThunk, getReviewsByWorkerThunk } from '../../store/slices/reviewSlice';
+import { getWorkerProfileByIdThunk, updateWorkerRatingThunk } from '../../store/slices/workerSlice';
+import { getUserByIdThunk } from '../../store/slices/authSlice';
 import ReviewForm from '../../components/customer/ReviewForm';
 import Loader from '../../components/common/Loader';
 
@@ -21,10 +22,12 @@ import Loader from '../../components/common/Loader';
 const ReviewPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { fetchBookingById } = useBooking();
+  const dispatch = useDispatch();
 
-  const [booking, setBooking] = useState(null);
-  const [workerProfile, setWorkerProfile] = useState(null);
+  const booking = useSelector((state) => state.booking.currentBooking);
+  const workerProfile = useSelector((state) => state.worker.currentWorker);
+  const usersCached = useSelector((state) => state.auth.usersCached);
+
   const [workerUser, setWorkerUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -34,14 +37,18 @@ const ReviewPage = () => {
   useEffect(() => {
     const loadBookingAndWorker = async () => {
       try {
-        const details = await fetchBookingById(id);
-        setBooking(details);
+        const details = await dispatch(getBookingByIdThunk(id)).unwrap();
 
         if (details.workerId) {
-          const profile = await workerApi.getProfileById(details.workerId);
-          const userObj = await authApi.getUserById(details.workerId);
-          setWorkerProfile(profile);
-          setWorkerUser(userObj);
+          await dispatch(getWorkerProfileByIdThunk(details.workerId)).unwrap();
+          
+          const cached = usersCached[details.workerId];
+          if (cached) {
+            setWorkerUser(cached);
+          } else {
+            const userObjResult = await dispatch(getUserByIdThunk(details.workerId)).unwrap();
+            setWorkerUser(userObjResult.data);
+          }
         }
       } catch (err) {
         setError('Failed to load technician details.');
@@ -51,7 +58,7 @@ const ReviewPage = () => {
       }
     };
     loadBookingAndWorker();
-  }, [id, fetchBookingById]);
+  }, [id, dispatch, usersCached]);
 
   const handleReviewSubmit = async ({ rating, comment }) => {
     if (!booking || !booking.workerId) return;
@@ -60,21 +67,21 @@ const ReviewPage = () => {
     setSuccess('');
     try {
       
-      await reviewApi.createReview({
+      await dispatch(createReviewThunk({
         bookingId: booking.id,
         customerId: booking.customerId,
         workerId: booking.workerId,
         rating,
         comment,
-      });
+      })).unwrap();
 
       
-      const allReviews = await reviewApi.getReviewsByWorker(booking.workerId);
+      const allReviews = await dispatch(getReviewsByWorkerThunk(booking.workerId)).unwrap();
       const sum = allReviews.reduce((acc, r) => acc + r.rating, 0);
       const avg = Number((sum / allReviews.length).toFixed(1));
 
       
-      await workerApi.updateRating(booking.workerId, avg);
+      await dispatch(updateWorkerRatingThunk({ id: booking.workerId, rating: avg })).unwrap();
 
       setSuccess('Review submitted! Navigating to dashboard...');
       setTimeout(() => {
@@ -82,7 +89,7 @@ const ReviewPage = () => {
       }, 2000);
     } catch (err) {
       console.error('Submit review failed:', err);
-      setError('Could not register service review. Please try again.');
+      setError(err.message || 'Could not register service review. Please try again.');
       setSubmitting(false);
     }
   };

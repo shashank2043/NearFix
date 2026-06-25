@@ -11,9 +11,10 @@ import Alert from '@mui/material/Alert';
 import Divider from '@mui/material/Divider';
 import { Ban, ChevronRight, Phone, RefreshCw } from 'lucide-react';
 
-import { useBooking } from '../../hooks/useBooking';
-import { workerApi } from '../../api/workerApi';
-import { authApi } from '../../api/authApi';
+import { useDispatch, useSelector } from 'react-redux';
+import { getBookingByIdThunk, updateBookingStatusThunk } from '../../store/slices/bookingSlice';
+import { getWorkerProfileByIdThunk } from '../../store/slices/workerSlice';
+import { getUserByIdThunk } from '../../store/slices/authSlice';
 import BookingStatusStepper from '../../components/customer/BookingStatusStepper';
 import WorkerCard from '../../components/customer/WorkerCard';
 import Loader from '../../components/common/Loader';
@@ -22,10 +23,12 @@ import Loader from '../../components/common/Loader';
 const TrackingPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { fetchBookingById, updateBookingStatus, loading, error } = useBooking();
+  const dispatch = useDispatch();
 
-  const [booking, setBooking] = useState(null);
-  const [workerProfile, setWorkerProfile] = useState(null);
+  const { currentBooking: booking, loading, error } = useSelector((state) => state.booking);
+  const workerProfile = useSelector((state) => state.worker.currentWorker);
+  const usersCached = useSelector((state) => state.auth.usersCached);
+
   const [workerUser, setWorkerUser] = useState(null);
   const [cancelling, setCancelling] = useState(false);
   const [refreshingETA, setRefreshingETA] = useState(false);
@@ -34,13 +37,17 @@ const TrackingPage = () => {
     if (!id) return;
     setRefreshingETA(true);
     try {
-      const details = await fetchBookingById(id);
-      setBooking(details);
+      const details = await dispatch(getBookingByIdThunk(id)).unwrap();
       if (details.workerId && !workerUser) {
-        const profile = await workerApi.getProfileById(details.workerId);
-        const userObj = await authApi.getUserById(details.workerId);
-        setWorkerProfile(profile);
-        setWorkerUser(userObj);
+        await dispatch(getWorkerProfileByIdThunk(details.workerId)).unwrap();
+        
+        const cached = usersCached[details.workerId];
+        if (cached) {
+          setWorkerUser(cached);
+        } else {
+          const userObjResult = await dispatch(getUserByIdThunk(details.workerId)).unwrap();
+          setWorkerUser(userObjResult.data);
+        }
       }
     } catch (err) {
       console.error('Error refreshing ETA:', err);
@@ -55,17 +62,20 @@ const TrackingPage = () => {
 
     const loadBookingDetails = async () => {
       try {
-        const details = await fetchBookingById(id);
+        const details = await dispatch(getBookingByIdThunk(id)).unwrap();
         if (!active) return;
-        setBooking(details);
 
-        
         if (details.workerId && !workerUser) {
-          const profile = await workerApi.getProfileById(details.workerId);
-          const userObj = await authApi.getUserById(details.workerId);
-          if (active) {
-            setWorkerProfile(profile);
-            setWorkerUser(userObj);
+          await dispatch(getWorkerProfileByIdThunk(details.workerId)).unwrap();
+          
+          const cached = usersCached[details.workerId];
+          if (cached) {
+            setWorkerUser(cached);
+          } else {
+            const userObjResult = await dispatch(getUserByIdThunk(details.workerId)).unwrap();
+            if (active) {
+              setWorkerUser(userObjResult.data);
+            }
           }
         }
       } catch (err) {
@@ -80,14 +90,13 @@ const TrackingPage = () => {
       active = false;
       clearInterval(interval);
     };
-  }, [id, fetchBookingById, workerUser]);
+  }, [id, dispatch, workerUser, usersCached]);
 
   const handleCancelBooking = async () => {
     if (!booking) return;
     setCancelling(true);
     try {
-      await updateBookingStatus(booking.id, 'CANCELLED');
-      setBooking((prev) => ({ ...prev, status: 'CANCELLED' }));
+      await dispatch(updateBookingStatusThunk({ id: booking.id, status: 'CANCELLED' })).unwrap();
     } catch (err) {
       console.error('SOS cancellation dispatch failed:', err);
     } finally {

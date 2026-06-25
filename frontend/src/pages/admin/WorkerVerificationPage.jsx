@@ -8,9 +8,9 @@ import Alert from '@mui/material/Alert';
 import Paper from '@mui/material/Paper';
 import { UserCheck, ShieldAlert, ShieldCheck, Users, Search } from 'lucide-react';
 
-import axiosInstance from '../../api/axiosInstance';
-import { workerApi } from '../../api/workerApi';
-import { authApi } from '../../api/authApi';
+import { useDispatch, useSelector } from 'react-redux';
+import { getAllWorkersThunk, verifyWorkerThunk } from '../../store/slices/workerSlice';
+import { getUserByIdThunk } from '../../store/slices/authSlice';
 import AdminHeader from '../../components/admin/AdminHeader';
 import WorkerVerificationCard from '../../components/admin/WorkerVerificationCard';
 import Loader from '../../components/common/Loader';
@@ -19,13 +19,14 @@ import { useTheme } from '@mui/material/styles';
 
 const WorkerVerificationPage = () => {
   const theme = useTheme();
+  const dispatch = useDispatch();
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   
-  const [workers, setWorkers] = useState([]);
-  const [users, setUsers] = useState([]);
+  const workers = useSelector((state) => state.worker.workers);
+  const users = useSelector((state) => state.auth.usersList);
   
   
   const [tabValue, setTabValue] = useState(1); 
@@ -35,11 +36,8 @@ const WorkerVerificationPage = () => {
       setLoading(true);
       setError('');
       
-      const allWorkers = await workerApi.getAllWorkers();
-      setWorkers(allWorkers);
-      
-      const allUsers = await authApi.getUserById('');
-      setUsers(Array.isArray(allUsers) ? allUsers : [allUsers]);
+      await dispatch(getAllWorkersThunk()).unwrap();
+      await dispatch(getUserByIdThunk('')).unwrap();
     } catch (err) {
       console.error(err);
       setError('Failed to fetch worker database registry.');
@@ -57,8 +55,7 @@ const WorkerVerificationPage = () => {
       setError('');
       setSuccess('');
       
-      
-      await workerApi.verifyWorker(id, true);
+      await dispatch(verifyWorkerThunk({ id, verified: true })).unwrap();
 
       setSuccess('Worker profile approved and activated successfully.');
       await loadData();
@@ -73,8 +70,7 @@ const WorkerVerificationPage = () => {
       setError('');
       setSuccess('');
 
-      
-      await workerApi.verifyWorker(id, false);
+      await dispatch(verifyWorkerThunk({ id, verified: false })).unwrap();
 
       setSuccess('Worker profile rejected.');
       await loadData();

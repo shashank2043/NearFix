@@ -22,12 +22,24 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Chip from '@mui/material/Chip';
 import Avatar from '@mui/material/Avatar';
 import { ShieldCheck, ToggleLeft, ClipboardList, Wallet, User, CheckCircle2, AlertTriangle, MapPin, Award } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { useAuth } from '../../hooks/useAuth';
-import { bookingApi } from '../../api/bookingApi';
-import { workerApi } from '../../api/workerApi';
-import { paymentApi } from '../../api/paymentApi';
-import { authApi } from '../../api/authApi';
+import { 
+  getCitiesThunk, 
+  getWorkerProfileByIdThunk, 
+  updateWorkerProfileThunk, 
+  createWorkerProfileThunk, 
+  updateWorkerStatusThunk 
+} from '../../store/slices/workerSlice';
+import { 
+  getAllBookingsThunk, 
+  assignWorkerThunk, 
+  updateBookingStatusThunk 
+} from '../../store/slices/bookingSlice';
+import { 
+  getAllPaymentsThunk 
+} from '../../store/slices/paymentSlice';
 import { SERVICE_TYPES } from '../../utils/constants';
 import { formatCurrency, formatDate } from '../../utils/helpers';
 import StatusBadge from '../../components/common/StatusBadge';
@@ -36,20 +48,38 @@ import Loader from '../../components/common/Loader';
 import EmptyState from '../../components/common/EmptyState';
 
 const Dashboard = () => {
-  const { user, setUser } = useAuth();
+  const { user } = useAuth();
+  const dispatch = useDispatch();
 
   
   const [tabValue, setTabValue] = useState(0);
 
   
   const [loading, setLoading] = useState(true);
-  const [workerProfile, setWorkerProfile] = useState(null);
-  const [availableRequests, setAvailableRequests] = useState([]);
-  const [activeJobs, setActiveJobs] = useState([]);
-  const [earnings, setEarnings] = useState(0);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [cities, setCities] = useState([]);
+
+  const workerProfile = useSelector((state) => state.worker.currentWorker);
+  const cities = useSelector((state) => state.worker.cities);
+  const allBookings = useSelector((state) => state.booking.bookings);
+  const payments = useSelector((state) => state.payment.payments);
+
+  
+  const availableRequests = workerProfile
+    ? allBookings.filter((b) => b.status === 'REQUESTED' && b.serviceType === workerProfile.skill)
+    : [];
+
+  
+  const activeJobs = allBookings.filter(
+    (b) => b.workerId === user?.id && ['ACCEPTED', 'ON_THE_WAY', 'WORK_STARTED'].includes(b.status)
+  );
+
+  
+  const completedBookingIds = allBookings
+    .filter((b) => b.workerId === user?.id && ['WORK_COMPLETED', 'PAID'].includes(b.status))
+    .map((b) => b.id);
+  const workerPayments = payments.filter((p) => completedBookingIds.includes(p.bookingId) && (p.status === 'COMPLETED' || p.status === 'SUCCESS'));
+  const earnings = workerPayments.reduce((sum, current) => sum + current.amount, 0);
 
   
   const profileFormik = useFormik({
@@ -70,24 +100,25 @@ const Dashboard = () => {
       setError('');
       setSuccess('');
       try {
-        let data;
         if (workerProfile) {
-          data = await workerApi.updateProfile(user.id, {
-            skill: values.skill,
-            experience: Number(values.experience),
-            city: values.city,
-          });
+          await dispatch(updateWorkerProfileThunk({
+            id: user.id,
+            workerData: {
+              skill: values.skill,
+              experience: Number(values.experience),
+              city: values.city,
+            }
+          })).unwrap();
           setSuccess('Profile updated successfully!');
         } else {
-          data = await workerApi.createProfile({
+          await dispatch(createWorkerProfileThunk({
             id: user.id,
             skill: values.skill,
             experience: Number(values.experience),
             city: values.city,
-          });
+          })).unwrap();
           setSuccess('Profile initialized successfully! Awaiting verification by Admin.');
         }
-        setWorkerProfile(data);
         loadDashboardData();
       } catch (err) {
         setError(workerProfile ? 'Failed to save profile modifications.' : 'Failed to configure profile.');
@@ -105,8 +136,7 @@ const Dashboard = () => {
 
       
       try {
-        const list = await workerApi.getCities();
-        setCities(list);
+        await dispatch(getCitiesThunk()).unwrap();
       } catch (err) {
         console.warn('Could not load operating cities list:', err);
       }
@@ -114,8 +144,7 @@ const Dashboard = () => {
       
       let profile;
       try {
-        profile = await workerApi.getProfileById(user.id);
-        setWorkerProfile(profile);
+        profile = await dispatch(getWorkerProfileByIdThunk(user.id)).unwrap();
       } catch (err) {
         
         console.warn('Worker profile not found. Need creation.');
@@ -123,29 +152,10 @@ const Dashboard = () => {
 
       if (profile) {
         
-        const allBookings = await bookingApi.getAllBookings();
-        
-        
-        const matchedRequests = allBookings.filter(
-          (b) => b.status === 'REQUESTED' && b.serviceType === profile.skill
-        );
-        setAvailableRequests(matchedRequests);
+        await dispatch(getAllBookingsThunk()).unwrap();
 
         
-        const workerAssignedJobs = allBookings.filter(
-          (b) => b.workerId === user.id && ['ACCEPTED', 'ON_THE_WAY', 'WORK_STARTED'].includes(b.status)
-        );
-        setActiveJobs(workerAssignedJobs);
-
-        
-        const payments = await paymentApi.getAllPayments();
-        
-        const completedBookingIds = allBookings
-          .filter((b) => b.workerId === user.id && ['WORK_COMPLETED', 'PAID'].includes(b.status))
-          .map((b) => b.id);
-        const workerPayments = payments.filter((p) => completedBookingIds.includes(p.bookingId) && (p.status === 'COMPLETED' || p.status === 'SUCCESS'));
-        const totalEarnings = workerPayments.reduce((sum, current) => sum + current.amount, 0);
-        setEarnings(totalEarnings);
+        await dispatch(getAllPaymentsThunk()).unwrap();
       }
     } catch (err) {
       setError('Error loading portal metrics.');
@@ -161,14 +171,11 @@ const Dashboard = () => {
     }
   }, [user?.id]);
 
-
-
   const handleAvailabilityToggle = async () => {
     if (!workerProfile) return;
     const newStatus = workerProfile.status === 'AVAILABLE' ? 'OFFLINE' : 'AVAILABLE';
     try {
-      const updated = await workerApi.updateStatus(user.id, newStatus);
-      setWorkerProfile(updated);
+      await dispatch(updateWorkerStatusThunk({ id: user.id, status: newStatus })).unwrap();
       setSuccess(`Your status is updated to ${newStatus === 'AVAILABLE' ? 'Online' : 'Offline'}`);
       loadDashboardData();
     } catch (err) {
@@ -179,11 +186,10 @@ const Dashboard = () => {
   const handleAcceptJob = async (bookingId) => {
     try {
       
-      await bookingApi.assignWorker(bookingId, user.id);
+      await dispatch(assignWorkerThunk({ bookingId, workerId: user.id })).unwrap();
       
       
-      const updatedProfile = await workerApi.updateStatus(user.id, 'BUSY');
-      setWorkerProfile(updatedProfile);
+      await dispatch(updateWorkerStatusThunk({ id: user.id, status: 'BUSY' })).unwrap();
 
       setSuccess('Emergency job accepted! Proceed to location.');
       loadDashboardData();
@@ -199,12 +205,11 @@ const Dashboard = () => {
     else if (currentStatus === 'WORK_STARTED') nextStatus = 'WORK_COMPLETED';
 
     try {
-      await bookingApi.updateBookingStatus(bookingId, nextStatus);
+      await dispatch(updateBookingStatusThunk({ id: bookingId, status: nextStatus })).unwrap();
       
       if (nextStatus === 'WORK_COMPLETED') {
         
-        const updatedProfile = await workerApi.updateStatus(user.id, 'AVAILABLE');
-        setWorkerProfile(updatedProfile);
+        await dispatch(updateWorkerStatusThunk({ id: user.id, status: 'AVAILABLE' })).unwrap();
         setSuccess('Work completed! Earnings added to your ledger.');
       } else {
         setSuccess(`Status advanced to: ${nextStatus.replace(/_/g, ' ')}`);

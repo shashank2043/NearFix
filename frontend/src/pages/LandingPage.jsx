@@ -18,7 +18,8 @@ import Paper from '@mui/material/Paper';
 import Rating from '@mui/material/Rating';
 import { Search, MapPin, Zap, Wrench, Hammer, ShieldCheck, Clock, Award, ArrowRight, Star } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { workerApi } from '../api/workerApi';
+import { useDispatch, useSelector } from 'react-redux';
+import { getCitiesThunk } from '../store/slices/workerSlice';
 
 
 const SERVICES = [
@@ -45,25 +46,21 @@ const TESTIMONIALS = [
 const LandingPage = () => {
   const { token, role, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
+  const cities = useSelector((state) => state.worker.cities);
   const [city, setCity] = useState('Bangalore');
-  const [cities, setCities] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    const fetchCities = async () => {
-      try {
-        const list = await workerApi.getCities();
-        setCities(list);
-        if (list && list.length > 0) {
-          setCity(list[0].name);
-        }
-      } catch (err) {
-        console.warn('Could not load operating cities list:', err);
-      }
-    };
-    fetchCities();
-  }, []);
+    dispatch(getCitiesThunk());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (cities && cities.length > 0) {
+      setCity(cities[0].name);
+    }
+  }, [cities]);
 
   const getDashboardPath = () => {
     if (role === 'CUSTOMER') return '/customer/dashboard';

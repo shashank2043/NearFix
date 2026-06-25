@@ -14,7 +14,8 @@ import IconButton from '@mui/material/IconButton';
 import Container from '@mui/material/Container';
 import MenuItem from '@mui/material/MenuItem';
 import { Eye, EyeOff, Mail, Lock, User, Phone, Briefcase, ShieldAlert } from 'lucide-react';
-import { authApi } from '../../api/authApi';
+import { useDispatch } from 'react-redux';
+import { registerThunk } from '../../store/slices/authSlice';
 
 
 const registerSchema = Yup.object().shape({
@@ -38,6 +39,7 @@ const registerSchema = Yup.object().shape({
 
 const Register = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -51,17 +53,17 @@ const Register = () => {
       role: 'CUSTOMER',
     },
     validationSchema: registerSchema,
-    onSubmit: async (values, { setSubmitting }) => {
+    onSubmit: async (values, { resetForm, setSubmitting }) => {
       setError('');
       setSuccess('');
       try {
-        await authApi.register(values);
+        await dispatch(registerThunk(values)).unwrap();
         setSuccess('Account created successfully! Redirecting to login page...');
         setTimeout(() => {
           navigate('/login');
         }, 2000);
       } catch (err) {
-        setError(err.response?.data?.message || err.message || 'Registration failed. Please try again.');
+        setError(err.message || 'Registration failed. Please try again.');
       } finally {
         setSubmitting(false);
       }

@@ -18,10 +18,11 @@ import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import { Award, ShieldCheck, MapPin, HardDrive } from 'lucide-react';
 
-import { authApi } from '../../api/authApi';
-import { workerApi } from '../../api/workerApi';
-import { bookingApi } from '../../api/bookingApi';
-import { paymentApi } from '../../api/paymentApi';
+import { useDispatch, useSelector } from 'react-redux';
+import { getUserByIdThunk } from '../../store/slices/authSlice';
+import { getAllWorkersThunk } from '../../store/slices/workerSlice';
+import { getAllBookingsThunk } from '../../store/slices/bookingSlice';
+import { getAllPaymentsThunk } from '../../store/slices/paymentSlice';
 import AdminHeader from '../../components/admin/AdminHeader';
 import AnalyticsChart from '../../components/admin/AnalyticsChart';
 import Loader from '../../components/common/Loader';
@@ -29,31 +30,25 @@ import { useTheme } from '@mui/material/styles';
 
 const AnalyticsPage = () => {
   const theme = useTheme();
+  const dispatch = useDispatch();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const [users, setUsers] = useState([]);
-  const [workers, setWorkers] = useState([]);
-  const [bookings, setBookings] = useState([]);
-  const [payments, setPayments] = useState([]);
+  const users = useSelector((state) => state.auth.usersList);
+  const workers = useSelector((state) => state.worker.workers);
+  const bookings = useSelector((state) => state.booking.bookings);
+  const payments = useSelector((state) => state.payment.payments);
 
   const loadData = async () => {
     try {
       setLoading(true);
       setError('');
 
-      const allBookings = await bookingApi.getAllBookings();
-      setBookings(allBookings);
-
-      const allWorkers = await workerApi.getAllWorkers();
-      setWorkers(allWorkers);
-
-      const allPayments = await paymentApi.getAllPayments();
-      setPayments(allPayments);
-
-      const allUsers = await authApi.getUserById('');
-      setUsers(Array.isArray(allUsers) ? allUsers : [allUsers]);
+      await dispatch(getAllBookingsThunk()).unwrap();
+      await dispatch(getAllWorkersThunk()).unwrap();
+      await dispatch(getAllPaymentsThunk()).unwrap();
+      await dispatch(getUserByIdThunk('')).unwrap();
     } catch (err) {
       console.error(err);
       setError('Could not fetch metrics required for system analytics.');

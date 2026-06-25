@@ -8,7 +8,8 @@ import Avatar from '@mui/material/Avatar';
 import Divider from '@mui/material/Divider';
 import Chip from '@mui/material/Chip';
 import { MapPin, Navigation, User, Calendar, Zap, Wrench, Hammer, Scissors, Check, X } from 'lucide-react';
-import { authApi } from '../../api/authApi';
+import { useDispatch, useSelector } from 'react-redux';
+import { getUserByIdThunk } from '../../store/slices/authSlice';
 import { formatDate } from '../../utils/helpers';
 
 
@@ -59,15 +60,26 @@ const calculateHaversineDistance = (lat1, lon1, lat2, lon2) => {
 
 const JobRequestCard = ({ booking, onAccept, onReject, actionLoading = false }) => {
   const { id, customerId, serviceType, issueDescription, address, createdAt } = booking;
+  
+  const dispatch = useDispatch();
+  const cachedUser = useSelector((state) => state.auth.usersCached[customerId]);
+
   const [customerName, setCustomerName] = useState('Loading Customer...');
   const [customerPhone, setCustomerPhone] = useState('');
   const [distance, setDistance] = useState('...');
 
   useEffect(() => {
+    if (cachedUser) {
+      setCustomerName(cachedUser.fullName || 'Anonymous Customer');
+      setCustomerPhone(cachedUser.phone || '');
+      return;
+    }
+
     let isMounted = true;
     const fetchCustomerInfo = async () => {
       try {
-        const user = await authApi.getUserById(customerId);
+        const result = await dispatch(getUserByIdThunk(customerId)).unwrap();
+        const user = result.data;
         if (isMounted) {
           setCustomerName(user.fullName || 'Anonymous Customer');
           setCustomerPhone(user.phone || '');
@@ -85,7 +97,7 @@ const JobRequestCard = ({ booking, onAccept, onReject, actionLoading = false }) 
     return () => {
       isMounted = false;
     };
-  }, [customerId]);
+  }, [customerId, cachedUser, dispatch]);
 
   useEffect(() => {
     const calcDistance = () => {
