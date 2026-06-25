@@ -261,7 +261,7 @@ const Dashboard = () => {
                   return (
                     <React.Fragment key={worker.id}>
                       <Box sx={{ py: 2.5, px: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Box display="flex" sx={{ gap: 2 }}>
+                        <Box sx={{ display: 'flex', gap: 2 }}>
                           <Avatar sx={{ bgcolor: 'secondary.main', color: '#0B192C', fontWeight: 'bold' }}>
                             {userDetail.fullName?.charAt(0).toUpperCase() || 'W'}
                           </Avatar>
@@ -277,7 +277,7 @@ const Dashboard = () => {
                             </Typography>
                           </Box>
                         </Box>
-                        <Box display="flex" sx={{ gap: 1.5 }}>
+                        <Box sx={{ display: 'flex', gap: 1.5 }}>
                           <Button
                             variant="outlined"
                             color="error"
@@ -329,7 +329,7 @@ const Dashboard = () => {
                     <React.Fragment key={booking.id}>
                       <Box sx={{ py: 2, px: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <Box>
-                          <Box display="flex" alignItems="center" sx={{ gap: 1.5, mb: 0.5 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
                             <Typography variant="subtitle1" fontWeight="700">
                               #{booking.id} - {booking.serviceType} Callout
                             </Typography>
@@ -372,7 +372,7 @@ const Dashboard = () => {
                 <React.Fragment key={comp.id}>
                   <Box sx={{ py: 2.5, px: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Box>
-                      <Box display="flex" alignItems="center" sx={{ gap: 1.5, mb: 0.8 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.8 }}>
                         <Typography variant="subtitle1" fontWeight="700">
                           {comp.id}
                         </Typography>

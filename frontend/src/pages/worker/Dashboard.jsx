@@ -377,7 +377,7 @@ const Dashboard = () => {
                                 <MapPin size={16} /> <strong>Address:</strong> {job.address}
                               </Typography>
                               
-                              <Box display="flex" sx={{ gap: 2 }}>
+                              <Box sx={{ display: 'flex', gap: 2 }}>
                                 {job.status === 'ACCEPTED' && (
                                   <Button
                                     variant="contained"
@@ -528,7 +528,7 @@ const Dashboard = () => {
             <Divider sx={{ mb: 4 }} />
 
             <form onSubmit={profileFormik.handleSubmit}>
-              <Box display="flex" flexDirection="column" sx={{ gap: 3 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <TextField
                   select
                   name="skill"

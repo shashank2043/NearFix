@@ -315,7 +315,7 @@ const Dashboard = () => {
         <Grid size={{ xs: 12, md: 5 }}>
           <Card sx={{ height: '100%' }}>
             <CardContent>
-              <Box display="flex" alignItems="center" sx={{ gap: 1.5, mb: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
                 <PlusCircle size={22} color="#00F5D4" />
                 <Typography variant="h6" fontWeight="700">
                   Emergency Help Request
@@ -323,7 +323,7 @@ const Dashboard = () => {
               </Box>
               
               <form onSubmit={bookingFormik.handleSubmit}>
-                <Box display="flex" flexDirection="column" sx={{ gap: 3 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                   <TextField
                     select
                     name="serviceType"
@@ -430,7 +430,7 @@ const Dashboard = () => {
                         <ListItemText
                           disableTypography
                           primary={
-                            <Box display="flex" alignItems="center" sx={{ gap: 1.5, mb: 0.5 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
                               <Typography variant="subtitle1" fontWeight="700">
                                 {booking.serviceType}
                               </Typography>
@@ -513,7 +513,7 @@ const Dashboard = () => {
             {assignedWorkerUser ? (
               <Card sx={{ bgcolor: 'action.hover', border: '1px solid', borderColor: 'divider', mb: 3 }}>
                 <CardContent sx={{ py: 1.5, '&:last-child': { pb: 1.5 } }}>
-                  <Box display="flex" alignItems="center" sx={{ gap: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Avatar sx={{ bgcolor: 'secondary.main', color: '#0B192C' }}>
                       <User size={18} />
                     </Avatar>
@@ -521,7 +521,7 @@ const Dashboard = () => {
                       <Typography variant="subtitle1" fontWeight="700">
                         {assignedWorkerUser.fullName}
                       </Typography>
-                      <Box display="flex" alignItems="center" sx={{ gap: 1 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Typography variant="caption" color="text.secondary">
                           {assignedWorker?.experience} Years Experience
                         </Typography>
@@ -602,8 +602,8 @@ const Dashboard = () => {
                   </Alert>
                 ) : (
                   <form onSubmit={reviewFormik.handleSubmit}>
-                    <Box display="flex" flexDirection="column" sx={{ gap: 2 }}>
-                      <Box display="flex" alignItems="center" sx={{ gap: 2 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                         <Typography variant="body2">Rate the helper's service:</Typography>
                         <RatingStars
                           value={reviewFormik.values.rating}
