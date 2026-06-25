@@ -10,6 +10,17 @@ spring:
     gateway:
       server:
         webflux:
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowedOrigins: "*"
+                allowedMethods:
+                  - GET
+                  - POST
+                  - PUT
+                  - DELETE
+                  - OPTIONS
+                allowedHeaders: "*"
           routes:
             - id: auth-service
               uri: lb://auth-service
@@ -35,17 +46,6 @@ spring:
               uri: lb://booking-service
               predicates:
                 - Path=/api/reviews/**
-          globalcors:
-            cors-configurations:
-              '[/**]':
-                allowedOrigins: "*"
-                allowedMethods:
-                  - GET
-                  - POST
-                  - PUT
-                  - DELETE
-                  - OPTIONS
-                allowedHeaders: "*"
 
 eureka:
   client:

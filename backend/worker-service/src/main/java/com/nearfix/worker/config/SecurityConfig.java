@@ -27,7 +27,7 @@ public class SecurityConfig {
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/workers/cities").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/workers/cities").hasRole("ADMIN")
                 .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/workers/cities/**").hasRole("ADMIN")
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/actuator/**").permitAll()
                 .requestMatchers("/api/workers/profile/*/verify").hasRole("ADMIN")
                 .requestMatchers("/api/workers/profile", "/api/workers/status").hasRole("WORKER")
                 .requestMatchers("/api/workers/profile/*/rating").authenticated()
